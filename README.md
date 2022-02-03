@@ -3,26 +3,6 @@ User Manual and Tutorial for Genomic Selection in WhEATBreeders
 Lance Merrick
 February 2, 2022
 
-<style type="text/css">
-
-h1.title {
-  font-size: 38px;
-  color: black;
-  text-align: center;
-}
-h4.author { /* Header 4 - and the author and data headers use this too  */
-    font-size: 25px;
-  font-family: "Times New Roman", Times, serif;
-  color: black;
-  text-align: center;
-}
-h4.date { /* Header 4 - and the author and data headers use this too  */
-  font-size: 18px;
-  font-family: "Times New Roman", Times, serif;
-  color: black;
-  text-align: center;
-}
-</style>
 
 <p>
 
