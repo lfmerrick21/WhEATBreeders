@@ -1,7 +1,8 @@
 User Manual and Tutorial for Genomic Selection in WhEATBreeders
 ================
-Lance Merrick
-February 2, 2022
+## Lance Merrick
+
+## February 2, 2022
 
 
 <p>
@@ -325,7 +326,7 @@ dim(GILre)
 dim(GTL)
 ```
 
-\#Function to get data in order as above chunck but integrated into a
+\# Function to get data in order as above chunck but integrated into a
 function to also combine all files for a nice list with PCs
 included.
 
@@ -613,9 +614,9 @@ save(LND_20_CV,file = "LND_20_CV_Jason.RData")
 
 ### **Frequently asked questions**
 
-1.  Where can I get GWhEAT? GWhEAT is currently only available on github
+1.  Where can I get WhEATBreeders? WhEATBreeders is currently only available on github
     via Samuel Prather’s public repository found at
-    <https://github.com/stp4freedom/GWhEAT>.  
+    <https://github.com/lfmerrick21/WhEATBreeders>.  
       
 2.  How to download GWhEAT? Please refer the “Getting started” section
     above where I show how to download and install GWhEAT using
@@ -636,7 +637,7 @@ save(LND_20_CV,file = "LND_20_CV_Jason.RData")
     develop their own output.  
       
 6.  Where can I get help with issues regarding GWhEAT? All questions
-    should be directed to Samuel Prather at <stp4freedom@gmail.com>.  
+    should be directed to Samuel Prather at <lance.merrick21@gmail.com>.  
       
 7.  Are there other R packages that can perform GWAS? Yes, I would
     strongly recommend you check out the packaged GAPIT
