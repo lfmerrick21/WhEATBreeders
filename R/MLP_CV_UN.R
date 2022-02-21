@@ -1,17 +1,5 @@
 MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds=5,Stage=NULL){
-  library(stringr)
-  library(rrBLUP)
-  library(BGLR)
-  library(caret)
-  library(Metrics)
-  library(mpath)
 
-  library(lsa)
-  library(keras)
-  library(BMTME)
-  library(plyr)
-  library(tidyr)
-  library (dplyr)
 
   if(model=="ST"){
     Phenotype=matrix$BUN$Y[,c("Genotype","ENV",trait)]

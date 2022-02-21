@@ -1,14 +1,6 @@
 MTME <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn = 10000, folds = 5,UN=FALSE)
 {
-  library(stringr)
-  library(dplyr)
-  library(rrBLUP)
-  library(BGLR)
-  library(tidyr)
-  library(caret)
-  library(Metrics)
-  library(mpath)
-  library(BMTME)
+
 
   if(UN==TRUE)
   {
@@ -449,6 +441,7 @@ MTME <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn = 1
           Y_IT=as.matrix(matrix$BME$Y[[trait[j]]])
           Y_IT[-fold_indices,] <- NA
           Y_IT=as.matrix(Y_IT[,-1])
+          Y_IT=apply(Y_IT,2,as.numeric)
           ZI_IT=matrix$BME$Z1[[trait[j]]]
 
           # Calculate the GS model using BGLR

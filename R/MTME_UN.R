@@ -1,14 +1,6 @@
 MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn = 10000, folds = 5)
 {
-  library(stringr)
-  library(dplyr)
-  library(rrBLUP)
-  library(BGLR)
-  library(tidyr)
-  library(caret)
-  library(Metrics)
-  library(mpath)
-  library(BMTME)
+
   # Make the CV list
   fold_list <- make_CV_sets(length(matrix$BUN$Y[,1]), k = folds)
 
@@ -171,7 +163,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
         #K_expanded=matrix$MTME$K_expanded
         #K_GE=matrix$MTME$K_GE
 
-        BMTME_ETA=list(Env=list(model="FIXED",X=Z_E),Lines=list(model="RKHS",K=K_expanded))
+        BME_IT_ETA=list(Env=list(model="FIXED",X=Z_E),Lines=list(model="RKHS",K=K_expanded))
 
         nEnv=length(levels(as.factor(phenotype$ENV)))
 

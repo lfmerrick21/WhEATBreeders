@@ -1,6 +1,5 @@
 # This is a function that will split data into a list of k-folds
-make_CV_sets <- function(list_length, k = 5)
-{
+make_CV_sets <- function(list_length, k = 5){
   rand_values <- rnorm(list_length)
   k_quantiles <- quantile(rand_values, 0:k/k)
   k_assign <- cut(rand_values, k_quantiles, include.lowest = T, labels = F)

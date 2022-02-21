@@ -1,23 +1,19 @@
-rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,GD=NULL,PCA=NULL,CV=NULL,GWAS="BLINK",alpha=0.05,threshold=NULL, markers=NULL, folds = 5,Sparse=FALSE,m=NULL,degree=NULL, nL=NULL,QTN=10,PCA.total=3,transformation=NULL)
+
+rrBLUP_GAGS_VS <- function(train_genotypes, train_phenotype,train_GM=NULL,train_GD=NULL,train_PCA=NULL,test_genotypes,test_phenotype,test_PCA=NULL,Kernel="Markers",Sparse=FALSE,m=NULL,degree=NULL, nL=NULL,GWAS="BLINK",alpha=0.05,threshold=NULL, QTN=10,markers=NULL,PCA.total=3,transformation=NULL)
 {
 
   # Make the CV list
-  fold_list <- make_CV_sets(length(phenotype[,2]), k = folds)
 
-  BGLR_acc_results <- list()
-  BGLR_acc_predictions<- list()
-  Predictions_ALL<-list()
-  for (i in 1:length(fold_list)){
-    fold_indices <- which(fold_list[[i]])
     if(Kernel=="Markers"){
       if(!is.null(markers)){
-        samp=sample(1:ncol(genotypes), markers)
-        m_samp=genotypes[,samp]
-        myGD_train <- m_samp[fold_indices,]
-        myGD_test <- m_samp[-fold_indices,]
+        samp=sample(1:ncol(train_genotypes), markers)
+        myGD_train <- train_genotypes[,samp]
+        myGD_test <- test_genotypes[,samp]
+        genotypes=rbind(train=myGD_train,test=myGD_test)
       }else{
-        myGD_train <- genotypes[fold_indices,]
-        myGD_test <- genotypes[-fold_indices,]
+        myGD_train <- train_genotypes
+        myGD_test <- test_genotypes
+        genotypes=rbind(train=myGD_train,test=myGD_test)
       }
       # Calculate the GS model using rrBLUP
       myGD_train=apply(myGD_train,2,function(x) recode(x,"0"="-1","1"="0","2"="1"))
@@ -25,6 +21,7 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
       myGD_test=apply(myGD_test,2,function(x) recode(x,"0"="-1","1"="0","2"="1"))
       myGD_test=apply(myGD_test,2,as.numeric)
     }else{
+      genotypes=rbind(train=train_genotypes,test=test_genotypes)
       maf <- calc_maf_apply(genotypes, encoding = c(0, 1, 2))
       mono_indices <- which(maf ==0)
       if(length(mono_indices)!=0){
@@ -58,75 +55,64 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
       }
 
     }
-      if(!is.null(markers)){
-        samp=sample(2:ncol(GD), markers)
-        m_samp=GD[,samp]
-        myGD_train <- m_samp[fold_indices,]
-        myGD_test <- m_samp[-fold_indices,]
-      }else{
-        myGD_train <- GD[fold_indices,]
-        myGD_test <- GD[-fold_indices,]
-      }
-
-
-
-    if(transformation=="sqrt"){
-      phenotype[,2]=replace(phenotype[,2], phenotype[,2] < 0, 0)
-      phenotype[-fold_indices,2] <-sqrt(phenotype[-fold_indices,2])
-      phenotype[fold_indices,2] <-sqrt(phenotype[fold_indices,2])
-      myY_train <- phenotype[fold_indices,2]
-      myY_test <- phenotype[-fold_indices,2]
-      Y[,2]=replace(Y[,2], Y[,2] < 0, 0)
-      Y_train <-Y[fold_indices,c(1,2)]
-      Y_test <-Y[-fold_indices,c(1,2)]
-      Y_train[,2] <-sqrt(Y_train[,2])
-      Y_test[,2] <-sqrt(Y_train[,2])
-      pheno_train <- phenotype[,2]
-      pheno_train[-fold_indices] <- NA
+    if(!is.null(markers)){
+      samp=sample(2:ncol(GD), markers)
+      m_samp=GD[,samp]
+      myGD_train <- m_samp[fold_indices,]
+      myGD_test <- m_samp[-fold_indices,]
+    }else{
+      myGD_train <- GD[fold_indices,]
+      myGD_test <- GD[-fold_indices,]
     }
 
-    if(transformation=="log"){
-      phenotype[,2]=replace(phenotype[,2], phenotype[,2] <= 0, 0.000001)
-      phenotype[-fold_indices,2] <-log(phenotype[-fold_indices,2])
-      phenotype[fold_indices,2] <-log(phenotype[fold_indices,2])
-      myY_train <- phenotype[fold_indices,2]
-      myY_test <- phenotype[-fold_indices,2]
-      Y[,2]=replace(Y[,2], Y[,2] <= 0, 0.000001)
-      Y_train <-Y[fold_indices,c(1,2)]
-      Y_test <-Y[-fold_indices,c(1,2)]
-      Y_train[,2] <-log(Y_train[,2])
-      Y_test[,2] <-log(Y_train[,2])
-      pheno_train <- phenotype[,2]
-      pheno_train[-fold_indices] <- NA
 
-    }
 
-    if(transformation=="boxcox"){
-      phenotype[-fold_indices,2] <-boxcox_t(phenotype[-fold_indices,2])
-      phenotype[fold_indices,2] <-boxcox_t(phenotype[fold_indices,2])
-      myY_train <- phenotype[fold_indices,2]
-      myY_test <- phenotype[-fold_indices,2]
-      Y_train <-Y[fold_indices,c(1,2)]
-      Y_test <-Y[-fold_indices,c(1,2)]
-      Y_train[,2] <-boxcox_t(Y_train[,2])
-      Y_test[,2] <-boxcox_t(Y_train[,2])
-      pheno_train <- phenotype[,2]
-      pheno_train[-fold_indices] <- NA
+  if(transformation=="sqrt"){
+    train_phenotype[,2]=replace(train_phenotype[,2], train_phenotype[,2] < 0, 0)
+    test_phenotype[,2]=replace(test_phenotype[,2], test_phenotype[,2] < 0, 0)
+    train_phenotype[,2] <-sqrt(train_phenotype[,2])
+    test_phenotype[,2] <-sqrt(test_phenotype[,2])
+    myY_train <- train_phenotype[,2]
+    myY_test <- test_phenotype[,2]
+    pheno_test=test_phenotype
+    pheno_test[,2]<-NA
+    pheno_train <- c(train=train_phenotype[,2],test=pheno_test[,2])
+  }
 
-    }
+  if(transformation=="log"){
+    train_phenotype[,2]=replace(train_phenotype[,2], train_phenotype[,2] <= 0, 0.000001)
+    test_phenotype[,2]=replace(test_phenotype[,2], test_phenotype[,2] <= 0, 0.000001)
+    train_phenotype[,2] <-log(train_phenotype[,2])
+    test_phenotype[,2] <-log(test_phenotype[,2])
+    myY_train <- train_phenotype[,2]
+    myY_test <- test_phenotype[,2]
+    pheno_test=test_phenotype
+    pheno_test[,2]<-NA
+    pheno_train <- c(train=train_phenotype[,2],test=pheno_test[,2])
 
-    if(transformation=="none"){
-      myY_train <- phenotype[fold_indices,2]
-      myY_test <- phenotype[-fold_indices,2]
-      Y_train <-Y[fold_indices,c(1,2)]
-      Y_test <-Y[-fold_indices,c(1,2)]
-      pheno_train <- phenotype[,2]
-      pheno_train[-fold_indices] <- NA
-    }
+  }
 
-    GWASR<- GAPIT(Y = Y_train,
-                  GD = myGD_train,
-                  GM = GM,
+  if(transformation=="boxcox"){
+    train_phenotype[,2] <-boxcox_t(train_phenotype[,2])
+    test_phenotype[,2] <-boxcox_t(test_phenotype[,2])
+    myY_train <- train_phenotype[,2]
+    myY_test <- test_phenotype[,2]
+    pheno_test=test_phenotype
+    pheno_test[,2]<-NA
+    pheno_train <- c(train=train_phenotype[,2],test=pheno_test[,2])
+  }
+
+  if(transformation=="none"){
+    myY_train <- train_phenotype[,2]
+    myY_test <- test_phenotype[,2]
+    pheno_test=test_phenotype
+    pheno_test[,2]<-NA
+    pheno_train <- c(train=train_phenotype[,2],test=pheno_test[,2])
+  }
+
+    GWASR<- GAPIT(Y = train_phenotype,
+                  GD = train_GD,
+                  GM = train_GM,
                   PCA.total=PCA.total,
                   model = GWAS,
                   file.output=F)
@@ -140,12 +126,8 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
         sacc <- NA
         metrics=c(RMSE=NA,Rsquared=NA,MAE=NA)
         results=c(ACC=acc,SACC=sacc,metrics)
-        prediction=data.frame(Fold=rep(i,length(phenotype[-fold_indices,1])),phenotype[-fold_indices,],GEBV=NA,RE=NA,FE=NA)
+        prediction=data.frame(test_phenotype,GEBV=NA,RE=NA,FE=NA)
 
-        Predictions<-prediction
-        BGLR_acc_results[[i]] <- list(results)
-
-        Predictions_ALL=rbind(Predictions_ALL,Predictions)
 
       }else{
         sm=as.character(GWASR$GWAS[GWASSM,]$SNP)
@@ -153,14 +135,13 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
         myCV_train <- myGD_train[,sm]
         myCV_test <- myGD_test[,sm]
         myCV<-as.matrix(genotypes[,sm])
-        if(!is.null(PCA)){
-          myPCA_train <- PCA[fold_indices,]
-          myPCA_test <- PCA[-fold_indices,]
-        }
 
         if(!is.null(PCA)){
 
           if(Kernel=="Markers"){
+            myPCA_train <- train_PCA
+            myPCA_test <- test_PCA
+            PCA<-rbind(train_PCA,test_PCA)
             fix_train_PC <- as.matrix(cbind(myCV_train,myPCA_train))
             fix_test_PC  <- as.matrix(cbind(myCV_test,myPCA_test))
             #fix_PC=as.matrix(cbind(myCV,PCA))
@@ -187,22 +168,22 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
             #XtX <- crossprod(fix_PC, fix_PC)
             #rank.X <- qr(XtX)$rank
             #if (rank.X < p) {
-              #sm2=findLinearCombos(fix_PC)$remove
-              #fix_PC=fix_PC[,-sm2]}
+            #sm2=findLinearCombos(fix_PC)$remove
+            #fix_PC=fix_PC[,-sm2]}
 
             fix_PC=make_full_rank(fix_PC)
             gBLUP_model <- mixed.solve(y = pheno_train,
                                        K = K,
                                        X=fix_PC)
-            pred_effects_PC <- gBLUP_model$u[-fold_indices]
-            fix_effects_PC <- as.matrix(fix_PC[-fold_indices,])  %*% gBLUP_model$beta
+            pred_effects_PC <- gBLUP_model$u[-c(1:length(train_phenotype[,2]))]
+            fix_effects_PC <- as.matrix(fix_PC[-c(1:length(train_phenotype[,2])),])  %*% gBLUP_model$beta
             predictions <- c(pred_effects_PC) + c(fix_effects_PC)
           }
           acc <- cor(predictions, myY_test, use = "pairwise.complete")
           sacc <- cor(predictions, myY_test, use = "pairwise.complete", method = c("spearman"))
           metrics=postResample(pred=predictions,obs=myY_test)
           results=c(ACC=acc,SACC=sacc,metrics)
-          prediction=data.frame(Fold=rep(i,length(phenotype[-fold_indices,1])),phenotype[-fold_indices,],GEBV=predictions,RE=pred_effects,FE=fix_effects)
+          prediction=data.frame(test_phenotype,GEBV=predictions,RE=pred_effects,FE=fix_effects)
 
 
         }else{
@@ -241,20 +222,17 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
             gBLUP_model <- mixed.solve(y = pheno_train,
                                        K = K,
                                        X=fix_myCV)
-            pred_effects <- gBLUP_model$u[-fold_indices]
-            fix_effects <- as.matrix(fix_myCV[-fold_indices,])  %*% gBLUP_model$beta
+            pred_effects <- gBLUP_model$u[-c(1:length(train_phenotype[,2]))]
+            fix_effects <- as.matrix(fix_myCV[-c(1:length(train_phenotype[,2])),])  %*% gBLUP_model$beta
             predictions <- c(pred_effects) + c(fix_effects)
           }
           acc <- cor(predictions, myY_test, use = "pairwise.complete")
           sacc <- cor(predictions, myY_test, use = "pairwise.complete", method = c("spearman"))
           metrics=postResample(pred=predictions,obs=myY_test)
           results=c(ACC=acc,SACC=sacc,metrics)
-          prediction=data.frame(Fold=rep(i,length(phenotype[-fold_indices,1])),phenotype[-fold_indices,],GEBV=predictions,RE=pred_effects,FE=fix_effects)
+          prediction=data.frame(test_phenotype,GEBV=predictions,RE=pred_effects,FE=fix_effects)
 
         }
-        Predictions<-prediction
-        BGLR_acc_results[[i]] <- list(results)
-        Predictions_ALL=rbind(Predictions_ALL,Predictions)
       }
 
 
@@ -272,8 +250,9 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
 
         gc()
         if(Kernel=="Markers"){
-          myPCA_train <- PCA[fold_indices,]
-          myPCA_test <- PCA[-fold_indices,]
+          myPCA_train <- train_PCA
+          myPCA_test <- test_PCA
+          PCA<-rbind(train_PCA,test_PCA)
           fix_train_PC <- as.matrix(cbind(myCV_train,myPCA_train))
           fix_test_PC  <- as.matrix(cbind(myCV_test,myPCA_test))
           #fix_PC=as.matrix(cbind(myCV,PCA))
@@ -300,21 +279,21 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
           #XtX <- crossprod(fix_PC, fix_PC)
           #rank.X <- qr(XtX)$rank
           #if (rank.X < p) {
-            #sm2=findLinearCombos(fix_PC)$remove
-            #fix_PC=fix_PC[,-sm2]}
+          #sm2=findLinearCombos(fix_PC)$remove
+          #fix_PC=fix_PC[,-sm2]}
           fix_PC=make_full_rank(fix_PC)
           gBLUP_model <- mixed.solve(y = pheno_train,
                                      K = K,
                                      X=fix_PC)
-          pred_effects <- gBLUP_model$u[-fold_indices]
-          fix_effects <- as.matrix(fix_PC[-fold_indices,])  %*% gBLUP_model$beta
+          pred_effects <- gBLUP_model$u[-c(1:length(train_phenotype[,2]))]
+          fix_effects <- as.matrix(fix_PC[-c(1:length(train_phenotype[,2])),])  %*% gBLUP_model$beta
           predictions <- c(pred_effects) + c(fix_effects)
         }
         acc <- cor(predictions, myY_test, use = "pairwise.complete")
         sacc <- cor(predictions, myY_test, use = "pairwise.complete", method = c("spearman"))
         metrics=postResample(pred=predictions,obs=myY_test)
         results=c(ACC=acc,SACC=sacc,metrics)
-        prediction=data.frame(Fold=rep(i,length(phenotype[-fold_indices,1])),phenotype[-fold_indices,],GEBV=predictions,RE=pred_effects,FE=fix_effects)
+        prediction=data.frame(test_phenotype,GEBV=predictions,RE=pred_effects,FE=fix_effects)
       }else{
 
 
@@ -353,38 +332,22 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
           gBLUP_model <- mixed.solve(y = pheno_train,
                                      K = K,
                                      X=myCV_fix)
-          pred_effects <- gBLUP_model$u[-fold_indices]
-          fix_effects <- as.matrix(myCV_fix[-fold_indices,])  %*% gBLUP_model$beta
+          pred_effects <- gBLUP_model$u[-c(1:length(train_phenotype[,2]))]
+          fix_effects <- as.matrix(myCV_fix[-c(1:length(train_phenotype[,2])),])  %*% gBLUP_model$beta
           predictions <- c(pred_effects) + c(fix_effects)
         }
         acc <- cor(predictions, myY_test, use = "pairwise.complete")
         sacc <- cor(predictions, myY_test, use = "pairwise.complete", method = c("spearman"))
         metrics=postResample(pred=predictions,obs=myY_test)
         results=c(ACC=acc,SACC=sacc,metrics)
-        prediction=data.frame(Fold=rep(i,length(phenotype[-fold_indices,1])),phenotype[-fold_indices,],GEBV=predictions,RE=pred_effects,FE=fix_effects)
+        prediction=data.frame(test_phenotype,GEBV=predictions,RE=pred_effects,FE=fix_effects)
 
       }
 
-      Predictions<-prediction
-      BGLR_acc_results[[i]] <- list(results)
-      Predictions_ALL=rbind(Predictions_ALL,Predictions)
-
     }
+    names(results)<- c("Pearson","Spearman","RMSE","R2","MAE")
 
 
-  }
-  model_vect <- c("Pearson","Spearman","RMSE","R2","MAE")
-  BGLR_acc_table <- data.frame(matrix(nrow = 0, ncol = 3))
-  for (i in 1:length(BGLR_acc_results))
-  {
-    results_long <- data.frame(rep(i, length(model_vect)), model_vect, unlist(BGLR_acc_results[[i]]))
-    BGLR_acc_table <- rbind(BGLR_acc_table, results_long)
-  }
-  names(BGLR_acc_table) <- c("fold", "model", "r")
-  data_wide <- spread(BGLR_acc_table, model, r)
-  acc_fold=data.frame(data_wide)
-  results=colMeans(acc_fold[2:6], na.rm=TRUE)
-
-  results_ALL=list(Results=results,Predictions=Predictions_ALL)
+    results_ALL=list(Results=results,Predictions=prediction)
   return(results_ALL)
 }

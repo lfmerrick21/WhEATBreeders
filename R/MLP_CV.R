@@ -1,17 +1,5 @@
-MLP_CV<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds=5,Stage=NULL,UN=FALSE){
-  library(stringr)
-  library(rrBLUP)
-  library(BGLR)
-  library(caret)
-  library(Metrics)
-  library(mpath)
+MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds=5,Stage=NULL,UN=TRUE){
 
-  library(lsa)
-  library(keras)
-  library(BMTME)
-  library(plyr)
-  library(tidyr)
-  library (dplyr)
 
   if(model=="ST"){
     Phenotype=matrix$MTME$YUN
@@ -25,6 +13,7 @@ MLP_CV<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,fold
     #Phenotype$Env=as.factor(Phenotype$Env)
     Y2=Phenotype[complete.cases(Phenotype),]
     X2=K_expanded[complete.cases(Phenotype),]
+
     results = data.frame()
     for(j in 1:length(trait)){
       ############Selecting the response variable#######################
@@ -220,6 +209,7 @@ MLP_CV<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,fold
     #Phenotype$Env=as.factor(Phenotype$Env)
     Y2=Phenotype[complete.cases(Phenotype),]
     X2=K_expanded[complete.cases(Phenotype),]
+
     #Y2=Y2[1:50,]
     #X2=X2[1:50,]
     ############Selecting the response variable#######################
@@ -667,19 +657,29 @@ MLP_CV<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,fold
   }
 
   if(model=="BME"){
-    Phenotype=matrix$MTME$YUN
-    #Y <- matrix$BMTME$Y
-    #Y[-fold_indices,] <- NA
-    #Z_L=matrix$MTME$Z_L
-    Z_E=matrix$MTME$Z_E
-    K_expanded=matrix$MTME$K_expanded
-    K_GE=matrix$MTME$K_GE
+    if(UN==TRUE){
+      Phenotype=matrix$MTME$YUN
+      #Y <- matrix$BMTME$Y
+      #Y[-fold_indices,] <- NA
+      #Z_L=matrix$MTME$Z_L
+      Z_E=matrix$MTME$Z_E
+      K_expanded=matrix$MTME$K_expanded
+      K_GE=matrix$MTME$K_GE
 
-    Genotype=cbind(Z_E,K_expanded,K_GE)
-    #Phenotype$Genotype=as.factor(Phenotype$Genotype)
-    #Phenotype$Env=as.factor(Phenotype$Env)
-    Y2=Phenotype[complete.cases(Phenotype),]
-    X2=Genotype[complete.cases(Phenotype),]
+      Genotype=cbind(Z_E,K_expanded,K_GE)
+      #Phenotype$Genotype=as.factor(Phenotype$Genotype)
+      #Phenotype$Env=as.factor(Phenotype$Env)
+      Y2=Phenotype[complete.cases(Phenotype),]
+      X2=Genotype[complete.cases(Phenotype),]
+    }else{
+      Phenotype=complete(matrix$BMTME$YUN, Genotype, ENV)
+      X=matrix$BMTME$X
+      Z1=matrix$BMTME$Z1
+      Z2=matrix$BMTME$Z2
+      Genotype=cbind(X,Z1,Z2)
+      Y2=Phenotype[complete.cases(Phenotype),]
+      X2=Genotype[complete.cases(Phenotype),]
+    }
     results = data.frame()
     for(j in 1:length(trait)){
       ############Selecting the response variable#######################
@@ -864,19 +864,29 @@ MLP_CV<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,fold
   }
 
   if(model=="BMTME"){
-    Phenotype=matrix$MTME$YUN
-    #Y <- matrix$BMTME$Y
-    #Y[-fold_indices,] <- NA
-    #Z_L=matrix$MTME$Z_L
-    Z_E=matrix$MTME$Z_E
-    K_expanded=matrix$MTME$K_expanded
-    K_GE=matrix$MTME$K_GE
+    if(UN==TRUE){
+      Phenotype=matrix$MTME$YUN
+      #Y <- matrix$BMTME$Y
+      #Y[-fold_indices,] <- NA
+      #Z_L=matrix$MTME$Z_L
+      Z_E=matrix$MTME$Z_E
+      K_expanded=matrix$MTME$K_expanded
+      K_GE=matrix$MTME$K_GE
 
-    Genotype=cbind(Z_E,K_expanded,K_GE)
-    #Phenotype$Genotype=as.factor(Phenotype$Genotype)
-    #Phenotype$Env=as.factor(Phenotype$Env)
-    Y2=Phenotype[complete.cases(Phenotype),]
-    X2=Genotype[complete.cases(Phenotype),]
+      Genotype=cbind(Z_E,K_expanded,K_GE)
+      #Phenotype$Genotype=as.factor(Phenotype$Genotype)
+      #Phenotype$Env=as.factor(Phenotype$Env)
+      Y2=Phenotype[complete.cases(Phenotype),]
+      X2=Genotype[complete.cases(Phenotype),]
+    }else{
+      Phenotype=complete(matrix$BMTME$YUN, Genotype, ENV)
+      X=matrix$BMTME$X
+      Z1=matrix$BMTME$Z1
+      Z2=matrix$BMTME$Z2
+      Genotype=cbind(X,Z1,Z2)
+      Y2=Phenotype[complete.cases(Phenotype),]
+      X2=Genotype[complete.cases(Phenotype),]
+    }
     #Y2=Y2[1:50,]
     #X2=X2[1:50,]
     ############Selecting the response variable#######################

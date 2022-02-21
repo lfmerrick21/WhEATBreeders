@@ -1,7 +1,7 @@
-PGandCV <- function(Pheno_Em_bl=NULL,myGD_EM=NULL,mytaxa_EM=NULL,myGM_EM=NULL,CV=NULL){
+PGEandCV <- function(Pheno_Em_bl=NULL,myGD_EM=NULL,mytaxa_EM=NULL,myGM_EM=NULL,CV=NULL){
   colnames(Pheno_Em_bl)[1]<-c("Genotype")
-  rownames(Pheno_Em_bl) <- Pheno_Em_bl$Genotype
-
+  #rownames(Pheno_Em_bl) <- Pheno_Em_bl$Genotype
+  Pheno_Em_bl=droplevels(Pheno_Em_bl)
   Markers_Em_bl<-myGD_EM
 
   colnames(mytaxa_EM)[1]<-c("Genotype")
@@ -16,12 +16,12 @@ PGandCV <- function(Pheno_Em_bl=NULL,myGD_EM=NULL,mytaxa_EM=NULL,myGM_EM=NULL,CV
     CV[,i]=as.numeric(CV[,i])
   }
 
-
-  Pheno_Em_bl <- Pheno_Em_bl[rownames(Pheno_Em_bl) %in% rownames(Markers_Em_bl),]
-  Markers_Em_bl <- Markers_Em_bl[rownames(Markers_Em_bl) %in% rownames(Pheno_Em_bl),]
+  Pheno_Em_bl <- Pheno_Em_bl[Pheno_Em_bl$Genotype %in% rownames(Markers_Em_bl),]
+  Markers_Em_bl <- Markers_Em_bl[rownames(Markers_Em_bl) %in% Pheno_Em_bl$Genotype,]
 
   Pheno_Em_bl <- Pheno_Em_bl[order(Pheno_Em_bl$Genotype),]
   Markers_Em_bl <- Markers_Em_bl[order(rownames(Markers_Em_bl)),]
+  Pheno_Em_bl=droplevels(Pheno_Em_bl)
 
   CV <- CV[rownames(CV) %in% rownames(Pheno_Em_bl),]
   CV <- CV[order(rownames(CV)),]
