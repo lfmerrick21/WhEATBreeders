@@ -200,10 +200,10 @@ WHEAT<-function(Phenotype,
 
                       if(Impuation=="KNN"){
                         #Section for downloading package
-                        if (!requireNamespace("BiocManager", quietly = TRUE))
-                          install.packages("BiocManager")
+                        #if (!requireNamespace("BiocManager", quietly = TRUE))
+                          #install.packages("BiocManager")
 
-                        BiocManager::install("impute")
+                        #BiocManager::install("impute")
 
                         x=impute::impute.knn(as.matrix(t(GDEmf)))
                         myGD_imp=t(x$data)

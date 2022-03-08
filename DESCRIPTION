@@ -39,5 +39,6 @@ Imports:
   vcfR,
   compiler,
   gdata,
-  BiocManager
+  BiocManager,
+  impute
 RoxygenNote: 7.0.2
