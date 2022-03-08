@@ -1,10 +1,10 @@
 Package: WhEATBreeders
 Type: Package
-Title: What the Package Does (Title Case)
+Title: Wrappers for Genomic Selection
 Version: 0.1.0
 Author: Lance Merrick
 Maintainer: Lance Merrick <lance.merrick21@gmail.com>
-Description: More about what it does (maybe more than one line)
+Description: Wrappers for Easy Association, Tools, and Selection for Breeders (WhEATBreeders)
     Use four spaces when indenting paragraphs within the Description.
 License: What license is it under?
 Encoding: UTF-8
