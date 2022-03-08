@@ -20,12 +20,12 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
 
       #Y=as.matrix(Y2[,-c(1, 2)])
       ####Training testing sets using the BMTMEpackage###############
-      pheno=data.frame(Line = Y2[, 1],
-                       Env=Y2[, 2],
+      pheno=data.frame(Genotype = Y2[, 1],
+                       ENV=Y2[, 2],
                        Response=Y2[,trait[j]])
-      pheno$Line=as.character(pheno$Line)
-      pheno$Env=as.character(pheno$Env)
-      CrossV=CV.KFold(pheno, DataSetID = 'Line', K=K)
+      pheno$Genotype=as.character(pheno$Genotype)
+      pheno$ENV=as.character(pheno$ENV)
+      CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
       #fold_list <- make_CV_sets(length(phenotypes), k = folds)
       #######Final X and y for fitting the model###################
       y=Y2[,trait[j]]
@@ -216,12 +216,12 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
 
     #Y=as.matrix(Y2[,-c(1, 2)])
     ####Training testing sets using the BMTMEpackage###############
-    pheno=data.frame(Line = Y2[, 1],
-                     Env=Y2[, 2],
-                     Response=Y2[,trait[1]])
-    pheno$Line=as.character(pheno$Line)
-    pheno$Env=as.character(pheno$Env)
-    CrossV=CV.KFold(pheno, DataSetID = 'Line', K=K)
+    pheno=data.frame(Genotype = Y2[, 1],
+                     ENV=Y2[, 2],
+                     Response=Y2[,trait])
+    pheno$Genotype=as.character(pheno$Genotype)
+    pheno$ENV=as.character(pheno$ENV)
+    CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
     #fold_list <- make_CV_sets(length(phenotypes), k = folds)
     #######Final X and y for fitting the model###################
     y=Y2[,trait]
@@ -686,12 +686,12 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
 
       #Y=as.matrix(Y2[,-c(1, 2)])
       ####Training testing sets using the BMTMEpackage###############
-      pheno=data.frame(Line = Y2[, 1],
-                       Env=Y2[, 2],
+      pheno=data.frame(Genotype = Y2[, 1],
+                       ENV=Y2[, 2],
                        Response=Y2[,trait[j]])
-      pheno$Line=as.character(pheno$Line)
-      pheno$Env=as.character(pheno$Env)
-      CrossV=CV.KFold(pheno, DataSetID = 'Line', K=K)
+      pheno$Genotype=as.character(pheno$Genotype)
+      pheno$ENV=as.character(pheno$ENV)
+      CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
       #fold_list <- make_CV_sets(length(phenotypes), k = folds)
       #######Final X and y for fitting the model###################
       y=Y2[,trait[j]]
@@ -893,12 +893,12 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
 
     #Y=as.matrix(Y2[,-c(1, 2)])
     ####Training testing sets using the BMTMEpackage###############
-    pheno=data.frame(Line = Y2[, 1],
-                     Env=Y2[, 2],
-                     Response=Y2[,trait[1]])
-    pheno$Line=as.character(pheno$Line)
-    pheno$Env=as.character(pheno$Env)
-    CrossV=CV.KFold(pheno, DataSetID = 'Line', K=K)
+    pheno=data.frame(Genotype = Y2[, 1],
+                     ENV=Y2[, 2],
+                     Response=Y2[,trait])
+    pheno$Genotype=as.character(pheno$Genotype)
+    pheno$ENV=as.character(pheno$ENV)
+    CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
     #fold_list <- make_CV_sets(length(phenotypes), k = folds)
     #######Final X and y for fitting the model###################
     y=Y2[,trait]

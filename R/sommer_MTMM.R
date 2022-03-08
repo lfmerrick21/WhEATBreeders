@@ -1,5 +1,5 @@
 #Sommer_MM_GWAS
-sommer_MTMM=function(Y=Gen_Table_JMP_DP18[,c(1,2,4)],SNP_INFO=GBS_qam_adj18$map,model=ansx18,X=myGM18,A=A,MAFX=NULL){
+sommer_MTMM=function(Y,SNP_INFO,model,X,A,MAFX=NULL){
   colnames(SNP_INFO)<-c('SNP','Chr','Pos')
   ## preparing genotype and Kinship data
   Y_<-Y

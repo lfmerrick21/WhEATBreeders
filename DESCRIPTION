@@ -2,10 +2,41 @@ Package: WhEATBreeders
 Type: Package
 Title: What the Package Does (Title Case)
 Version: 0.1.0
-Author: Who wrote it
-Maintainer: The package maintainer <yourself@somewhere.net>
+Author: Lance Merrick
+Maintainer: Lance Merrick <lance.merrick21@gmail.com>
 Description: More about what it does (maybe more than one line)
     Use four spaces when indenting paragraphs within the Description.
 License: What license is it under?
 Encoding: UTF-8
 LazyData: true
+Imports:
+  BGLR,
+  rrBLUP,
+  caret,
+  tidyr,
+  dplyr,
+  GAPIT3,
+  Hmisc,
+  WeightIt,
+  mpath,
+  glmnetUtils,
+  glmnet,
+  MASS,
+  Metrics,
+  stringr,
+  lsa,
+  keras,
+  tensorflow,
+  BMTME,
+  plyr,
+  data.table,
+  bigmemory,
+  biganalytics,
+  ggplot2,
+  tidyverse,
+  knitr,
+  cvTools,
+  vcfR,
+  compiler,
+  gdata
+RoxygenNote: 7.0.2
