@@ -5,8 +5,11 @@ WHEAT<-function(Phenotype,
                 #QC Info
                 Geno_Type="Hapmap",
                 Imputation="Beagle",
+                Filter=TRUE,
                 Missing_Rate=0.20,
                 MAF=0.05,
+                Filter_Ind=TRUE,
+                Missing_Rate_Ind=0.80,
                 #If QC Info is FALSE
                 GDre=NULL,
                 GT=NULL,
@@ -46,6 +49,8 @@ WHEAT<-function(Phenotype,
                 GE=TRUE,
                 UN=FALSE,
                 model="MTME"){
+
+                Phenotype=Phenotype %>% filter(Env %in% c(Trial))
                   if(QC==TRUE){
                     #############PandG#########################
                     ###############################################################################
@@ -86,7 +91,7 @@ WHEAT<-function(Phenotype,
                       save(hapmap,file=paste0(Study,"_Filtered_Hapmap.RData"))
                       fwrite(hapmap,paste0(Study,"_Filtered_Hapmap.hmp.txt"),sep="\t",row.names = FALSE,col.names = TRUE)
                       #Convert to Numeric
-                      if(Impuation=="Middle"){
+                      if(Imputation=="Middle"){
                         outG=GAPIT.HapMap(hapmap,SNP.impute="Middle")
                       }else{
                         outG=GAPIT.HapMap(hapmap,SNP.impute="None")
@@ -106,7 +111,7 @@ WHEAT<-function(Phenotype,
 
                     #### Filter
                     ##### Remove makers based on missing data
-                    if(Filter=="None"){
+                    if(Filter==FALSE){
                       GDmf = GD
                       GImf = GI
                     }else{
@@ -115,6 +120,9 @@ WHEAT<-function(Phenotype,
                       if(length(mr_indices)!=0){
                         GDmr = GD[,-mr_indices]
                         GImr = GI[-mr_indices,]
+                      }else{
+                        GDmr = GD
+                        GImr = GI
                       }
                       dim(GDmr)
                       dim(GImr)
@@ -125,6 +133,9 @@ WHEAT<-function(Phenotype,
                       if(length(mono_indices)!=0){
                         GDmo = GDmr[,-mono_indices]
                         GImo = GImr[-mono_indices,]
+                      }else{
+                        GDmo = GDmr
+                        GImo = GImr
                       }
                       dim(GDmo)
                       dim(GImo)
@@ -135,13 +146,30 @@ WHEAT<-function(Phenotype,
                       if(length(mono_indices)!=0){
                         GDmf = GDmo[,-mono_indices]
                         GImf = GImo[-mono_indices,]
+                      }else{
+                        GDmf = GDmo
+                        GImf = GImo
+                      }
+                      dim(GDmf)
+                      dim(GImf)
+                    }
+
+                    if(Filter_Ind==FALSE){
+                      GDmf = GDmf
+                    }else{
+                      mr=calc_missrate(GD)
+                      mr_indices <- which(mr > Missing_Rate_Ind)
+                      if(length(mr_indices)!=0){
+                        GDmf = GDmf[-mr_indices,]
+                      }else{
+                        GDmf = GDmf
                       }
                       dim(GDmf)
                       dim(GImf)
                     }
                     #### Imputation
                     ##### Imputation Using BEAGLE
-                    if(Impuation=="None"){
+                    if(Imputation=="None"){
                       GDEre = GDmf
                       GIEre = GImf
                       dim(GDEre)
@@ -152,7 +180,7 @@ WHEAT<-function(Phenotype,
                       save(GDre,GIre,GT,file=paste0(Study,"_Filt_Imputed.RData"))
                     }else{
 
-                      if(Impuation=="Beagle"){
+                      if(Imputation=="Beagle"){
                         GImf$chr <- GImf$Chromosome
                         GImf$rs <- GImf$SNP
                         GImf$pos <- GImf$Position
@@ -165,10 +193,10 @@ WHEAT<-function(Phenotype,
                         outfile = paste0(Study,"_imp")
 
                         # Define a system command
-                        command1_prefix <- "java -Xmx1g -jar beagle.25Nov19.28d.jar"
+                        command1_prefix <- "java -jar beagle.25Nov19.28d.jar"
                         command_args <- paste(" gt=", genotype_file, " out=", outfile, sep = "")
                         command1 <- paste(command1_prefix, command_args)
-                        test <- system(command1, intern = T)
+                        test <- system(command1)
                         # Run BEAGLE using the system function, this will produce a gzip .vcf file
                         Xvcf=read.vcfR(paste0(Study,"_imp",".vcf.gz"))
                         Xbgl=data.frame(Xvcf@fix,Xvcf@gt)
@@ -183,8 +211,15 @@ WHEAT<-function(Phenotype,
                         #Remove MAF <5%
                         maf <- calc_maf_apply(genotypes_imp, encoding = c(0, 1, 2))
                         mono_indices <- which(maf < MAF)
-                        GDre = genotypes_imp[,-mono_indices]
-                        GIre = GImf[-mono_indices,]
+
+                        if(length(mono_indices)!=0){
+                          GDre = genotypes_imp[,-mono_indices]
+                          GIre = GImf[-mono_indices,]
+                        }else{
+                          GDre = genotypes_imp
+                          GIre = GImf
+                        }
+
                         GIre=GIre[,-c("chr","rs","pos")]
                         dim(GDre)
                         dim(GIre)
@@ -198,14 +233,14 @@ WHEAT<-function(Phenotype,
 
                       }
 
-                      if(Impuation=="KNN"){
+                      if(Imputation=="KNN"){
                         #Section for downloading package
                         #if (!requireNamespace("BiocManager", quietly = TRUE))
                           #install.packages("BiocManager")
 
                         #BiocManager::install("impute")
 
-                        x=impute::impute.knn(as.matrix(t(GDEmf)))
+                        x=impute::impute.knn(as.matrix(t(GDmf)))
                         myGD_imp=t(x$data)
                         myGD_imp<-round(myGD_imp,0)
                         sum(is.na(myGD_imp))
@@ -213,10 +248,15 @@ WHEAT<-function(Phenotype,
                         #Remove MAF <5%
                         maf <- calc_maf_apply(myGD_imp, encoding = c(0, 1, 2))
                         mono_indices <- which(maf < MAF)
-                        GDEre = myGD_imp[,-mono_indices]
-                        GIEre = GIEmf[-mono_indices,]
-                        dim(GDEre)
-                        dim(GIEre)
+                        if(length(mono_indices)!=0){
+                          GDre = myGD_imp[,-mono_indices]
+                          GIre = GImf[-mono_indices,]
+                        }else{
+                          GDre = myGD_imp
+                          GIre = GImf
+                        }
+                        dim(GDre)
+                        dim(GIre)
 
                         fwrite(GDre,paste0(Study,"_GD_Filt_Imputed.csv"))
                         fwrite(GIre[,1:3],paste0(Study,"_GI_Filt_Imputed.csv"))
@@ -229,7 +269,7 @@ WHEAT<-function(Phenotype,
                         GBS.list=c()
                         for(i in 1:length(Trial)){
                           Pheno=Phenotype1 %>% filter(Env %in% c(Trial[i]))
-                          Pheno=Pheno[,c("Taxa","Env",Trait)]
+                          Pheno=Pheno[,c("Genotype","Env",Trait)]
                           for(j in 1:length(Trait)){
                             Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
                             GBS<<-PGandCV(Pheno,GDre,GT,GIre,CV)
@@ -245,7 +285,7 @@ WHEAT<-function(Phenotype,
                         GBS.list=c()
                         for(i in 1:length(Trial)){
                           Pheno=Phenotype1 %>% filter(Env %in% c(Trial[i]))
-                          Pheno=Pheno[,c("Taxa","Env",Trait)]
+                          Pheno=Pheno[,c("Genotype","Env",Trait)]
                           for(j in 1:length(Trait)){
                             Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
                             GBS<<-PandG(Pheno,GDre,GT,GIre)
@@ -258,48 +298,84 @@ WHEAT<-function(Phenotype,
                         }
                         save(list = try, file=paste0("GBS_2_",Study,".RData"))
                       }
+
+                      if(Outcome=="Untested"){
+                        if(!is.null(CV)){
+                          GBS.list=c()
+                          for(i in 1:length(Trial)){
+                            Pheno=Phenotype1 %>% filter(Env %in% c(Trial[i]))
+                            Pheno=Pheno[,c("Genotype","Env",Trait)]
+                            for(j in 1:length(Trait)){
+                              #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
+                              GBS<<-PGandCV(Pheno,GDre,GT,GIre,CV)
+                              mv(from = "GBS", to = paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+
+                              GBS.list=c(GBS.list,paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]))
+                              #save(list=paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_CV_",Trial[i],"_",Trait[j],".RData"))
+                            }
+
+                          }
+                          save(list = GBS.list, file=paste0("GBS_2_CV_Untested_",Study,".RData"))
+                        }else{
+                          GBS.list=c()
+                          for(i in 1:length(Trial)){
+                            Pheno=Phenotype1 %>% filter(Env %in% c(Trial[i]))
+                            Pheno=Pheno[,c("Genotype","Env",Trait)]
+                            for(j in 1:length(Trait)){
+                              #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
+                              GBS<<-PandG(Pheno,GDre,GT,GIre)
+                              mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+
+                              GBS.list=c(GBS.list,paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]))
+                              #save(list=paste0("GBS_2_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_",Trial[i],"_",Trait[j],".RData"))
+                            }
+
+                          }
+                          save(list = try, file=paste0("GBS_2_Untested_",Study,".RData"))
+                        }
+                      }
                     }
 
                     if(Method=="One-Step"){
                       if(!is.null(CV)){
                         Pheno=Phenotype1 %>% filter(Env %in% c(Trial))
-                        Pheno=Phenotype1[,c("Taxa","Env",Trait)]
+                        Pheno=Phenotype1[,c("Genotype","Env",Trait)]
                         GBS<<-PGEandCV(Pheno,GDre,GT,GIre,CV)
                         mv(from = "GBS", to = paste0("GBS_1_CV_",Study),envir = globalenv())
                         save(list=paste0("GBS_1_CV_",Study),file=paste0("GBS_1_CV_",Study,".RData"))
                       }else{
                         Pheno=Phenotype1 %>% filter(Env %in% c(Trial))
-                        Pheno=Phenotype1[,c("Taxa","Env",Trait)]
+                        Pheno=Phenotype1[,c("Genotype","Env",Trait)]
                         GBS<<-PGandE(Pheno,GDre,GT,GIre)
                         mv(from = "GBS", to = paste0("GBS_1_",Study),envir = globalenv())
                         save(list=paste0("GBS_1_",Study),file=paste0("GBS_1_",Study,".RData"))
                       }
                     }
-
-
-                    #############GS#########################
-                    #Load files
-                    if(Method=="Two-Step"){
-                      if(!is.null(CV)){
-                        load(file=paste0("GBS_2_CV_",Study,".RData"))
-                      }else{
-                        load(file=paste0("GBS_2_",Study,".RData"))
-                      }
-                    }
-
-                    if(Method=="One-Step"){
-                      if(!is.null(CV)){
-                        load(file=paste0("GBS_1_CV_",Study,".RData"))
-                      }else{
-                        load(file=paste0("GBS_1_",Study,".RData"))
-                      }
-                    }
-
                     if(Method=="One-Step"){
                       Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,GE=GE,UN=UN,model=model)
                       mv(from = "Matrix", to = paste0("Matrix_",Study,model),envir = globalenv())
                       save(list=paste0("Matrix_",Study),file=paste0("GBS_1_",Study,".RData"))
                     }
+
+                    #############GS#########################
+                    #Load files
+                    #if(Method=="Two-Step"){
+                      #if(!is.null(CV)){
+                        #load(file=paste0("GBS_2_CV_",Study,".RData"))
+                      #}else{
+                        #load(file=paste0("GBS_2_",Study,".RData"))
+                      #}
+                    #}
+
+                    #if(Method=="One-Step"){
+                      #if(!is.null(CV)){
+                        #load(file=paste0("GBS_1_CV_",Study,".RData"))
+                      #}else{
+                        #load(file=paste0("GBS_1_",Study,".RData"))
+                      #}
+                    #}
+
+
                   }
                   if(GS==TRUE){
                     #####################GS######################################################
@@ -310,7 +386,7 @@ WHEAT<-function(Phenotype,
                           GBS.list=c()
                           for(i in 1:length(Trial)){
                             Pheno=Phenotype1 %>% filter(Env %in% c(Trial[i]))
-                            Pheno=Pheno[,c("Taxa","Env",Trait)]
+                            Pheno=Pheno[,c("Genotype","Env",Trait)]
                             for(j in 1:length(Trait)){
                               Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
                               GBS<<-PGandCV(Pheno,GDre,GT,GIre,CV)
@@ -326,7 +402,7 @@ WHEAT<-function(Phenotype,
                           GBS.list=c()
                           for(i in 1:length(Trial)){
                             Pheno=Phenotype1 %>% filter(Env %in% c(Trial[i]))
-                            Pheno=Pheno[,c("Taxa","Env",Trait)]
+                            Pheno=Pheno[,c("Genotype","Env",Trait)]
                             for(j in 1:length(Trait)){
                               Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
                               GBS<<-PandG(Pheno,GDre,GT,GIre)
@@ -339,22 +415,62 @@ WHEAT<-function(Phenotype,
                           }
                           save(list = try, file=paste0("GBS_2_",Study,".RData"))
                         }
+                        if(Outcome=="Untested"){
+                          if(!is.null(CV)){
+                            GBS.list=c()
+                            for(i in 1:length(Trial)){
+                              Pheno=Phenotype1 %>% filter(Env %in% c(Trial[i]))
+                              Pheno=Pheno[,c("Genotype","Env",Trait)]
+                              for(j in 1:length(Trait)){
+                                #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
+                                GBS<<-PGandCV(Pheno,GDre,GT,GIre,CV)
+                                mv(from = "GBS", to = paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+
+                                GBS.list=c(GBS.list,paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]))
+                                #save(list=paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_CV_",Trial[i],"_",Trait[j],".RData"))
+                              }
+
+                            }
+                            save(list = GBS.list, file=paste0("GBS_2_CV_Untested_",Study,".RData"))
+                          }else{
+                            GBS.list=c()
+                            for(i in 1:length(Trial)){
+                              Pheno=Phenotype1 %>% filter(Env %in% c(Trial[i]))
+                              Pheno=Pheno[,c("Genotype","Env",Trait)]
+                              for(j in 1:length(Trait)){
+                                #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
+                                GBS<<-PandG(Pheno,GDre,GT,GIre)
+                                mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+
+                                GBS.list=c(GBS.list,paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]))
+                                #save(list=paste0("GBS_2_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_",Trial[i],"_",Trait[j],".RData"))
+                              }
+
+                            }
+                            save(list = try, file=paste0("GBS_2_Untested_",Study,".RData"))
+                          }
+                        }
                       }
 
                       if(Method=="One-Step"){
                         if(!is.null(CV)){
                           Pheno=Phenotype1 %>% filter(Env %in% c(Trial))
-                          Pheno=Phenotype1[,c("Taxa","Env",Trait)]
+                          Pheno=Phenotype1[,c("Genotype","Env",Trait)]
                           GBS<<-PGEandCV(Pheno,GDre,GT,GIre,CV)
                           mv(from = "GBS", to = paste0("GBS_1_CV_",Study),envir = globalenv())
                           save(list=paste0("GBS_1_CV_",Study),file=paste0("GBS_1_CV_",Study,".RData"))
                         }else{
                           Pheno=Phenotype1 %>% filter(Env %in% c(Trial))
-                          Pheno=Phenotype1[,c("Taxa","Env",Trait)]
+                          Pheno=Phenotype1[,c("Genotype","Env",Trait)]
                           GBS<<-PGandE(Pheno,GDre,GT,GIre)
                           mv(from = "GBS", to = paste0("GBS_1_",Study),envir = globalenv())
                           save(list=paste0("GBS_1_",Study),file=paste0("GBS_1_",Study,".RData"))
                         }
+                      }
+                      if(Method=="One-Step"){
+                        Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,GE=GE,UN=UN,model=model)
+                        mv(from = "Matrix", to = paste0("Matrix_",Study,model),envir = globalenv())
+                        save(list=paste0("Matrix_",Study),file=paste0("GBS_1_",Study,".RData"))
                       }
                     }
 
@@ -1380,7 +1496,7 @@ WHEAT<-function(Phenotype,
                             }
                           }
                           if(Package=="caret"){
-                            Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV(train_genotypes = get(paste0("GBS_2_",Training,"_",Trait))$geno,
+                            Results=sapply(1:Replications, function(i,...){Results=Caret_Models_VS(train_genotypes = get(paste0("GBS_2_",Training,"_",Trait))$geno,
                                                                                                    train_phenotype = get(paste0("GBS_2_",Training,"_",Trait))$pheno[,c(1,3)],
                                                                                                    test_genotypes= get(paste0("GBS_2_",Prediction,"_",Trait))$geno,
                                                                                                    test_phenotype= get(paste0("GBS_2_",Prediction,"_",Trait))$pheno[,c(1,3)],
@@ -1521,6 +1637,12 @@ WHEAT<-function(Phenotype,
                         Results_Predictions=Extract_Pred(Results,Replications,Training,Model,Kernel,CV_Message,Trait)
 
                         Results_All=list(Accuracy=Results_Accuracy,Predictions=Results_Predictions)
+                      }
+
+                      if(Outcome=="Untested"){
+                        Results_Predictions=Extract_Pred(Results,Replications,Training,Model,Kernel,CV_Message,Trait)
+
+                        Results_All=list(Predictions=Results_Predictions)
                       }
 
                       return(Results_All)
