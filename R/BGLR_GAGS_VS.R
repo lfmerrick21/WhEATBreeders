@@ -1,5 +1,5 @@
 
-BGLR_GAGS_CV <- function(train_genotypes, train_phenotype,train_GM=NULL,train_GD=NULL,train_PCA=NULL,test_genotypes,test_phenotype,test_PCA=NULL,model="RKHS",Kernel="Markers",GWAS="BLINK",alpha=0.05,threshold=NULL, markers=NULL, nIter = 15000, burnIn = 5000,Sparse=FALSE,m=NULL,degree=NULL, nL=NULL,QTN=10,PCA.total=3,transformation=NULL)
+BGLR_GAGS_VS <- function(train_genotypes, train_phenotype,train_GM=NULL,train_GD=NULL,train_PCA=NULL,test_genotypes,test_phenotype,test_PCA=NULL,model="RKHS",Kernel="Markers",GWAS="BLINK",alpha=0.05,threshold=NULL, markers=NULL, nIter = 15000, burnIn = 5000,Sparse=FALSE,m=NULL,degree=NULL, nL=NULL,QTN=10,PCA.total=3,transformation=NULL)
 {
 
   # Make the CV list

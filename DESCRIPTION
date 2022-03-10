@@ -40,5 +40,8 @@ Imports:
   compiler,
   gdata,
   BiocManager,
-  impute
+  impute,
+  PopVar,
+  BLR,
+  sommer
 RoxygenNote: 7.0.2
