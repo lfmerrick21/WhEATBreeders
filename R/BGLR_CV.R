@@ -1,4 +1,4 @@
-BLGR_CV <- function(genotypes, phenotype,model="RKHS",Kernel="Markers",PCA=NULL,CV=NULL,markers=NULL, folds = 5,nIter = 15000, burnIn = 5000,Sparse=FALSE,m=NULL,degree=NULL, nL=NULL,transformation=NULL)
+BGLR_CV <- function(genotypes, phenotype,model="RKHS",Kernel="Markers",PCA=NULL,CV=NULL,markers=NULL, folds = 5,nIter = 15000, burnIn = 5000,Sparse=FALSE,m=NULL,degree=NULL, nL=NULL,transformation=NULL)
 {
 
   # Make the CV list

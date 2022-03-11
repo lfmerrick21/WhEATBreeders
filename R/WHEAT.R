@@ -870,7 +870,7 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(CV)){
                                   if(!is.null(PC)){
                                     #No GAGS
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_CV(genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
                                                                                                    phenotype = GBS_Train$pheno,
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
@@ -888,7 +888,7 @@ WHEAT<-function(Phenotype,
                                     )})
                                   }else{
                                     #No GAGS, No PC
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_CV(genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
                                                                                                    phenotype = GBS_Train$pheno,
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
@@ -908,7 +908,7 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   if(!is.null(PC)){
                                     #No GAGS, No CV
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_CV(genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
                                                                                                    phenotype = GBS_Train$pheno,
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
@@ -926,7 +926,7 @@ WHEAT<-function(Phenotype,
                                     )})
                                   }else{
                                     #No GAGS, No CV, No PC
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_CV(genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
                                                                                                    phenotype = GBS_Train$pheno,
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
@@ -1425,7 +1425,7 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(CV)){
                                   if(!is.null(PC)){
                                     #No GAGS
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_VS(train_genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
                                                                                                    train_phenotype = GBS_Train$pheno,
                                                                                                    train_PCA=GBS_Train$PC[,1:PC],
                                                                                                    train_CV=GBS_Train$CV[,-1],
@@ -1446,7 +1446,7 @@ WHEAT<-function(Phenotype,
                                     )})
                                   }else{
                                     #No GAGS, No PC
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_VS(train_genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
                                                                                                    train_phenotype = GBS_Train$pheno,
                                                                                                    train_PCA=PC,
                                                                                                    train_CV=GBS_Train$CV[,-1],
@@ -1469,7 +1469,7 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   if(!is.null(PC)){
                                     #No GAGS, No CV
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_VS(train_genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
                                                                                                    train_phenotype = GBS_Train$pheno,
                                                                                                    train_PCA=GBS_Train$PC[,1:PC],
                                                                                                    train_CV=CV,
@@ -1490,7 +1490,7 @@ WHEAT<-function(Phenotype,
                                     )})
                                   }else{
                                     #No GAGS, No CV, No PC
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_VS(train_genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
                                                                                                    train_phenotype = GBS_Train$pheno,
                                                                                                    train_PCA=PC,
                                                                                                    train_CV=CV,
@@ -2013,7 +2013,7 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(CV)){
                                   if(!is.null(PC)){
                                     #No GAGS
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_VS_UT(train_genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
                                                                                                       train_phenotype = GBS_Train$pheno,
                                                                                                       train_PCA=GBS_Train$PC[,1:PC],
                                                                                                       train_CV=GBS_Train$CV[,-1],
@@ -2034,7 +2034,7 @@ WHEAT<-function(Phenotype,
                                     )})
                                   }else{
                                     #No GAGS, No PC
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_VS_UT(train_genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
                                                                                                       train_phenotype = GBS_Train$pheno,
                                                                                                       train_PCA=PC,
                                                                                                       train_CV=GBS_Train$CV[,-1],
@@ -2057,7 +2057,7 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   if(!is.null(PC)){
                                     #No GAGS, No CV
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_VS_UT(train_genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
                                                                                                       train_phenotype = GBS_Train$pheno,
                                                                                                       train_PCA=GBS_Train$PC[,1:PC],
                                                                                                       train_CV=CV,
@@ -2078,7 +2078,7 @@ WHEAT<-function(Phenotype,
                                     )})
                                   }else{
                                     #No GAGS, No CV, No PC
-                                    Results=sapply(1:Replications, function(i,...){Results=BLGR_VS_UT(train_genotypes = GBS_Train$geno,
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
                                                                                                       train_phenotype = GBS_Train$pheno,
                                                                                                       train_PCA=PC,
                                                                                                       train_CV=CV,

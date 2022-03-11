@@ -1,5 +1,5 @@
 
-BLGR_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_CV=NULL,test_genotypes,test_phenotype,test_PCA=NULL,test_CV=NULL,model="RKHS",Kernel="Markers",markers=NULL, nIter = 15000, burnIn = 5000,Sparse=FALSE,m=NULL,degree=NULL, nL=NULL,transformation=NULL)
+BGLR_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_CV=NULL,test_genotypes,test_phenotype,test_PCA=NULL,test_CV=NULL,model="RKHS",Kernel="Markers",markers=NULL, nIter = 15000, burnIn = 5000,Sparse=FALSE,m=NULL,degree=NULL, nL=NULL,transformation=NULL)
 {
 
   # Make the CV list
