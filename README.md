@@ -1,7 +1,28 @@
 User Manual and Tutorial for WhEATBreeders
 ================
 Lance F. Merrick
-February 2, 2022
+March 14, 2022
+
+<style type="text/css">
+
+h1.title {
+  font-size: 38px;
+  color: black;
+  text-align: center;
+}
+h4.author { /* Header 4 - and the author and data headers use this too  */
+    font-size: 25px;
+  font-family: "Times New Roman", Times, serif;
+  color: black;
+  text-align: center;
+}
+h4.date { /* Header 4 - and the author and data headers use this too  */
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: black;
+  text-align: center;
+}
+</style>
 
 <p>
 
@@ -19,7 +40,7 @@ February 2, 2022
 
 <center>
 
-![](Wheat.jpg)
+![](WinterWheat.png)
 
 </center>
 
@@ -66,6 +87,8 @@ for Breeders (WhEATBreeders)** </font>
 
 #### Genome-Wide Association Tutorial using GAPIT
 
+#### Cross Prediction
+
 #### Frequently asked questions
 
 #### Further Information
@@ -90,30 +113,28 @@ for Breeders (WhEATBreeders)** </font>
 
 ### **Introduction**
 
-A common problem associated with performing Genome Wide Association
-Studies (GWAS) is the abundance of false positive and false negative
-associated with population structure. One way of dealing with this issue
-is to first calculate Principal Components (PC) and then use those PCs
-as to account for population structure when running the GWAS. This
-method has shown to not only reduce false positives but also increase
-the power of the test. Here we present an R based package that can
-preform GWAS using PCA and user imputed covariate to calculate SNPs
-associated with a phenotype called “GWhEAT”. It will also check to see
-if the PC are in linear dependence to the covariates and remove the PCs
-if they are. Using the freely availably R studio software this packaged
-is designed to quickly and efficiently calculate a P-value for every SNP
-phenotype association. The results from this package are including but
-not limited to a Manhattan plot, QQ-plot and table with every recorded
-p-value.
+WhEATBreeders was created to lower the bar for implementing genomic
+selection models for plant breeders to utilize within their own breeding
+programs. Not only does include functions for genotype quality control
+and filtering, but it includes easy to use wrappers for the most
+commonly use models in many scenarios with K-Fold cross-validation or
+validation sets. You can also implement GWAS assisted genomic selection.
+We created a full wrapper for quality control and genomci selection in
+our function “WHEAT”. Additionaly we walk through the set up of
+unrpelicated data using adjuste means and calculate cullis heritability.
+We also go through multi-output and multi-trait wrappers for GWAS in
+GAPIt. Finally we walk through cross-prediction using PopVar, rrBLUP,
+and sommer.
 
 ### **Description of package functions**
 
-For a full list of functions within GWhEAT see “Reference\_Manual.pdf”
-this file contains not only the full list of functions but also a
-description of each. The pdf also has each functions arguments listed.
-And like with all R packages once GWhEAT is installed and loaded you can
-type ?function\_name and that specific function’s full descriptions will
-appear in the help tab on RStudio.
+For a full list of functions within WhEATBreeders see
+“Reference\_Manual.pdf” this file contains not only the full list of
+functions but also a description of each. The pdf also has each
+functions arguments listed. And like with all R packages once
+WhEATBreeders is installed and loaded you can type ?function\_name and
+that specific function’s full descriptions will appear in the help tab
+on RStudio.
 
 ### **Getting started**
 
@@ -125,41 +146,75 @@ package in it’s early stages of development it’s only available through
 Github. To download files off Github first download and load the library
 of the packaged “devtools” using the code below.
 
+# Packages needed
+
 ``` r
-#file.choose()
-rm(list = ls(all.names = TRUE))
-gc()
-if (!require("pacman")) install.packages("pacman")
-pacman::p_load(data.table,bigmemory,biganalytics,dplyr,compiler)
-library(data.table)
-library(dplyr)
-#library(GAPIT3)
-library(bigmemory)
-library(biganalytics)
-library(ggplot2)
-library(dplyr)
-library(rrBLUP)
-library(knitr)
-library(cvTools)
-library(vcfR)
-library(devtools)
-library(emmeans)
-library(heritability)
-library(arm)
-library(optimx)
-library(purrr)
-library(psych)
-library(lme4)
-library(lmerTest)
-library(gridExtra)
+#Better for FDR function
+devtools::install_github("jiabowang/GAPIT3",force=TRUE)
+library(GAPIT3)
+install.packages("devtools")
+devtools::install_github("jiabowang/GAPIT3",force=TRUE)
+library(GAPIT3)
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+  BiocManager::install("impute")
+#From the source
 require(compiler) #for cmpfun
-#source("http://zzlab.net/GAPIT/GAPIT.library.R")
-#source("http://zzlab.net/GAPIT/gapit_functions.txt") #make sure compiler is running
-#source("http://zzlab.net/GAPIT/emma.txt")
+source("http://zzlab.net/GAPIT/GAPIT.library.R")
+source("http://zzlab.net/GAPIT/gapit_functions.txt") #make sure compiler is running
+source("http://zzlab.net/GAPIT/emma.txt")
 
 #Better for FDR function
 devtools::install_github("jiabowang/GAPIT3",force=TRUE)
 library(GAPIT3)
+
+  library(BGLR)
+  library(rrBLUP)
+  library(caret)
+  library(tidyr)
+  library(dplyr)
+  library(Hmisc)
+  library(WeightIt)
+  library(mpath)
+  library(glmnetUtils)
+  library(glmnet)
+  library(MASS)
+  library(Metrics)
+  library(stringr)
+  library(lsa)
+  library(keras)
+  library(tensorflow)
+  library(BMTME)
+  library(plyr)
+  library(data.table)
+  library(bigmemory)
+  library(biganalytics)
+  library(ggplot2)
+  library(tidyverse)
+  library(knitr)
+  library(cvTools)
+  library(vcfR)
+  library(compiler)
+  library(gdata)
+  library(BiocManager)
+  library(impute)
+  library(PopVar)
+  library(BLR)
+  library(sommer)
+  library(emmeans)
+  library(heritability)
+  library(arm)
+  library(optimx)
+  library(purrr)
+  library(psych)
+  library(lme4)
+  library(lmerTest)
+  library(gridExtra)
+  library(grid)
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(data.table,bigmemory,biganalytics,dplyr,compiler)
 ```
 
 ### **Load Package**
@@ -171,10 +226,7 @@ dependencies GWhEAT relies on are also downloaded and installed.
 ``` r
 #install package
 install_github("lfmerrick21/WhEATBreeders")
-library(GWhEAT)#package name
-#Load dependencies 
-if (!require("pacman")) install.packages("pacman")
-pacman::p_load(ggplot2,knitr,gridExtra)
+library(WhEATBreeders)#package name
 ```
 
 In order to have an effective tutorial you’ll need some data to play
@@ -201,6 +253,8 @@ phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors 
 
 hapmap <- fread("https://zzlab.net/GAPIT/data/mdp_genotype_test.hmp.txt",fill=TRUE)
 ```
+
+### **Phenotypic Data**
 
 #### Read in Phenotypic Data
 
@@ -235,8 +289,6 @@ lq15_17=em_trials[em_trials$r_expt == "2015 QAM Plots Lind" | em_trials$r_expt =
 lq15_18=em_trials[em_trials$r_expt == "2015 QAM Plots Lind" | em_trials$r_expt == "2017 QAM Plots Lind" |em_trials$r_expt == "2018 QAM Rows Lind", ]
 lq15_19=em_trials[em_trials$r_expt == "2015 QAM Plots Lind" | em_trials$r_expt == "2017 QAM Plots Lind" |em_trials$r_expt == "2018 QAM Rows Lind" |em_trials$r_expt == "2019 QAM Rows Lind", ]
 ```
-
-### **Phenotypic Data**
 
 #### Cullis Heritability (From Shantel Martinez Github)
 
@@ -292,6 +344,13 @@ lq15_17_r <- lm(emer~ibloc+checks+r_expt+ibloc*r_expt+checks*r_expt, data=lq15_1
 lq15_17=lq15_17 %>% mutate(ap_adj = emer+lq15_17_r$residuals)
 lq15_17_ap=aggregate(lq15_17[,c(21)],list(lq15_17$Name),mean)
 colnames(lq15_17_ap)<-c("Name","emer_15_17_ap")
+```
+
+\#Combine Environments
+
+``` r
+d1=left_join(lq15_r,lq15_17_r,by="Name")
+d2=left_join(d1,lq18_raw,by="Name")
 ```
 
 #### True version of Cullis heritability code that I’m working on which has been adapted from the Comparison of heritability papers and the github “<https://github.com/PaulSchmidtGit/Heritability>”. I’m still working on this code, but I figured I’d give you an overview.
@@ -444,21 +503,39 @@ H2Cullis <- 1 - (vdBLUP_avg / 2 / vc_g)
 H2Cullis #0.4911897
 ```
 
-#### **Genotypic Data**
-
-##### Read in 2020 Lind Taxa
+# Phenotypic data wide to long format
 
 ``` r
-#file.choose()
-#N x 1 with just taxa list
-gname=read.csv("Lind_2020_taxa.csv",header=T)
-#str(gname)
-names(gname)<-"taxa"
-gname$taxa=as.character(gname$taxa)
-gname=as.vector(gname$taxa)
-str(gname)
-#gname=gname[-1]
-#str(gname)
+Phenotype=Phenotype[,-1]
+Phenotype1=Phenotype %>%
+  pivot_longer(!Genotype, names_to = "Env", values_to = "EM")
+Phenotype=Phenotype1
+```
+
+#### **Genotypic Data**
+
+##### Read in Genotype Data and/or Phenotype Data
+
+``` r
+library(data.table)
+Genotype<-fread("F:\\OneDrive\\OneDrive - Washington State University (email.wsu.edu)\\Documents\\Genomic Selection\\Genomic Selection Pipeline\\Jason_GBS\\WAC_2016-2020_production_filt.hmp.txt",fill=TRUE)
+Phenotype<-fread("F:\\OneDrive\\OneDrive - Washington State University (email.wsu.edu)\\Documents\\Genomic Selection\\Genomic Selection Pipeline\\GS-Complex-Traits\\BL_EM_Pheno.csv",header=T)
+```
+
+##### Name Study
+
+``` r
+Study="Tutorial"
+```
+
+##### Obtain
+
+``` r
+Pheno_Names=Phenotype
+names(Pheno_Names)[1]<-"Taxa"
+Pheno_Names$Taxa=as.character(Pheno_Names$Taxa)
+gname=as.vector(Pheno_Names$Taxa)
+gname<-clean_names(gname)
 ```
 
 ##### IF VCF
@@ -469,7 +546,7 @@ str(gname)
 
 ``` r
 #setwd("F:/OneDrive/OneDrive - Washington State University (email.wsu.edu)/Documents/Genomic Selection/Genomic Selection Pipeline/GWAS Pipeline")
-Xvcf=read.vcfR("YR_Numeric_COMP1.vcf")
+Xvcf=read.vcfR(Genotype)
 Xvcf@fix
 Xvcf@gt
 ```
@@ -478,11 +555,18 @@ Xvcf@gt
 
 ``` r
 Xbgl=data.frame(Xvcf@fix,Xvcf@gt)
-genotypes_num<- VCF_2_numeric(Xbgl)
-GDE=genotypes_num$genotypes
-GIE=genotypes_num$marker_map
-View(GDE[1:10,1:10])
-View(GIE[1:10,1:3])
+genotypes_num<- VCF_2_numeric(Genotype)
+GD=genotypes_num$genotypes
+names.use <- names(GD)[(names(GD) %in% gname)]
+GD <- GD[, names.use, with = FALSE]
+GI=genotypes_num$marker_map
+GT
+
+#Save Raw Files
+fwrite(GT,paste0(Study,"_GT_taxa.csv"))
+fwrite(GD,paste0(Study,"_GD_numeric_Raw.csv"))
+fwrite(GI,paste0(Study,"_GI_map_Raw.csv"))
+save(GD,GI,GT,file=paste0(Study,"_Raw.RData"))
 ```
 
 The majority of this code is my pipeline I use to take a hapmap file,
@@ -490,90 +574,54 @@ convert it to numeric, filter and impute it. If you just want the code
 for what I use for kamiak, you can just skip to the bottom or look at
 the R Script I provided.
 
-#### Filter GBS for Lind 2020
+##### IF Hapmap
+
+#### Filter GBS for Phenotype data
 
 ``` r
-names.use <- names(gen1)[(names(gen1) %in% gname)]
-output <- gen1[, names.use, with = FALSE]
-output=cbind(gen1[,1:11],output)
+names.use <- names(Genotype)[(names(Genotype) %in% gname)]
+hapmap <- Genotype[, names.use, with = FALSE]
+hapmap=cbind(Genotype[,1:11],hapmap)
 #str(output)
-output[output=="NA"]<-"NA"
-output$`assembly#`=as.character(output$`assembly#`)
-output$center=as.character(output$center)
-output$protLSID=as.character(output$protLSID)
-output$assayLSID=as.character(output$assayLSID)
-output$panelLSID=as.character(output$panelLSID)
-output$QCcode=as.character(output$QCcode)
-str(output)
-fwrite(output,"WA16_20_LIND_20_filt.hmp.txt",sep="\t",row.names = FALSE,col.names = TRUE)
-save(output,file="WA16_20_LIND_20_filt.hmp.txt.RData")
-#readLines(output)
+hapmap[hapmap=="NA"]<-"NA"
+hapmap$`assembly#`=as.character(hapmap$`assembly#`)
+hapmap$center=as.character(hapmap$center)
+hapmap$protLSID=as.character(hapmap$protLSID)
+hapmap$assayLSID=as.character(hapmap$assayLSID)
+hapmap$panelLSID=as.character(hapmap$panelLSID)
+hapmap$QCcode=as.character(hapmap$QCcode)
+dim(hapmap)
+#Save filtered hapmap
+save(hapmap,file=paste0(Study,"_Filtered_Hapmap.RData"))
+fwrite(hapmap,paste0(Study,"_Filtered_Hapmap.hmp.txt"),sep="\t",row.names = FALSE,col.names = TRUE)
 ```
 
 #### Convert to Numeric
 
 ``` r
-getwd()
-#Only needed if you're reloading
-output=read_hapmap("WA16_20_LIND_20_filt.hmp.txt")
-
-save(output,file="LIND_20_Hapmap_Raw.RData")
-load(file="WA16_20_LIND_20_filt.hmp.txt.RData")
-#Convert to Numeric Output
-#Impute is none because we will impute using BEAGLE
-outG=GAPIT.HapMap(output,SNP.impute="None")#None could be "Middle"
-#outG$GD[1:10,1:10]
-GTL=outG$GT
-GTL=cbind(rownames(GTL),GTL)
-fwrite(GTL,"GT_L20_taxa.csv")
-GDL=outG$GD
-GIL=outG$GI
-
-rownames(GDL)=rownames(GTL)
-colnames(GDL)=GIL$SNP
-fwrite(GDL,"GD_L20_numeric_Raw.csv")
-fwrite(GIL,"GI_L20_map_Raw.csv")
-save(GDL,GIL,GTL,file="LIND_20_GD_GI_Raw.RData")
-load(file="LIND_20_GD_GI_Raw.RData")
-GTL=read.csv(file="GT_L20_taxa.csv")
-GTL
+#If you want to impute with mean
+outG=GAPIT.HapMap(hapmap,SNP.impute="Middle")
+#If you want to use a different imputation method
+outG=GAPIT.HapMap(hapmap,SNP.impute="None")
+GT=outG$GT
+GT=data.frame(V1=rownames(GT),GT)
+GD=outG$GD
+GI=outG$GI
+rownames(GD)=rownames(GT)
+colnames(GD)=GI$SNP
+#Save Raw Files
+fwrite(GT,paste0(Study,"_GT_taxa.csv"))
+fwrite(GD,paste0(Study,"_GD_numeric_Raw.csv"))
+fwrite(GI,paste0(Study,"_GI_map_Raw.csv"))
+save(GD,GI,GT,file=paste0(Study,"_Raw.RData"))
 ```
 
-#### Remove Missing Data \>80%, MAF \<5% and Monomorphic Markers
+#### Filter Remove Missing Data \>20%, MAF \<5% and Monomorphic Markers and Lines with more than 80% missing
 
 ``` r
-GDL[1:10,1:10]
-dim(GDL)
-#Remove missing data with more than 20%
-mr=calc_missrate(GDL)
-mr_indices <- which(mr > 0.20)
-GDLmr = GDL[,-mr_indices]
-GILmr = GIL[-mr_indices,]
-
-dim(GDLmr)
-dim(GILmr)
-
-#Remove Monomorphic Markers
-maf <- calc_maf_apply(GDLmr, encoding = c(0, 1, 2))
-mono_indices <- which(maf ==0)
-GDLmo = GDLmr[,-mono_indices]
-GILmo = GILmr[-mono_indices,]
-
-dim(GDLmo)
-dim(GILmo)
-
-#Remove Markers with MAF less than 5%
-maf <- calc_maf_apply(GDLmo, encoding = c(0, 1, 2))
-mono_indices <- which(maf <0.05)
-GDLmf = GDLmo[,-mono_indices]
-GILmf = GILmo[-mono_indices,]
-
-dim(GDLmf)
-dim(GILmf)
-GDLmf[1:10,1:10]
-fwrite(GDLmf,"GD_L20_numeric_Filtered.csv")
-fwrite(GILmf,"GI_L20_map_Filtered.csv")
-save(GDLmf,GILmf,GTL,file="LIND_20_GD_GI_Filtered.RData")
+Missing_Rate=0.20
+MAF=0.05
+Missing_Rate_Ind=0.80
 ```
 
 #### Filter
@@ -581,34 +629,68 @@ save(GDLmf,GILmf,GTL,file="LIND_20_GD_GI_Filtered.RData")
 ##### Remove makers with more than 20% missing
 
 ``` r
-mr=calc_missrate(GDE)
-mr_indices <- which(mr > 0.20)
-GDEmr = GDE[,-mr_indices]
-GIEmr = GIE[-mr_indices,]
-dim(GDEmr)
-dim(GIEmr)
+##### Remove makers based on missing data
+mr=calc_missrate(GD)
+mr_indices <- which(mr > Missing_Rate)
+if(length(mr_indices)!=0){
+  GDmr = GD[,-mr_indices]
+  GImr = GI[-mr_indices,]
+  }else{
+    GDmr = GD
+    GImr = GI
+  }
+  dim(GDmr)
+  dim(GImr)
 ```
 
 ##### Remove Monomorphic Markers
 
 ``` r
-maf <- calc_maf_apply(GDEmr, encoding = c(0, 1, 2))
+##### Remove Monomorphic Markers
+maf <- calc_maf_apply(GDmr, encoding = c(0, 1, 2))
 mono_indices <- which(maf ==0)
-GDEmo = GDEmr[,-mono_indices]
-GIEmo = GIEmr[-mono_indices,]
-dim(GDEmo)
-dim(GIEmo)
+if(length(mono_indices)!=0){
+  GDmo = GDmr[,-mono_indices]
+  GImo = GImr[-mono_indices,]
+  }else{
+    GDmo = GDmr
+    GImo = GImr
+  }
+  dim(GDmo)
+  dim(GImo)
 ```
 
 ##### Remove MAF \<5%
 
 ``` r
-maf <- calc_maf_apply(GDEmo, encoding = c(0, 1, 2))
-mono_indices <- which(maf <0.05)
-GDEmf = GDEmo[,-mono_indices]
-GIEmf = GIEmo[-mono_indices,]
-dim(GDEmf)
-dim(GIEmf)
+##### Remove MAF
+maf <- calc_maf_apply(GDmo, encoding = c(0, 1, 2))
+mono_indices <- which(maf < MAF)
+if(length(mono_indices)!=0){
+  GDmf = GDmo[,-mono_indices]
+  GImf = GImo[-mono_indices,]
+  }else{
+    GDmf = GDmo
+    GImf = GImo
+  }
+  dim(GDmf)
+  dim(GImf)
+```
+
+##### Filter Individuals
+
+``` r
+mr=calc_missrate(t(GDmf))
+mr_indices <- which(mr > Missing_Rate_Ind)
+if(length(mr_indices)!=0){
+  GDmf = GDmf[-mr_indices,]
+  GT=GT[-mr_indices,]
+  }else{
+    GDmf = GDmf
+    GT=GT
+    }
+    dim(GDmf)
+    dim(GImf)
 ```
 
 #### Imputation
@@ -616,89 +698,81 @@ dim(GIEmf)
 ##### Imputation Using BEAGLE
 
 ``` r
-GDLmf[1:10,1:10]
-  GILmf$chr <- GILmf$Chromosome
-  GILmf$rs <- GILmf$SNP
-  GILmf$pos <- GILmf$Position
+GImf$chr <- GImf$Chromosome
+GImf$rs <- GImf$SNP
+GImf$pos <- GImf$Position
 
-LD_file <- "LD_Numeric"
-vcf_LD <- numeric_2_VCF(GDLmf, GILmf)
-write_vcf(vcf_LD, outfile = LD_file)#Exports vcf 
+LD_file <- paste0(Study)
+vcf_LD <- numeric_2_VCF(GDmf, GImf)
+write_vcf(vcf_LD, outfile = LD_file)#Exports vcf
 # Assign parameters
-  genotype_file = "LD_Numeric.vcf" 
-  outfile = "LD_Numeric_imp"
-  
-  # Define a system command
-  command1_prefix <- "java -Xmx1g -jar beagle.25Nov19.28d.jar"
-  command_args <- paste(" gt=", genotype_file, " out=", outfile, sep = "")
-  command1 <- paste(command1_prefix, command_args)
-  test <- system(command1, intern = T)
-  # Run BEAGLE using the system function, this will produce a gzip .vcf file
-  Xvcf=read.vcfR("LD_Numeric_imp.vcf.gz")
-  Xbgl=data.frame(Xvcf@fix,Xvcf@gt)
-  genotypes_imp <- VCF_2_numeric(Xbgl)[[1]]
-  #Pre-imputed genotype matrix
-  dim(GDLmf)
-  sum(is.na(GDLmf))
-  #Imputed genotype matrix
-  dim(genotypes_imp)
-  sum(is.na(genotypes_imp))
-  
-genotypes_imp[1:10,1:10]
+genotype_file = paste0(Study,".vcf")
+outfile = paste0(Study,"_imp")
+
+# Define a system command
+command1_prefix <- "java -jar beagle.25Nov19.28d.jar"
+command_args <- paste(" gt=", genotype_file, " out=", outfile, sep = "")
+command1 <- paste(command1_prefix, command_args)
+test <- system(command1)
+# Run BEAGLE using the system function, this will produce a gzip .vcf file
+Xvcf=read.vcfR(paste0(Study,"_imp",".vcf.gz"))
+Xbgl=data.frame(Xvcf@fix,Xvcf@gt)
+genotypes_imp <- VCF_2_numeric(Xbgl)[[1]]
+#Pre-imputed genotype matrix
+dim(GDmf)
+sum(is.na(GDmf))
+#Imputed genotype matrix
+dim(genotypes_imp)
+sum(is.na(genotypes_imp))
+
 #Remove MAF <5%
 maf <- calc_maf_apply(genotypes_imp, encoding = c(0, 1, 2))
-mono_indices <- which(maf <0.05)
-GDLre = genotypes_imp[,-mono_indices]
-GILre = GILmf[-mono_indices,]
-dim(GDLre)
-#dim(GIEmo)
-dim(GDLmf)
-dim(genotypes_imp)
-GILre
-#If Beagle didn't work could us KNN
-#x=impute::impute.knn(as.matrix(t(GDEmf)))
-#myGD_imp=t(x$data)
-#myGD_imp<-round(myGD_imp,0)
-#sum(is.na(myGD_imp))
-#View(myGD_imp)
+mono_indices <- which(maf < MAF)
 
-fwrite(GDLre,"GD_L20_numeric_Filt_Imputed.csv")
-fwrite(GILre[,1:3],"GI_L20_map_Filt_Imputed.csv")
-save(GDLre,GILre,GTL,file="LIND_20_GD_GI_Filt_Imputed.RData")
-dim(GDLre)
-dim(GILre)
-dim(GTL)
+if(length(mono_indices)!=0){
+  GDre = genotypes_imp[,-mono_indices]
+  GIre = GImf[-mono_indices,]
+  }else{
+  GDre = genotypes_imp
+  GIre = GImf
+  }
+
+  GIre=GIre[,1:3]
+  dim(GDre)
+  dim(GIre)
+
+fwrite(GDre,paste0(Study,"_GD_Filt_Imputed.csv"))
+fwrite(GIre[,1:3],paste0(Study,"_GI_Filt_Imputed.csv"))
+save(GDre,GIre,GT,file=paste0(Study,"_Filt_Imputed.RData"))
+dim(GDre)
+dim(GIre)
+dim(GT)
 ```
 
 ##### Or Impute with KNN
 
 ``` r
-#Section for downloading package
-if (!requireNamespace("BiocManager", quietly = TRUE))
-    install.packages("BiocManager")
-
-BiocManager::install("impute")
-
-x=impute::impute.knn(as.matrix(t(GDEmf)))
+x=impute::impute.knn(as.matrix(t(GDmf)))
 myGD_imp=t(x$data)
 myGD_imp<-round(myGD_imp,0)
 sum(is.na(myGD_imp))
 #Filter again
 #Remove MAF <5%
 maf <- calc_maf_apply(myGD_imp, encoding = c(0, 1, 2))
-mono_indices <- which(maf <0.05)
-GDEre = myGD_imp[,-mono_indices]
-GIEre = GIEmf[-mono_indices,]
-dim(GDEre)
-dim(GIEre)
-```
+mono_indices <- which(maf < MAF)
+if(length(mono_indices)!=0){
+  GDre = myGD_imp[,-mono_indices]
+  GIre = GImf[-mono_indices,]
+  }else{
+    GDre = myGD_imp
+    GIre = GImf
+  }
+ dim(GDre)
+dim(GIre)
 
-##### Save Files for easy reproducibility
-
-``` r
-fwrite(GDEre,"GDE_numeric.csv")
-colnames(GIEre)
-fwrite(GIEre[,1:3],"GIE_map.csv")
+fwrite(GDre,paste0(Study,"_GD_Filt_Imputed.csv"))
+fwrite(GIre[,1:3],paste0(Study,"_GI_Filt_Imputed.csv"))
+save(GDre,GIre,GT,file=paste0(Study,"_Filt_Imputed.RData"))
 ```
 
 ### **START HERE IF GENOTYPE DATA IS DONE**
@@ -708,161 +782,2149 @@ fwrite(GIEre[,1:3],"GIE_map.csv")
 #### Function to get data in order as above chunck but integrated into a function to also combine all files for a nice list with PCs included.
 
 ``` r
+CV=NULL
+PC=NULL
+Trait="EM"
+Study="Tutorial"
+Outcome="Tested" #Tested or Untested
+Trial=c("F5_2015","DH_2020","BL_2015_2020")
+Scheme="K-Fold"
+Method="Two-Step"
 #load phenotypic and genotypic data in.
-#setwd("F:/OneDrive/OneDrive - Washington State University (email.wsu.edu)/Documents/Genomic Selection/Genomic Selection Pipeline/GWAS Pipeline")
-load(file="LIND_20_GD_GI_Filt_Imputed.RData")
-#Without Covariates
-#Remove missing data
-Pheno_LND_20_1<-Pheno[complete.cases(Pheno[,2]),]
-GBS_LND_20_1=PandG(Pheno_LND_20_1,GDLre,GTL,GILre)
+##########PG################################
+                    if(Method=="Two-Step"){
+                      if(!is.null(CV)){
+                        GBS.list=c()
+                        for(i in 1:length(Trial)){
+                          Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
+                          Pheno=Pheno[,c("Genotype","Env",Trait)]
+                          for(j in 1:length(Trait)){
+                            Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
+                            GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
+                            mv(from = "GBS", to = paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),envir = globalenv())
 
-Pheno_LND_20_2<-Pheno[complete.cases(Pheno[,3]),]
-GBS_LND_20_2=PandG(Pheno_LND_20_2,GDLre,GTL,GILre)
+                            GBS.list=c(GBS.list,paste0("GBS_2_CV_",Trial[i],"_",Trait[j]))
+                            #save(list=paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_CV_",Trial[i],"_",Trait[j],".RData"))
+                          }
 
-#If you have covariates
-#Remove missing data
-Pheno_LND_20<-Pheno[complete.cases(Pheno[,2]),]
-GBS_LND_20_CV=PGandCV(Pheno_LND_20,GDLre,GTL,GILre,myCV_EM)
+                        }
+                        save(list = GBS.list, file=paste0("GBS_2_CV_",Study,".RData"))
+                      }else{
+                        GBS.list=c()
+                        for(i in 1:length(Trial)){
+                          Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
+                          Pheno=Pheno[,c("Genotype","Env",Trait)]
+                          for(j in 1:length(Trait)){
+                            Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
+                            GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
+                            mv(from = "GBS", to = paste0("GBS_2_",Trial[i],"_",Trait[j]),envir = globalenv())
 
-save(GBS_LND_20,GBS_LND_20_CV,file="LND_20_GBS.RData")
+                            GBS.list=c(GBS.list,paste0("GBS_2_",Trial[i],"_",Trait[j]))
+                            #save(list=paste0("GBS_2_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_",Trial[i],"_",Trait[j],".RData"))
+                          }
+
+                        }
+                        save(list = GBS.list, file=paste0("GBS_2_",Study,".RData"))
+                      }
+
+                      if(Outcome=="Untested"){
+                        if(!is.null(CV)){
+                          GBS.list=c()
+                          for(i in 1:length(Trial)){
+                            Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
+                            Pheno=Pheno[,c("Genotype","Env",Trait)]
+                            for(j in 1:length(Trait)){
+                              #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
+                              GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
+                              mv(from = "GBS", to = paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+
+                              GBS.list=c(GBS.list,paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]))
+                              #save(list=paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_CV_",Trial[i],"_",Trait[j],".RData"))
+                            }
+
+                          }
+                          save(list = GBS.list, file=paste0("GBS_2_CV_Untested_",Study,".RData"))
+                        }else{
+                          GBS.list=c()
+                          for(i in 1:length(Trial)){
+                            Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
+                            Pheno=Pheno[,c("Genotype","Env",Trait)]
+                            for(j in 1:length(Trait)){
+                              #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
+                              GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
+                              mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+
+                              GBS.list=c(GBS.list,paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]))
+                              #save(list=paste0("GBS_2_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_",Trial[i],"_",Trait[j],".RData"))
+                            }
+
+                          }
+                          save(list = GBS.list, file=paste0("GBS_2_Untested_",Study,".RData"))
+                        }
+                      }
+                    }
+
+                    if(Method=="One-Step"){
+                      if(!is.null(CV)){
+                        Pheno=Phenotype %>% filter(Env %in% c(Trial))
+                        Pheno=Phenotype[,c("Genotype","Env",Trait)]
+                        GBS<<-PGEandCV(Pheno,GDre,GT,GIre,CV)
+                        mv(from = "GBS", to = paste0("GBS_1_CV_",Study),envir = globalenv())
+                        save(list=paste0("GBS_1_CV_",Study),file=paste0("GBS_1_CV_",Study,".RData"))
+                      }else{
+                        Pheno=Phenotype %>% filter(Env %in% c(Trial))
+                        Pheno=Phenotype[,c("Genotype","Env",Trait)]
+                        GBS<<-PGandE(Pheno,GDre,GT,GIre)
+                        mv(from = "GBS", to = paste0("GBS_1_",Study),envir = globalenv())
+                        save(list=paste0("GBS_1_",Study),file=paste0("GBS_1_",Study,".RData"))
+                      }
+                    }
+                    if(Method=="One-Step"){
+                      Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), 
+                      phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,GE=GE,UN=UN,model=GE_model)
+                      mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
+                      save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
+                    }
+```
+
+#### Or we can do all of this with the wrapper WHEAT function
+
+##### Make QC=TRUE and GS=FALSE
+
+``` r
+LIND_QC=WHEAT(Phenotype=Phenotype,
+                Genotype=Genotype,
+                QC=TRUE,
+                GS=FALSE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                Filter_Ind=TRUE,
+                Missing_Rate_Ind=0.80,
+                #If QC Info is FALSE
+                GDre=NULL,
+                GT=NULL,
+                GIre=NULL,
+                #GDre=GDre,
+                #GT=GT,
+                #GIre=GIre,
+                GBS_Train=GBS_2_F5_2015_EM,
+                GBS_Predict=GBS_2_Untested_DH_2020_EM,
+                #GS Info
+                Type="Regression",
+                Replications=2,
+                Training="F5_2015",
+                Prediction="DH_2020",
+                CV=NULL,
+                PC=NULL,
+                Trait="EM",
+                Study="Tutorial",
+                Outcome="Tested", #Tested or Untested
+                #Trial=c("F5_2015","DH_2020","BL_2015_2020"),
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",#K-Fold or VS
+                Method="Two-Step", #Two-Step or #One-Step
+                Package="rrBLUP",
+                model="rrBLUP",
+                Kernel="Markers",
+                markers=NULL,
+                folds = 5,
+                nIter = 1500,
+                burnIn = 500,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                transformation="none",
+                #GAGS Info
+                GAGS=FALSE,
+                PCA.total=3,
+                QTN=10,
+                GWAS=c("BLINK"),
+                alpha=0.05,
+                threshold=NULL,
+                GE=TRUE,
+                UN=FALSE,
+                GE_model="MTME",
+                sampling="up",
+                repeats=5,
+                method="repeatedcv",
+                Messages=TRUE)
 ```
 
 ### **Genomic Selection Tutorial**
 
-### Cross-Validation
+### Optional Input
 
-#### GS without CV
+#### if you want to use the numeric files
+
+##### GDre (Numeric Matrix from output)
+
+##### GT (Taxa file from output)
+
+##### GIre (Map file from output)
+
+##### GBS\_Train (GBS RData output you want to use for training population)
+
+##### GBS\_Predict (GBS RData output you want to use for validation set if you’re using VS)
+
+### Multipe Trait Output
+
+#### Method: “Two-Step”
+
+#### Scheme: Cross-Validation (“K-Fold”) or Validation Sets (“VS”)
+
+#### fold (Number of folds in K-Fold)
+
+#### Training (Select trial for training population)
+
+#### Prediction (Select trial if using validation sets)
+
+#### Outcome: “Tested” or “Untested”
+
+##### Tested allows predictions and accuracy and error comparisons
+
+##### Untested for new predictions without comparisons
+
+#### Packages: “rrBLUP”, “MAS”, “BGLR”, “caret”, “GLM”,
+
+#### Type: “Regression” or “Classification” with caret package
+
+#### Models: rrBLUP, MAS, BGLR(BayesA,BayesB,BayesC,BayesL,BayesRR,RKHS, Ordinal), caret(any model available in the caret package), GAPIT(gBLUP,cBLUP, or sBLUP)
+
+#### nIter (Number of iterations for BGLR models)
+
+#### burnIn (Number of burn-ins for BGLR models)
+
+#### With/without Principal Components (“PC”: Number included or NULL)
+
+#### With/without Covariates (“CV”: CV set (Genotypes and CVs) or NULL)
+
+#### Phenotype transformation (“none”,“sqrt”,“log”,“boxcox”)
+
+#### Subsampling of markers (markers: Number of markers to sample or NULL)
+
+#### Kernel (“Markers”,“Linear”,Gaussian“,”Polynomial“,”Sigmoid“,”Arc-cosine with 1 layer or multiple layers:nl (“AK1”,“AKL”),“Exponential”)
+
+#### Kernel (caret package allows above kernels with addition of “VanRaden”,“PC”,“Zhang”,“Endelman”(A-mat),)
+
+#### nl (Number of layers for arc-cosine kernel)
+
+#### degree (degree for polynomial kernel)
+
+#### Sparse Matrix (Sparese=TRUE or FALSE)
+
+#### m (Number of lines to keep in sparse matrix)
+
+#### Replications (Number of Replications)
+
+#### GWAS-Assisted GS (GAGS:TRUE or FALSE)
+
+#### PCA.total (Number of PCs for GAGS and GAPIT models)
+
+#### QTN (Number of top QTN or markers to include for GAGS)
+
+#### GWAS (GWAS model for GAGS c(“BLINK) or any GAPIT model) \#\#\#\# threshold (”Bonferonni" or NULL for GAGS)
+
+#### alpha (0.5, or any other threshold for Bonferonni for GAGS)
+
+#### Messages (TRUE or FALSE)
 
 ``` r
-load(file="LND_20_GBS.RData")
-LND_20=test_all_models_BLUP_pc_mean_recode(genotypes = GBS_LND_20$geno, 
-                                    phenotype = GBS_LND_20$pheno[,c(1,2)],
-                                    PCA=GBS_LND_20$PC[,1:3])
-#Replications
-LND_20_50=Sapply(1:50, function(i,...){LND_20_50=test_all_models_BLUP_pc_mean_recode(genotypes = GBS_LND_20$geno, 
-                                    phenotype = GBS_LND_20$pheno[,c(1,2)],
-                                    PCA=GBS_LND_20$PC[,1:3])})
+                    if(Method=="Two-Step"){
+                    Results_All=list()
+                    for(i in 1:length(Trait)){
+                      if(Outcome=="Tested"){
+                        if(Scheme=="K-Fold"){
+                          if(is.null(GBS_Train)){
+                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
+                          }
+                          if(Package=="rrBLUP"){
+                            if(GAGS==TRUE){
+                              if(!is.null(PC)){
+                                #No CV
 
+                                Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_CV(genotypes = GBS_Train$geno,
+                                                                                                      phenotype = GBS_Train$pheno,
+                                                                                                      Kernel=Kernel,
+                                                                                                      PCA=GBS_Train$PC[,1:PC],
+                                                                                                      CV=CV,
+                                                                                                      markers=markers,
+                                                                                                      folds = folds,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation,
+                                                                                                      Y=GBS_Train$pheno,
+                                                                                                      GM=GBS_Train$map,
+                                                                                                      GD=GBS_Train$numeric,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total
+                                )})
+                              }else{
+                                #No CV, No PC
+                                Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_CV(genotypes = GBS_Train$geno,
+                                                                                                      phenotype = GBS_Train$pheno,
+                                                                                                      Kernel=Kernel,
+                                                                                                      PCA=PC,
+                                                                                                      CV=CV,
+                                                                                                      markers=markers,
+                                                                                                      folds = folds,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation,
+                                                                                                      Y=GBS_Train$pheno,
+                                                                                                      GM=GBS_Train$map,
+                                                                                                      GD=GBS_Train$numeric,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total
+                                )})
+                              }
+                            }else{
+                              if(!is.null(CV)){
+                                if(!is.null(PC)){
+                                  #No GAGS
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   Kernel=Kernel,
+                                                                                                   PCA=GBS_Train$PC[,1:PC],
+                                                                                                   CV=GBS_Train$CV[,-1],
+                                                                                                   markers=markers,
+                                                                                                   folds = folds,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                  )})
+                                }else{
+                                  #No GAGS, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   Kernel=Kernel,
+                                                                                                   PCA=PC,
+                                                                                                   CV=GBS_Train$CV[,-1],
+                                                                                                   markers=markers,
+                                                                                                   folds = folds,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                  )})
+                                }
+                              }else{
+                                if(!is.null(PC)){
+                                  #No GAGS, No CV
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   Kernel=Kernel,
+                                                                                                   PCA=GBS_Train$PC[,1:PC],
+                                                                                                   CV=CV,
+                                                                                                   markers=markers,
+                                                                                                   folds = folds,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                  )})
+                                }else{
+                                  #No GAGS, No CV, No PC
+                                  if(Messages==TRUE){
+                                    print(paste0("Peforming ",Method," ",Scheme," ",Type," using the package ",Package," with the model ",Model," and ",Kernel," on ",Trait[model]," using ",Training,"."))
+                                  }
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   Kernel=Kernel,
+                                                                                                   PCA=PC,
+                                                                                                   CV=CV,
+                                                                                                   markers=markers,
+                                                                                                   folds = folds,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                  )})
+                                }
+                              }
 
+                            }
 
-Extract_ACC=function(results,nrep,pop,year,loc,model,trait,pheno){
-model_vect <- c("MAE","MAE_PC","Pearson","Pearson_PC","R2","R2_PC","RMSE","RMSE_PC","Spearman" ,"Spearman_PC")
-  BGLR_acc_table <- data.frame(matrix(nrow = 0, ncol = 3))
-  for (i in 1:length(results[1,])){
-    results_long <- data.frame(rep(i, length(model_vect)), model_vect, unlist(results[1,i]))
-    BGLR_acc_table <- rbind(BGLR_acc_table, results_long)
-  }
-colnames(BGLR_acc_table)<-c("Rep","Metric","Accuracy")
-po=rep(pop,nrep)
-yr=rep(year,nrep)
-loc=rep(loc,nrep)
-mo=rep(model,nrep)
-tr=rep(trait,nrep)
-ph=rep(pheno,nrep)
-ac=data.frame(Population=po,Year=yr,Location=loc,Prediction=mo,Trait=tr,Adjustment=ph,BGLR_acc_table)
-return(ac)
-}
+                          }
 
-SVM_BL17_28=Extract_ACC(LND_20_50,50,"Breeding Lines","2017","Lind","SVM","IT","Factor")
-RVC_ALL_FIL=rbind(SVM_BL17_28)
+                          if(Package=="MAS"){
+                            if(GAGS==TRUE){
+                              if(!is.null(PC)){
+                                #No CV
+                                Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   PCA=GBS_Train$PC[,1:PC],
+                                                                                                   CV=CV,
+                                                                                                   folds = folds,
+                                                                                                   transformation=transformation,
+                                                                                                   Y=GBS_Train$pheno,
+                                                                                                   GM=GBS_Train$map,
+                                                                                                   GD=GBS_Train$numeric,
+                                                                                                   GWAS=GWAS,
+                                                                                                   alpha=alpha,
+                                                                                                   threshold=threshold,
+                                                                                                   QTN=QTN,
+                                                                                                   PCA.total=PCA.total
+                                )})
+                              }else{
+                                #No CV, No PC
+                                Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   PCA=PC,
+                                                                                                   CV=CV,
+                                                                                                   folds = folds,
+                                                                                                   transformation=transformation,
+                                                                                                   Y=GBS_Train$pheno,
+                                                                                                   GM=GBS_Train$map,
+                                                                                                   GD=GBS_Train$numeric,
+                                                                                                   GWAS=GWAS,
+                                                                                                   alpha=alpha,
+                                                                                                   threshold=threshold,
+                                                                                                   QTN=QTN,
+                                                                                                   PCA.total=PCA.total
+                                )})
+                              }
+                            }else{
+                              if(!is.null(CV)){
+                                if(!is.null(PC)){
+                                  #No GAGS
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_CV(phenotype = GBS_Train$pheno,
+                                                                                                PCA=GBS_Train$PC[,1:PC],
+                                                                                                CV=GBS_Train$CV[,-1],
+                                                                                                folds = folds,
+                                                                                                transformation=transformation
+                                  )})
+                                }else{
+                                  #No GAGS, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_CV(phenotype = GBS_Train$pheno,
+                                                                                                PCA=PC,
+                                                                                                CV=GBS_Train$CV[,-1],
+                                                                                                folds = folds,
+                                                                                                transformation=transformation
+                                  )})
+                                }
+                              }
+
+                            }
+
+                          }
+
+                          if(Package=="BGLR"){
+                            if(Type=="Ordinal"){
+                              if(GAGS==TRUE){
+                                if(!is.null(PC)){
+                                  #No CV
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_CV(genotypes = GBS_Train$geno,
+                                                                                                              phenotype = GBS_Train$pheno,
+                                                                                                              model=model,
+                                                                                                              Kernel=Kernel,
+                                                                                                              PCA=GBS_Train$PC[,1:PC],
+                                                                                                              CV=CV,
+                                                                                                              markers=markers,
+                                                                                                              folds = folds,
+                                                                                                              nIter = nIter,
+                                                                                                              burnIn = burnIn,
+                                                                                                              Sparse=Sparse,
+                                                                                                              m=m,
+                                                                                                              degree=degree,
+                                                                                                              nL=nL,
+                                                                                                              Y=GBS_Train$pheno,
+                                                                                                              GM=GBS_Train$map,
+                                                                                                              GD=GBS_Train$numeric,
+                                                                                                              GWAS=GWAS,
+                                                                                                              alpha=alpha,
+                                                                                                              threshold=threshold,
+                                                                                                              QTN=QTN,
+                                                                                                              PCA.total=PCA.total
+                                  )})
+                                }else{
+                                  #No CV, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_CV(genotypes = GBS_Train$geno,
+                                                                                                              phenotype = GBS_Train$pheno,
+                                                                                                              model=model,
+                                                                                                              Kernel=Kernel,
+                                                                                                              PCA=PC,
+                                                                                                              CV=CV,
+                                                                                                              markers=markers,
+                                                                                                              folds = folds,
+                                                                                                              nIter = nIter,
+                                                                                                              burnIn = burnIn,
+                                                                                                              Sparse=Sparse,
+                                                                                                              m=m,
+                                                                                                              degree=degree,
+                                                                                                              nL=nL,
+                                                                                                              Y=GBS_Train$pheno,
+                                                                                                              GM=GBS_Train$map,
+                                                                                                              GD=GBS_Train$numeric,
+                                                                                                              GWAS=GWAS,
+                                                                                                              alpha=alpha,
+                                                                                                              threshold=threshold,
+                                                                                                              QTN=QTN,
+                                                                                                              PCA.total=PCA.total
+                                  )})
+                                }
+                              }else{
+                                if(!is.null(CV)){
+                                  if(!is.null(PC)){
+                                    #No GAGS
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_CV(genotypes = GBS_Train$geno,
+                                                                                                           phenotype = GBS_Train$pheno,
+                                                                                                           model=model,
+                                                                                                           Kernel=Kernel,
+                                                                                                           PCA=GBS_Train$PC[,1:PC],
+                                                                                                           CV=GBS_Train$CV[,-1],
+                                                                                                           markers=markers,
+                                                                                                           folds = folds,
+                                                                                                           nIter = nIter,
+                                                                                                           burnIn = burnIn,
+                                                                                                           Sparse=Sparse,
+                                                                                                           m=m,
+                                                                                                           degree=degree,
+                                                                                                           nL=nL
+                                    )})
+                                  }else{
+                                    #No GAGS, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_CV(genotypes = GBS_Train$geno,
+                                                                                                           phenotype = GBS_Train$pheno,
+                                                                                                           model=model,
+                                                                                                           Kernel=Kernel,
+                                                                                                           PCA=PC,
+                                                                                                           CV=GBS_Train$CV[,-1],
+                                                                                                           markers=markers,
+                                                                                                           folds = folds,
+                                                                                                           nIter = nIter,
+                                                                                                           burnIn = burnIn,
+                                                                                                           Sparse=Sparse,
+                                                                                                           m=m,
+                                                                                                           degree=degree,
+                                                                                                           nL=nL
+                                    )})
+                                  }
+                                }else{
+                                  if(!is.null(PC)){
+                                    #No GAGS, No CV
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_CV(genotypes = GBS_Train$geno,
+                                                                                                           phenotype = GBS_Train$pheno,
+                                                                                                           model=model,
+                                                                                                           Kernel=Kernel,
+                                                                                                           PCA=GBS_Train$PC[,1:PC],
+                                                                                                           CV=CV,
+                                                                                                           markers=markers,
+                                                                                                           folds = folds,
+                                                                                                           nIter = nIter,
+                                                                                                           burnIn = burnIn,
+                                                                                                           Sparse=Sparse,
+                                                                                                           m=m,
+                                                                                                           degree=degree,
+                                                                                                           nL=nL
+                                    )})
+                                  }else{
+                                    #No GAGS, No CV, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_CV(genotypes = GBS_Train$geno,
+                                                                                                           phenotype = GBS_Train$pheno,
+                                                                                                           model=model,
+                                                                                                           Kernel=Kernel,
+                                                                                                           PCA=PC,
+                                                                                                           CV=CV,
+                                                                                                           markers=markers,
+                                                                                                           folds = folds,
+                                                                                                           nIter = nIter,
+                                                                                                           burnIn = burnIn,
+                                                                                                           Sparse=Sparse,
+                                                                                                           m=m,
+                                                                                                           degree=degree,
+                                                                                                           nL=nL
+                                    )})
+                                  }
+                                }
+
+                              }
+                            }else{
+
+                              if(GAGS==TRUE){
+                                if(!is.null(PC)){
+                                  #No CV
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_CV(genotypes = GBS_Train$geno,
+                                                                                                      phenotype = GBS_Train$pheno,
+                                                                                                      model=model,
+                                                                                                      Kernel=Kernel,
+                                                                                                      PCA=GBS_Train$PC[,1:PC],
+                                                                                                      CV=CV,
+                                                                                                      markers=markers,
+                                                                                                      folds = folds,
+                                                                                                      nIter = nIter,
+                                                                                                      burnIn = burnIn,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation,
+                                                                                                      Y=GBS_Train$pheno,
+                                                                                                      GM=GBS_Train$map,
+                                                                                                      GD=GBS_Train$numeric,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total
+                                  )})
+                                }else{
+                                  #No CV, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_CV(genotypes = GBS_Train$geno,
+                                                                                                      phenotype = GBS_Train$pheno,
+                                                                                                      model=model,
+                                                                                                      Kernel=Kernel,
+                                                                                                      PCA=PC,
+                                                                                                      CV=CV,
+                                                                                                      markers=markers,
+                                                                                                      folds = folds,
+                                                                                                      nIter = nIter,
+                                                                                                      burnIn = burnIn,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation,
+                                                                                                      Y=GBS_Train$pheno,
+                                                                                                      GM=GBS_Train$map,
+                                                                                                      GD=GBS_Train$numeric,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total
+                                  )})
+                                }
+                              }else{
+                                if(!is.null(CV)){
+                                  if(!is.null(PC)){
+                                    #No GAGS
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   PCA=GBS_Train$PC[,1:PC],
+                                                                                                   CV=GBS_Train$CV[,-1],
+                                                                                                   markers=markers,
+                                                                                                   folds = folds,
+                                                                                                   nIter = nIter,
+                                                                                                   burnIn = burnIn,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                    )})
+                                  }else{
+                                    #No GAGS, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   PCA=PC,
+                                                                                                   CV=GBS_Train$CV[,-1],
+                                                                                                   markers=markers,
+                                                                                                   folds = folds,
+                                                                                                   nIter = nIter,
+                                                                                                   burnIn = burnIn,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                    )})
+                                  }
+                                }else{
+                                  if(!is.null(PC)){
+                                    #No GAGS, No CV
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   PCA=GBS_Train$PC[,1:PC],
+                                                                                                   CV=CV,
+                                                                                                   markers=markers,
+                                                                                                   folds = folds,
+                                                                                                   nIter = nIter,
+                                                                                                   burnIn = burnIn,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                    )})
+                                  }else{
+                                    #No GAGS, No CV, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   PCA=PC,
+                                                                                                   CV=CV,
+                                                                                                   markers=markers,
+                                                                                                   folds = folds,
+                                                                                                   nIter = nIter,
+                                                                                                   burnIn = burnIn,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                    )})
+                                  }
+                                }
+
+                              }
+
+                            }
+                          }
+
+                          if(Package=="GAPIT"){
+                            if(!is.null(CV)){
+                              #No GAGS
+                              Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_CV(genotypes = GBS_Train$numeric,
+                                                                                                 phenotype = GBS_Train$pheno,
+                                                                                                 myGD=GBS_Train$map,
+                                                                                                 model=model,
+                                                                                                 PCA.total=PC,
+                                                                                                 CV=GBS_Train$CV[,-1],
+                                                                                                 kinship=kinship,
+                                                                                                 markers=markers,
+                                                                                                 folds = folds,
+                                                                                                 transformation=transformation
+                              )})
+
+                            }else{
+                              #No GAGS, No CV
+                              Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_CV(genotypes = GBS_Train$numeric,
+                                                                                                 phenotype = GBS_Train$pheno,
+                                                                                                 myGD=GBS_Train$map,
+                                                                                                 model=model,
+                                                                                                 PCA.total=PC,
+                                                                                                 CV=CV,
+                                                                                                 kinship=kinship,
+                                                                                                 markers=markers,
+                                                                                                 folds = folds,
+                                                                                                 transformation=transformation
+                              )})
+
+                            }
+                          }
+
+                          if(Package=="caret"){
+                            Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   type=type,
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   folds = folds,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation,
+                                                                                                   sampling=sampling,
+                                                                                                   repeats=repeats,
+                                                                                                   method=method
+                            )})
+                          }
+
+                          if(Package=="GLM"){
+                            Results=sapply(1:Replications, function(i,...){Results=GLM_CV(genotypes = GBS_Train$geno,
+                                                                                          phenotype = GBS_Train$pheno,
+                                                                                          fam=fam,
+                                                                                          Kernel=Kernel,
+                                                                                          markers=markers,
+                                                                                          folds = folds,
+                                                                                          Sparse=Sparse,
+                                                                                          m=m,
+                                                                                          degree=degree,
+                                                                                          nL=nL
+                            )})
+                          }
+
+                        }
+                        if(Scheme=="VS"){
+                          if(is.null(GBS_Train)){
+                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
+                            GBS_Predict=get(paste0("GBS_2_",Prediction,"_",Trait[i]))
+                          }
+                          if(Package=="rrBLUP"){
+                            if(GAGS==TRUE){
+                              if(!is.null(PC)){
+                                #No CV
+                                Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_VS(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_GM=GBS_Train$map,
+                                                                                                      train_GD=GBS_Train$numeric,
+                                                                                                      train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total,
+                                                                                                      transformation=transformation
+                                )})
+
+                              }else{
+                                #No CV, No PC
+                                Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_VS(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_GM=GBS_Train$map,
+                                                                                                      train_GD=GBS_Train$numeric,
+                                                                                                      train_PCA=PC,
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=PC,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total,
+                                                                                                      transformation=transformation
+                                )})
+                              }
+                            }else{
+                              if(!is.null(CV)){
+                                if(!is.null(PC)){
+                                  #No GAGS
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                   train_CV=GBS_Train$CV[,-1],
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                   test_CV=GBS_Predict$CV[,-1],
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                  )})
+                                }else{
+                                  #No GAGS, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=PC,
+                                                                                                   train_CV=GBS_Train$CV[,-1],
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=PC,
+                                                                                                   test_CV=GBS_Predict$CV[,-1],
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                  )})
+                                }
+                              }else{
+                                if(!is.null(PC)){
+                                  #No GAGS, No CV
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                   train_CV=CV,
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                   test_CV=CV,
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                  )})
+                                }else{
+                                  #No GAGS, No CV, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=PC,
+                                                                                                   train_CV=CV,
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=PC,
+                                                                                                   test_CV=CV,
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                  )})
+                                }
+                              }
+
+                            }
+
+                          }
+
+                          if(Package=="MAS"){
+                            if(GAGS==TRUE){
+                              if(!is.null(PC)){
+                                #No CV
+                                Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_GM=GBS_Train$map,
+                                                                                                   train_GD=GBS_Train$numeric,
+                                                                                                   train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                   markers=markers,
+                                                                                                   GWAS=GWAS,
+                                                                                                   alpha=alpha,
+                                                                                                   threshold=threshold,
+                                                                                                   QTN=QTN,
+                                                                                                   PCA.total=PCA.total,
+                                                                                                   transformation=transformation
+                                )})
+                              }else{
+                                #No CV, No PC
+                                Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_GM=GBS_Train$map,
+                                                                                                   train_GD=GBS_Train$numeric,
+                                                                                                   train_PCA=PC,
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=PC,
+                                                                                                   markers=markers,
+                                                                                                   GWAS=GWAS,
+                                                                                                   alpha=alpha,
+                                                                                                   threshold=threshold,
+                                                                                                   QTN=QTN,
+                                                                                                   PCA.total=PCA.total,
+                                                                                                   transformation=transformation
+                                )})
+                              }
+                            }else{
+                              if(!is.null(CV)){
+                                if(!is.null(PC)){
+                                  #No GAGS
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS(train_phenotype = GBS_Train$pheno,
+                                                                                                train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                train_CV=GBS_Train$CV[,-1],
+                                                                                                test_phenotype= GBS_Predict$pheno,
+                                                                                                test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                test_CV=GBS_Predict$CV[,-1],
+                                                                                                transformation=transformation
+                                  )})
+                                }else{
+                                  #No GAGS, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS(train_phenotype = GBS_Train$pheno,
+                                                                                                train_PCA=PC,
+                                                                                                train_CV=GBS_Train$CV[,-1],
+                                                                                                test_phenotype= GBS_Predict$pheno,
+                                                                                                test_PCA=PC,
+                                                                                                test_CV=GBS_Predict$CV[,-1],
+                                                                                                transformation=transformation
+                                  )})
+                                }
+                              }
+
+                            }
+
+                          }
+                          if(Package=="BGLR"){
+                            if(Type=="Ordinal"){
+                              if(GAGS==TRUE){
+                                if(!is.null(PC)){
+                                  #No CV
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_VS(train_genotypes = GBS_Train$geno,
+                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_GM=GBS_Train$map,
+                                                                                                              train_GD=GBS_Train$numeric,
+                                                                                                              train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                              test_genotypes= GBS_Predict$geno,
+                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                              model=model,
+                                                                                                              Kernel=Kernel,
+                                                                                                              markers=markers,
+                                                                                                              nIter = nIter,
+                                                                                                              burnIn = burnIn,
+                                                                                                              Sparse=Sparse,
+                                                                                                              m=m,
+                                                                                                              degree=degree,
+                                                                                                              nL=nL,
+                                                                                                              GWAS=GWAS,
+                                                                                                              alpha=alpha,
+                                                                                                              threshold=threshold,
+                                                                                                              QTN=QTN,
+                                                                                                              PCA.total=PCA.total
+                                  )})
+                                }else{
+                                  #No CV, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_VS(train_genotypes = GBS_Train$geno,
+                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_GM=GBS_Train$map,
+                                                                                                              train_GD=GBS_Train$numeric,
+                                                                                                              train_PCA=PC,
+                                                                                                              test_genotypes= GBS_Predict$geno,
+                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_PCA=PC,
+                                                                                                              model=model,
+                                                                                                              Kernel=Kernel,
+                                                                                                              markers=markers,
+                                                                                                              nIter = nIter,
+                                                                                                              burnIn = burnIn,
+                                                                                                              Sparse=Sparse,
+                                                                                                              m=m,
+                                                                                                              degree=degree,
+                                                                                                              nL=nL,
+                                                                                                              GWAS=GWAS,
+                                                                                                              alpha=alpha,
+                                                                                                              threshold=threshold,
+                                                                                                              QTN=QTN,
+                                                                                                              PCA.total=PCA.total
+                                  )})
+                                }
+                              }else{
+                                if(!is.null(CV)){
+                                  if(!is.null(PC)){
+                                    #No GAGS
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS(train_genotypes = GBS_Train$geno,
+                                                                                                           train_phenotype = GBS_Train$pheno,
+                                                                                                           train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                           train_CV=GBS_Train$CV[,-1],
+                                                                                                           test_genotypes= GBS_Predict$geno,
+                                                                                                           test_phenotype= GBS_Predict$pheno,
+                                                                                                           test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                           test_CV=GBS_Predict$CV[,-1],
+                                                                                                           model=model,
+                                                                                                           Kernel=Kernel,
+                                                                                                           markers=markers,
+                                                                                                           nIter = nIter,
+                                                                                                           burnIn = burnIn,
+                                                                                                           Sparse=Sparse,
+                                                                                                           m=m,
+                                                                                                           degree=degree,
+                                                                                                           nL=nL
+                                    )})
+                                  }else{
+                                    #No GAGS, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS(train_genotypes = GBS_Train$geno,
+                                                                                                           train_phenotype = GBS_Train$pheno,
+                                                                                                           train_PCA=PC,
+                                                                                                           train_CV=GBS_Train$CV[,-1],
+                                                                                                           test_genotypes= GBS_Predict$geno,
+                                                                                                           test_phenotype= GBS_Predict$pheno,
+                                                                                                           test_PCA=PC,
+                                                                                                           test_CV=GBS_Predict$CV[,-1],
+                                                                                                           model=model,
+                                                                                                           Kernel=Kernel,
+                                                                                                           markers=markers,
+                                                                                                           nIter = nIter,
+                                                                                                           burnIn = burnIn,
+                                                                                                           Sparse=Sparse,
+                                                                                                           m=m,
+                                                                                                           degree=degree,
+                                                                                                           nL=nL
+                                    )})
+                                  }
+                                }else{
+                                  if(!is.null(PC)){
+                                    #No GAGS, No CV
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS(train_genotypes = GBS_Train$geno,
+                                                                                                           train_phenotype = GBS_Train$pheno,
+                                                                                                           train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                           train_CV=CV,
+                                                                                                           test_genotypes= GBS_Predict$geno,
+                                                                                                           test_phenotype= GBS_Predict$pheno,
+                                                                                                           test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                           test_CV=CV,
+                                                                                                           model=model,
+                                                                                                           Kernel=Kernel,
+                                                                                                           markers=markers,
+                                                                                                           nIter = nIter,
+                                                                                                           burnIn = burnIn,
+                                                                                                           Sparse=Sparse,
+                                                                                                           m=m,
+                                                                                                           degree=degree,
+                                                                                                           nL=nL
+                                    )})
+                                  }else{
+                                    #No GAGS, No CV, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS(train_genotypes = GBS_Train$geno,
+                                                                                                           train_phenotype = GBS_Train$pheno,
+                                                                                                           train_PCA=PC,
+                                                                                                           train_CV=CV,
+                                                                                                           test_genotypes= GBS_Predict$geno,
+                                                                                                           test_phenotype= GBS_Predict$pheno,
+                                                                                                           test_PCA=PC,
+                                                                                                           test_CV=CV,
+                                                                                                           model=model,
+                                                                                                           Kernel=Kernel,
+                                                                                                           markers=markers,
+                                                                                                           nIter = nIter,
+                                                                                                           burnIn = burnIn,
+                                                                                                           Sparse=Sparse,
+                                                                                                           m=m,
+                                                                                                           degree=degree,
+                                                                                                           nL=nL
+                                    )})
+                                  }
+                                }
+
+                              }
+                            }else{
+
+                              if(GAGS==TRUE){
+                                if(!is.null(PC)){
+                                  #No CV
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_VS(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_GM=GBS_Train$map,
+                                                                                                      train_GD=GBS_Train$numeric,
+                                                                                                      train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                      model=model,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      nIter = nIter,
+                                                                                                      burnIn = burnIn,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total
+                                  )})
+                                }else{
+                                  #No CV, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_VS(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_GM=GBS_Train$map,
+                                                                                                      train_GD=GBS_Train$numeric,
+                                                                                                      train_PCA=PC,
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=PC,
+                                                                                                      model=model,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      nIter = nIter,
+                                                                                                      burnIn = burnIn,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total
+                                  )})
+                                }
+                              }else{
+                                if(!is.null(CV)){
+                                  if(!is.null(PC)){
+                                    #No GAGS
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                   train_CV=GBS_Train$CV[,-1],
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                   test_CV=GBS_Predict$CV[,-1],
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   nIter = nIter,
+                                                                                                   burnIn = burnIn,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                    )})
+                                  }else{
+                                    #No GAGS, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=PC,
+                                                                                                   train_CV=GBS_Train$CV[,-1],
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=PC,
+                                                                                                   test_CV=GBS_Predict$CV[,-1],
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   nIter = nIter,
+                                                                                                   burnIn = burnIn,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                    )})
+                                  }
+                                }else{
+                                  if(!is.null(PC)){
+                                    #No GAGS, No CV
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                   train_CV=CV,
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                   test_CV=CV,
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   nIter = nIter,
+                                                                                                   burnIn = burnIn,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                    )})
+                                  }else{
+                                    #No GAGS, No CV, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=PC,
+                                                                                                   train_CV=CV,
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=PC,
+                                                                                                   test_CV=CV,
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   nIter = nIter,
+                                                                                                   burnIn = burnIn,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation
+                                    )})
+                                  }
+                                }
+
+                              }
+
+                            }
+                          }
+                          if(Package=="caret"){
+                            Results=sapply(1:Replications, function(i,...){Results=Caret_Models_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   type=type,
+                                                                                                   model=model,
+                                                                                                   Kernel=Kernel,
+                                                                                                   markers=markers,
+                                                                                                   Sparse=Sparse,
+                                                                                                   m=m,
+                                                                                                   degree=degree,
+                                                                                                   nL=nL,
+                                                                                                   transformation=transformation,
+                                                                                                   sampling="up",
+                                                                                                   repeats=5,
+                                                                                                   method="repeatedcv"
+                            )})
+                          }
+
+                          if(Package=="GAPIT"){
+                            if(!is.null(CV)){
+                              #No GAGS
+                              Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_VS(genotypes = GBS_Train$numeric,
+                                                                                                 phenotype = GBS_Train$pheno,
+                                                                                                 train_GM=GBS_Train$map,
+                                                                                                 train_CV=GBS_Train$CV[,-1],
+                                                                                                 test_genotypes= GBS_Predict$numeric,
+                                                                                                 test_phenotype= GBS_Predict$pheno,
+                                                                                                 test_GM=GBS_Predict$map,
+                                                                                                 test_CV=GBS_Predict$CV[,-1],
+                                                                                                 model=model,
+                                                                                                 PCA.total=PC,
+                                                                                                 kinship=kinship,
+                                                                                                 markers=markers,
+                                                                                                 transformation=transformation
+                              )})
+
+                            }else{
+                              #No GAGS, No CV
+                              Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_VS(genotypes = GBS_Train$numeric,
+                                                                                                 phenotype = GBS_Train$pheno,
+                                                                                                 train_GM=GBS_Train$map,
+                                                                                                 train_CV=CV,
+                                                                                                 test_genotypes= GBS_Predict$numeric,
+                                                                                                 test_phenotype= GBS_Predict$pheno,
+                                                                                                 test_GM=GBS_Predict$map,
+                                                                                                 test_CV=CV,
+                                                                                                 model=model,
+                                                                                                 PCA.total=PC,
+                                                                                                 kinship=kinship,
+                                                                                                 markers=markers,
+                                                                                                 transformation=transformation
+                              )})
+
+                            }
+                          }
+                          if(Package=="GLM"){
+                            Results=sapply(1:Replications, function(i,...){Results=GLM_VS(train_genotypes = GBS_Train$geno,
+                                                                                          train_phenotype = GBS_Train$pheno,
+                                                                                          test_genotypes= GBS_Predict$geno,
+                                                                                          test_phenotype= GBS_Predict$pheno,
+                                                                                          fam=fam,
+                                                                                          Kernel=Kernel,
+                                                                                          markers=markers,
+                                                                                          Sparse=Sparse,
+                                                                                          m=m,
+                                                                                          degree=degree,
+                                                                                          nL=nL
+                            )})
+                          }
+
+                        }
+                      }
+                      if(Outcome=="Untested"){
+                        if(Scheme=="K-Fold"){
+                          if(is.null(GBS_Train)){
+                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
+                          }
+                          #Is there even a point for K-fold for untested?
+                          #We can do this if we include blank values, but not in rrBLUP or DL
+                          if(package=="rrBLUP"){
+                            if(Kernel=="Markers"){
+                              NULL
+                            }else{}
+                          }
+                        }
+                        if(Scheme=="VS"){
+                          if(is.null(GBS_Train)){
+                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
+                            GBS_Predict=get(paste0("GBS_2_Untested_",Prediction,"_",Trait[i]))
+                          }
+                          if(Package=="rrBLUP"){
+                            if(GAGS==TRUE){
+                              if(!is.null(PC)){
+                                #No CV
+                                Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                         train_phenotype = GBS_Train$pheno,
+                                                                                                         train_GM=GBS_Train$map,
+                                                                                                         train_GD=GBS_Train$numeric,
+                                                                                                         train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                         test_genotypes= GBS_Predict$geno,
+                                                                                                         test_phenotype= GBS_Predict$pheno,
+                                                                                                         test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                         Kernel=Kernel,
+                                                                                                         markers=markers,
+                                                                                                         Sparse=Sparse,
+                                                                                                         m=m,
+                                                                                                         degree=degree,
+                                                                                                         nL=nL,
+                                                                                                         GWAS=GWAS,
+                                                                                                         alpha=alpha,
+                                                                                                         threshold=threshold,
+                                                                                                         QTN=QTN,
+                                                                                                         PCA.total=PCA.total,
+                                                                                                         transformation=transformation
+                                )})
+
+                              }else{
+                                #No CV, No PC
+                                Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                         train_phenotype = GBS_Train$pheno,
+                                                                                                         train_GM=GBS_Train$map,
+                                                                                                         train_GD=GBS_Train$numeric,
+                                                                                                         train_PCA=PC,
+                                                                                                         test_genotypes= GBS_Predict$geno,
+                                                                                                         test_phenotype= GBS_Predict$pheno,
+                                                                                                         test_PCA=PC,
+                                                                                                         Kernel=Kernel,
+                                                                                                         markers=markers,
+                                                                                                         Sparse=Sparse,
+                                                                                                         m=m,
+                                                                                                         degree=degree,
+                                                                                                         nL=nL,
+                                                                                                         GWAS=GWAS,
+                                                                                                         alpha=alpha,
+                                                                                                         threshold=threshold,
+                                                                                                         QTN=QTN,
+                                                                                                         PCA.total=PCA.total,
+                                                                                                         transformation=transformation
+                                )})
+                              }
+                            }else{
+                              if(!is.null(CV)){
+                                if(!is.null(PC)){
+                                  #No GAGS
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                      train_CV=GBS_Train$CV[,-1],
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                      test_CV=GBS_Predict$CV[,-1],
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation
+                                  )})
+                                }else{
+                                  #No GAGS, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_PCA=PC,
+                                                                                                      train_CV=GBS_Train$CV[,-1],
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=PC,
+                                                                                                      test_CV=GBS_Predict$CV[,-1],
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation
+                                  )})
+                                }
+                              }else{
+                                if(!is.null(PC)){
+                                  #No GAGS, No CV
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                      train_CV=CV,
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                      test_CV=CV,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation
+                                  )})
+                                }else{
+                                  #No GAGS, No CV, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_PCA=PC,
+                                                                                                      train_CV=CV,
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=PC,
+                                                                                                      test_CV=CV,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation
+                                  )})
+                                }
+                              }
+
+                            }
+
+                          }
+
+                          if(Package=="MAS"){
+                            if(GAGS==TRUE){
+                              if(!is.null(PC)){
+                                #No CV
+                                Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_GM=GBS_Train$map,
+                                                                                                      train_GD=GBS_Train$numeric,
+                                                                                                      train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                      markers=markers,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total,
+                                                                                                      transformation=transformation
+                                )})
+                              }else{
+                                #No CV, No PC
+                                Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_GM=GBS_Train$map,
+                                                                                                      train_GD=GBS_Train$numeric,
+                                                                                                      train_PCA=PC,
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=PC,
+                                                                                                      markers=markers,
+                                                                                                      GWAS=GWAS,
+                                                                                                      alpha=alpha,
+                                                                                                      threshold=threshold,
+                                                                                                      QTN=QTN,
+                                                                                                      PCA.total=PCA.total,
+                                                                                                      transformation=transformation
+                                )})
+                              }
+                            }else{
+                              if(!is.null(CV)){
+                                if(!is.null(PC)){
+                                  #No GAGS
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS_UT(train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                   train_CV=GBS_Train$CV[,-1],
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                   test_CV=GBS_Predict$CV[,-1],
+                                                                                                   transformation=transformation
+                                  )})
+                                }else{
+                                  #No GAGS, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS_UT(train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=PC,
+                                                                                                   train_CV=GBS_Train$CV[,-1],
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=PC,
+                                                                                                   test_CV=GBS_Predict$CV[,-1],
+                                                                                                   transformation=transformation
+                                  )})
+                                }
+                              }
+
+                            }
+
+                          }
+                          if(Package=="BGLR"){
+                            if(Type=="Ordinal"){
+                              if(GAGS==TRUE){
+                                if(!is.null(PC)){
+                                  #No CV
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                                 train_phenotype = GBS_Train$pheno,
+                                                                                                                 train_GM=GBS_Train$map,
+                                                                                                                 train_GD=GBS_Train$numeric,
+                                                                                                                 train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                                 test_genotypes= GBS_Predict$geno,
+                                                                                                                 test_phenotype= GBS_Predict$pheno,
+                                                                                                                 test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                                 model=model,
+                                                                                                                 Kernel=Kernel,
+                                                                                                                 markers=markers,
+                                                                                                                 nIter = nIter,
+                                                                                                                 burnIn = burnIn,
+                                                                                                                 Sparse=Sparse,
+                                                                                                                 m=m,
+                                                                                                                 degree=degree,
+                                                                                                                 nL=nL,
+                                                                                                                 GWAS=GWAS,
+                                                                                                                 alpha=alpha,
+                                                                                                                 threshold=threshold,
+                                                                                                                 QTN=QTN,
+                                                                                                                 PCA.total=PCA.total
+                                  )})
+                                }else{
+                                  #No CV, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                                 train_phenotype = GBS_Train$pheno,
+                                                                                                                 train_GM=GBS_Train$map,
+                                                                                                                 train_GD=GBS_Train$numeric,
+                                                                                                                 train_PCA=PC,
+                                                                                                                 test_genotypes= GBS_Predict$geno,
+                                                                                                                 test_phenotype= GBS_Predict$pheno,
+                                                                                                                 test_PCA=PC,
+                                                                                                                 model=model,
+                                                                                                                 Kernel=Kernel,
+                                                                                                                 markers=markers,
+                                                                                                                 nIter = nIter,
+                                                                                                                 burnIn = burnIn,
+                                                                                                                 Sparse=Sparse,
+                                                                                                                 m=m,
+                                                                                                                 degree=degree,
+                                                                                                                 nL=nL,
+                                                                                                                 GWAS=GWAS,
+                                                                                                                 alpha=alpha,
+                                                                                                                 threshold=threshold,
+                                                                                                                 QTN=QTN,
+                                                                                                                 PCA.total=PCA.total
+                                  )})
+                                }
+                              }else{
+                                if(!is.null(CV)){
+                                  if(!is.null(PC)){
+                                    #No GAGS
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                              train_CV=GBS_Train$CV[,-1],
+                                                                                                              test_genotypes= GBS_Predict$geno,
+                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                              test_CV=GBS_Predict$CV[,-1],
+                                                                                                              model=model,
+                                                                                                              Kernel=Kernel,
+                                                                                                              markers=markers,
+                                                                                                              nIter = nIter,
+                                                                                                              burnIn = burnIn,
+                                                                                                              Sparse=Sparse,
+                                                                                                              m=m,
+                                                                                                              degree=degree,
+                                                                                                              nL=nL
+                                    )})
+                                  }else{
+                                    #No GAGS, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_PCA=PC,
+                                                                                                              train_CV=GBS_Train$CV[,-1],
+                                                                                                              test_genotypes= GBS_Predict$geno,
+                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_PCA=PC,
+                                                                                                              test_CV=GBS_Predict$CV[,-1],
+                                                                                                              model=model,
+                                                                                                              Kernel=Kernel,
+                                                                                                              markers=markers,
+                                                                                                              nIter = nIter,
+                                                                                                              burnIn = burnIn,
+                                                                                                              Sparse=Sparse,
+                                                                                                              m=m,
+                                                                                                              degree=degree,
+                                                                                                              nL=nL
+                                    )})
+                                  }
+                                }else{
+                                  if(!is.null(PC)){
+                                    #No GAGS, No CV
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                              train_CV=CV,
+                                                                                                              test_genotypes= GBS_Predict$geno,
+                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                              test_CV=CV,
+                                                                                                              model=model,
+                                                                                                              Kernel=Kernel,
+                                                                                                              markers=markers,
+                                                                                                              nIter = nIter,
+                                                                                                              burnIn = burnIn,
+                                                                                                              Sparse=Sparse,
+                                                                                                              m=m,
+                                                                                                              degree=degree,
+                                                                                                              nL=nL
+                                    )})
+                                  }else{
+                                    #No GAGS, No CV, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_PCA=PC,
+                                                                                                              train_CV=CV,
+                                                                                                              test_genotypes= GBS_Predict$geno,
+                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_PCA=PC,
+                                                                                                              test_CV=CV,
+                                                                                                              model=model,
+                                                                                                              Kernel=Kernel,
+                                                                                                              markers=markers,
+                                                                                                              nIter = nIter,
+                                                                                                              burnIn = burnIn,
+                                                                                                              Sparse=Sparse,
+                                                                                                              m=m,
+                                                                                                              degree=degree,
+                                                                                                              nL=nL
+                                    )})
+                                  }
+                                }
+
+                              }
+                            }else{
+
+                              if(GAGS==TRUE){
+                                if(!is.null(PC)){
+                                  #No CV
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                         train_phenotype = GBS_Train$pheno,
+                                                                                                         train_GM=GBS_Train$map,
+                                                                                                         train_GD=GBS_Train$numeric,
+                                                                                                         train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                         test_genotypes= GBS_Predict$geno,
+                                                                                                         test_phenotype= GBS_Predict$pheno,
+                                                                                                         test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                         model=model,
+                                                                                                         Kernel=Kernel,
+                                                                                                         markers=markers,
+                                                                                                         nIter = nIter,
+                                                                                                         burnIn = burnIn,
+                                                                                                         Sparse=Sparse,
+                                                                                                         m=m,
+                                                                                                         degree=degree,
+                                                                                                         nL=nL,
+                                                                                                         transformation=transformation,
+                                                                                                         GWAS=GWAS,
+                                                                                                         alpha=alpha,
+                                                                                                         threshold=threshold,
+                                                                                                         QTN=QTN,
+                                                                                                         PCA.total=PCA.total
+                                  )})
+                                }else{
+                                  #No CV, No PC
+                                  Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                         train_phenotype = GBS_Train$pheno,
+                                                                                                         train_GM=GBS_Train$map,
+                                                                                                         train_GD=GBS_Train$numeric,
+                                                                                                         train_PCA=PC,
+                                                                                                         test_genotypes= GBS_Predict$geno,
+                                                                                                         test_phenotype= GBS_Predict$pheno,
+                                                                                                         test_PCA=PC,
+                                                                                                         model=model,
+                                                                                                         Kernel=Kernel,
+                                                                                                         markers=markers,
+                                                                                                         nIter = nIter,
+                                                                                                         burnIn = burnIn,
+                                                                                                         Sparse=Sparse,
+                                                                                                         m=m,
+                                                                                                         degree=degree,
+                                                                                                         nL=nL,
+                                                                                                         transformation=transformation,
+                                                                                                         GWAS=GWAS,
+                                                                                                         alpha=alpha,
+                                                                                                         threshold=threshold,
+                                                                                                         QTN=QTN,
+                                                                                                         PCA.total=PCA.total
+                                  )})
+                                }
+                              }else{
+                                if(!is.null(CV)){
+                                  if(!is.null(PC)){
+                                    #No GAGS
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                      train_CV=GBS_Train$CV[,-1],
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                      test_CV=GBS_Predict$CV[,-1],
+                                                                                                      model=model,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      nIter = nIter,
+                                                                                                      burnIn = burnIn,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation
+                                    )})
+                                  }else{
+                                    #No GAGS, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_PCA=PC,
+                                                                                                      train_CV=GBS_Train$CV[,-1],
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=PC,
+                                                                                                      test_CV=GBS_Predict$CV[,-1],
+                                                                                                      model=model,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      nIter = nIter,
+                                                                                                      burnIn = burnIn,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation
+                                    )})
+                                  }
+                                }else{
+                                  if(!is.null(PC)){
+                                    #No GAGS, No CV
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                      train_CV=CV,
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                      test_CV=CV,
+                                                                                                      model=model,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      nIter = nIter,
+                                                                                                      burnIn = burnIn,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation
+                                    )})
+                                  }else{
+                                    #No GAGS, No CV, No PC
+                                    Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_PCA=PC,
+                                                                                                      train_CV=CV,
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_PCA=PC,
+                                                                                                      test_CV=CV,
+                                                                                                      model=model,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      nIter = nIter,
+                                                                                                      burnIn = burnIn,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation
+                                    )})
+                                  }
+                                }
+
+                              }
+
+                            }
+                          }
+                          if(Package=="caret"){
+                            Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV_UT(train_genotypes = GBS_Train$geno,
+                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      test_genotypes= GBS_Predict$geno,
+                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      type=type,
+                                                                                                      model=model,
+                                                                                                      Kernel=Kernel,
+                                                                                                      markers=markers,
+                                                                                                      Sparse=Sparse,
+                                                                                                      m=m,
+                                                                                                      degree=degree,
+                                                                                                      nL=nL,
+                                                                                                      transformation=transformation,
+                                                                                                      sampling="up",
+                                                                                                      repeats=5,
+                                                                                                      method="repeatedcv"
+                            )})
+                          }
+
+                          if(Package=="GAPIT"){
+                            if(!is.null(CV)){
+                              #No GAGS
+                              Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_VS_UT(genotypes = GBS_Train$numeric,
+                                                                                                    phenotype = GBS_Train$pheno,
+                                                                                                    train_GM=GBS_Train$map,
+                                                                                                    train_CV=GBS_Train$CV[,-1],
+                                                                                                    test_genotypes= GBS_Predict$numeric,
+                                                                                                    test_phenotype= GBS_Predict$pheno,
+                                                                                                    test_GM=GBS_Predict$map,
+                                                                                                    test_CV=GBS_Predict$CV[,-1],
+                                                                                                    model=model,
+                                                                                                    PCA.total=PC,
+                                                                                                    kinship=kinship,
+                                                                                                    markers=markers,
+                                                                                                    transformation=transformation
+                              )})
+
+                            }else{
+                              #No GAGS, No CV
+                              Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_VS_UT(genotypes = GBS_Train$numeric,
+                                                                                                    phenotype = GBS_Train$pheno,
+                                                                                                    train_GM=GBS_Train$map,
+                                                                                                    train_CV=CV,
+                                                                                                    test_genotypes= GBS_Predict$numeric,
+                                                                                                    test_phenotype= GBS_Predict$pheno,
+                                                                                                    test_GM=GBS_Predict$map,
+                                                                                                    test_CV=CV,
+                                                                                                    model=model,
+                                                                                                    PCA.total=PC,
+                                                                                                    kinship=kinship,
+                                                                                                    markers=markers,
+                                                                                                    transformation=transformation
+                              )})
+
+                            }
+                          }
+                          if(Package=="GLM"){
+                            Results=sapply(1:Replications, function(i,...){Results=GLM_VS_UT(train_genotypes = GBS_Train$geno,
+                                                                                             train_phenotype = GBS_Train$pheno,
+                                                                                             test_genotypes= GBS_Predict$geno,
+                                                                                             test_phenotype= GBS_Predict$pheno,
+                                                                                             fam=fam,
+                                                                                             Kernel=Kernel,
+                                                                                             markers=markers,
+                                                                                             Sparse=Sparse,
+                                                                                             m=m,
+                                                                                             degree=degree,
+                                                                                             nL=nL
+                            )})
+                          }
+
+                        }
+                      }
+
+                      if(!is.null(CV)){
+                        CV_Message=TRUE
+                      }else{
+                        CV_Message=NULL
+                      }
+
+                      if(!is.null(PC)){
+                        PCA_Message=TRUE
+                      }else{
+                        PCA_Message=NULL
+                      }
+
+                      if(GAGS==TRUE){
+                        GAGS_Message=TRUE
+                      }else{
+                        GAGS_Message=NULL
+                      }
+
+                      if(Outcome=="Tested"){
+                        Results_Accuracy=Extract_ACC(Results,Replications,Training,model,Kernel,CV_Message,Trait[i])
+
+                        Results_Predictions=Extract_Pred(Results,Replications,Training,model,Kernel,CV_Message,Trait[i])
+
+                        Results_Both=list(Accuracy=Results_Accuracy,Predictions=Results_Predictions)
+                        Results_All[[i]]=Results_Both
+                        names(Results_All[[i]])<-Trait[i]
+                      }
+
+                      if(Outcome=="Untested"){
+                        Results_Predictions=Extract_Pred_UT(Results,Replications,Training,model,Kernel,CV_Message,Trait[i])
+
+                        Results_Both=list(Predictions=Results_Predictions)
+                        Results_All[[i]]=Results_Both
+                        names(Results_All[[i]])<-Trait[i]
+                      }
+                    }
+
+                    }
 ```
 
-#### HSD and ggplot comparison
+#### If you want to look at individual functions
+
+### Options with rrBLUP
+
+#### GS with K-Fold with all opotions
 
 ``` r
-BL_REG_17_acc=RVC_ALL_FIL %>% filter(Population %in% c("Breeding Lines") & Location %in% c("Lind") & Year %in% c("2017") & Metric %in% c("Pearson")& Prediction %in% c("rrBLUP","GLM","SVMR"))
-
-Mean_BL_REG_17_acc=BL_REG_17_acc %>%
-  group_by(Specific,Metric) %>%
-  summarise(mean = mean(Accuracy))
-
-
-BL_REG_17_acc_IT=BL_REG_17_acc %>% filter(Trait %in% c("IT"))
-
-
-Tukey_test_BL_REG_17_acc_IT <- aov(Accuracy~Specific, data=BL_REG_17_acc_IT) %>%
-HSD.test("Specific", group=TRUE) %>%
-.$groups %>%
-as_tibble(rownames="Specific") %>%
-rename("Letters"="groups")
-
-Tukey_test_BL_REG_17_std_IT<-aov(Accuracy~Specific, data=BL_REG_17_acc_IT) %>%
-HSD.test("Specific", group=TRUE)%>%.$means%>%
-as_tibble(rownames="Specific")%>%.[,c("Specific","std")]
-
-
-ggviolin(BL_REG_17_acc_IT, x = "Specific", y = "Accuracy", fill = "Specific",
-         add = "boxplot", add.params = list(fill = "white"),legend="none",title="Infection Type")+ geom_hline(yintercept = 0)+
-  theme(axis.text.x = element_text(colour="black",face="bold" ,size=8, angle = 45, vjust=0.5))+
-    geom_label(data=Tukey_test_BL_REG_17_acc_IT, aes(label=Letters))
+Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   Kernel="Markers",
+                                                                                                   PCA=GBS_Train$PC[,1:PC],
+                                                                                                   CV=GBS_Train$CV[,-1],
+                                                                                                   markers=NULL,
+                                                                                                   folds = 5,
+                                                                                                   Sparse=FALSE,
+                                                                                                   m=NULL,
+                                                                                                   degree=NULL,
+                                                                                                   nL=NULL,
+                                                                                                   transformation="none"
+                                  )})
 ```
 
-#### GS with CV
+#### rrBLUP Validation sets with all options
 
 ``` r
-load(file="LND_20_GBS.RData")
-LND_20_CV=test_all_models_BLUP_pc_mean_recode(genotypes = GBS_LND_20_CV$geno, 
-                                    phenotype = GBS_LND_20_CV$pheno[,c(1,2)],
-                                    PCA=GBS_LND_20_CV$PC[,1:3],
-                                    CV=GBS_LND_20_CV$CV[,2])
-#Replicatoins
-LND_20_CV_50=Sapply(1:50, function(i,...){LND_20_CV=test_all_models_BLUP_pc_mean_recode(genotypes = GBS_LND_20_CV$geno, 
-                                    phenotype = GBS_LND_20_CV$pheno[,c(1,2)],
-                                    PCA=GBS_LND_20_CV$PC[,1:3],
-                                    CV=GBS_LND_20_CV$CV[,2])})
+Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
+                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_PCA=GBS_Train$PC[,1:PC],
+                                                                                                   train_CV=GBS_Train$CV[,-1],
+                                                                                                   test_genotypes= GBS_Predict$geno,
+                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_PCA=GBS_Predict$PC[,1:PC],
+                                                                                                   test_CV=GBS_Predict$CV[,-1],
+                                                                                                   Kernel="Markers",
+                                                                                                   markers=NULL,
+                                                                                                   Sparse=FALSE,
+                                                                                                   m=NULL,
+                                                                                                   degree=NULL,
+                                                                                                   nL=NULL,
+                                                                                                   transformation="none"
+                                  )})
 ```
 
-#### Without CV
+#### rrBLUP with GAGS in K-Fold
 
 ``` r
-LND_20=Caret_Models_Mean_Matrix(genotypes=GBS_LND_20$geno,
-                                phenotype= GBS_LND_20$pheno[,c(1,2)],
-                                model="svmRadial",
-                                Matrix="VanRaden",
-                                sampling="up")#Unbalanced
+Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_CV(genotypes = GBS_Train$geno,
+                                                                                                      phenotype = GBS_Train$pheno,
+                                                                                                      Kernel="Markers",
+                                                                                                      PCA=GBS_Train$PC[,1:PC],
+                                                                                                      CV=NULL,
+                                                                                                      markers=NULL,
+                                                                                                      folds = 5,
+                                                                                                      Sparse=FALSE,
+                                                                                                      m=NULL,
+                                                                                                      degree=NULL,
+                                                                                                      nL=NULL,
+                                                                                                      transformation="none",
+                                                                                                      Y=GBS_Train$pheno,
+                                                                                                      GM=GBS_Train$map,
+                                                                                                      GD=GBS_Train$numeric,
+                                                                                                      GWAS=c("BLINK"),
+                                                                                                      alpha=0.5,
+                                                                                                      threshold="Bonferonni",
+                                                                                                      QTN=NULL,
+                                                                                                      PCA.total=3
+                                )})
 ```
 
-#### With CV
+### Classification with caret in K-Fold
 
 ``` r
-LND_20_CV=Caret_Models_Mean_Matrix(genotypes=cbind(GBS_LND_20_CV$CV[,c(2:5)],GBS_LND_20_CV$geno),
-                                   phenotype= GBS_LND_20_CV$pheno[,c(1,2)],
-                                   model="svmRadial",
-                                   Matrix="VanRaden",
-                                   sampling="up")
+Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   type="Classification",
+                                                                                                   model="SVM",
+                                                                                                   Kernel="VanRaden",
+                                                                                                   markers=NULL,
+                                                                                                   folds = 5,
+                                                                                                   Sparse=FALSE,
+                                                                                                   m=NULL,
+                                                                                                   degree=NULL,
+                                                                                                   nL=NULL,
+                                                                                                   transformation="none",
+                                                                                                   sampling="up",
+                                                                                                   repeats=5,
+                                                                                                   method="repeatedcv"
+                            )})
 ```
 
-### Validation GS
+#### All of the above can be done with the wrapper function WHEAT
 
-#### Without CV
-
-``` r
-test_all_models_BLUP_vs_pc_mean_recode(train_genotypes = GBS_BQALL_comp2$geno, 
-                                       train_phenotype = GBS_BQALL_comp2$pheno[,c(1,2)],
-                                       train_PCA=GBS_BQALL_comp2$PC[,1:3],
-                                       test_genotypes = GBS_BQALL_comp4$geno,
-                                       test_phenotype = GBS_BQALL_comp4$pheno[,c(1,4)],
-                                       test_PCA=GBS_BQALL_comp4$PC[,1:3])
-```
-
-#### With CV
+#### Option shown below displays the function after QC and just GS with the GBS RData as input for validation sets using Two-step rrBLUP
 
 ``` r
-test_all_models_BLUP_vs_pc_mean_recode(train_genotypes = GBS_BQALL_comp2$geno, 
-                                       train_phenotype = GBS_BQALL_comp2$pheno[,c(1,2)],
-                                       train_PCA=GBS_BQALL_comp2$PC[,1:3],
-                                       train_CV=GBS_BQALL_comp2$CV[,2],
-                                       test_genotypes = GBS_BQALL_comp4$geno,
-                                       test_phenotype = GBS_BQALL_comp4$pheno[,c(1,4)],
-                                       test_PCA=GBS_BQALL_comp4$PC[,1:3],
-                                       test_CV=GBS_BQALL_comp4$CV[,2])
+F515_DH20=WHEAT(Phenotype=Phenotype1,
+                Genotype=Genotype,
+                QC=FALSE,
+                GS=TRUE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                Filter_Ind=TRUE,
+                Missing_Rate_Ind=0.80,
+                #If QC Info is FALSE
+                GDre=NULL,
+                GT=NULL,
+                GIre=NULL,
+                #GDre=GDre,
+                #GT=GT,
+                #GIre=GIre,
+                GBS_Train=GBS_2_F5_2015_EM,
+                GBS_Predict=GBS_2_Untested_DH_2020_EM,
+                #GS Info
+                Type="Regression",
+                Replications=2,
+                Training="F5_2015",
+                Prediction="DH_2020",
+                CV=NULL,
+                PC=NULL,
+                Trait="EM",
+                Study="Tutorial",
+                Outcome="Untested", #Tested or Untested
+                #Trial=c("F5_2015","DH_2020","BL_2015_2020"),
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="VS",
+                Method="Two-Step",
+                Package="rrBLUP",
+                model="rrBLUP",
+                Kernel="Markers",
+                markers=NULL,
+                folds = 5,
+                nIter = 1500,
+                burnIn = 500,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                transformation="none",
+                #GAGS Info
+                GAGS=FALSE,
+                PCA.total=3,
+                QTN=10,
+                GWAS=c("BLINK"),
+                alpha=0.05,
+                threshold=NULL,
+                GE=TRUE,
+                UN=FALSE,
+                GE_model="MTME",
+                sampling="up",
+                repeats=5,
+                method="repeatedcv",
+                Messages=TRUE)
 ```
 
 #### R Script for Kamiak
 
 ``` r
   source("FUNCTIONS_GS_COMP.R")
-  load(file = "LND_20_GBS.RData")
+  load(file ='GBS_2_Tutorial.RData')
   library(dplyr)
   library(rrBLUP)
   library(BGLR)
@@ -876,46 +2938,33 @@ cores=10
 cl <- makeForkCluster(cores)
 clusterSetRNGStream(cl)
 
-LND_20=parSapply(cl, 1:50, function(i,...){LND_20=test_all_models_BLUP_pc_mean_recode(genotypes = GBS_LND_20$geno, 
-                                    phenotype = GBS_LND_20$pheno[,c(1,2)],
-                                    PCA=GBS_LND_20$PC[,1:3])
-save(LND_20,file=paste0("LND_20_",i,".RData"))
-LND_20})
+Results=parSapply(cl, 1:50, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
+                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   Kernel="Markers",
+                                                                                                   PCA=GBS_Train$PC[,1:PC],
+                                                                                                   CV=GBS_Train$CV[,-1],
+                                                                                                   markers=NULL,
+                                                                                                   folds = 5,
+                                                                                                   Sparse=FALSE,
+                                                                                                   m=NULL,
+                                                                                                   degree=NULL,
+                                                                                                   nL=NULL,
+                                                                                                   transformation="none"
+                                  )
+save(Results,file=paste0("Results_",i,".RData"))
+Results})
 
 stopCluster(cl)
-save(LND_20,file = "LND_20_Jason.RData")
-```
-
-#### R Script for HPC with CV
-
-``` r
-  source("FUNCTIONS_GS_COMP.R")
-  load(file = "LND_20_GBS.RData")
-  library(dplyr)
-  library(rrBLUP)
-  library(BGLR)
-  library(tidyr)
-  library(caret)
-  library(Metrics)
-  library(mpath)
-
-library(parallel)
-cores=10
-cl <- makeForkCluster(cores)
-clusterSetRNGStream(cl)
-
-LND_20_CV=parSapply(cl, 1:50, function(i,...){LND_20_CV=test_all_models_BLUP_pc_mean_recode(genotypes = GBS_LND_20_CV$geno, 
-                                    phenotype = GBS_LND_20_CV$pheno[,c(1,2)],
-                                    PCA=GBS_LND_20_CV$PC[,1:3],
-                                    CV=GBS_LND_20_CV$CV[,2])
-save(LND_20_CV,file=paste0("LND_20_CV_",i,".RData"))
-LND_20_CV})
-
-stopCluster(cl)
-save(LND_20_CV,file = "LND_20_CV_Jason.RData")
+save(Results,file = "Results.RData")
 ```
 
 ### **Genome-Wide Association Tutorial using GAPIT**
+
+#### load GBS data ouput form WHEAT
+
+``` r
+load(file='GBS_2_Tutorial.RData')
+```
 
 #### Model Selection in GAPIT (aka PC number selection)
 
@@ -1327,6 +3376,215 @@ venn.diagram(
         )
 ```
 
+# PopVar Cross-Prediction
+
+# Read in phenotypic file and rename columns
+
+``` r
+Pheno <- read.csv(file="F:\\OneDrive\\OneDrive - Washington State University (email.wsu.edu)\\Documents\\MN Grant\\TCAP\\TCAP_EDX_GP.csv", header=T, sep=",", stringsAsFactors=F) #Fill-in phenotype file 
+colnames(Pheno)<-c("Genotype","Mg","P","K","Ca","Mn","Fe","Cu","Zn")
+length(unique(Pheno$Genotype))
+```
+
+# Get data in order
+
+## In this example the phenotype file consisted of the first colum of genotype and the other 8 as nutrients
+
+``` r
+#Map File
+dim(GIEre)
+#Imputed Numeric genotype
+dim(GDEre)
+#Taxa File
+GTS=data.frame(GTS)
+#Remove lines with NAs
+#This function gets everything in order and into one lists
+Pheno_T2<-Pheno[complete.cases(Pheno[,2]),]
+GBS_T2=PandG(Pheno_T2,GDEre,GTS,GIEre)
+Pheno_T3<-Pheno[complete.cases(Pheno[,3]),]
+GBS_T3=PandG(Pheno_T3,GDEre,GTS,GIEre)
+Pheno_T4<-Pheno[complete.cases(Pheno[,4]),]
+GBS_T4=PandG(Pheno_T4,GDEre,GTS,GIEre)
+Pheno_T5<-Pheno[complete.cases(Pheno[,5]),]
+GBS_T5=PandG(Pheno_T5,GDEre,GTS,GIEre)
+Pheno_T6<-Pheno[complete.cases(Pheno[,6]),]
+GBS_T6=PandG(Pheno_T6,GDEre,GTS,GIEre)
+Pheno_T7<-Pheno[complete.cases(Pheno[,7]),]
+GBS_T7=PandG(Pheno_T7,GDEre,GTS,GIEre)
+Pheno_T8<-Pheno[complete.cases(Pheno[,8]),]
+GBS_T8=PandG(Pheno_T8,GDEre,GTS,GIEre)
+Pheno_T9<-Pheno[complete.cases(Pheno[,9]),]
+GBS_T9=PandG(Pheno_T9,GDEre,GTS,GIEre)
+```
+
+# PopVar need to be in a certain format
+
+## Here I focused on T9 which was zinc
+
+## You can do it for all columns but only needs to be done for the trait you intend to use in PopVar
+
+``` r
+View(GBS_T9$numeric)
+#Remove taxa column
+num=GBS_T9$numeric[,-1]
+#Convert numeric alleles to -1,0,1
+num=apply(num,2,function(x) recode(x,"0"="-1","1"="0","2"="1"))
+#Makes sure all columns are numeric
+num=apply(num,2,as.numeric)
+
+num=num[,-c(1:2)]
+num=data.frame(GBS_T9$numeric$taxa,num)
+num=rbind(colnames(num),num)
+num=num[-1,]
+colnames(num)[1]<-"taxa"
+num$taxa=as.character(num$taxa)
+num[1,1]="taxa"
+GBS_T9$PopVar=as.matrix(num)
+View(GBS_T9$PopVar)
+save(GBS_T2,GBS_T3,GBS_T4,GBS_T5,GBS_T6,GBS_T7,GBS_T8,GBS_T9,file="TCAP_GBS.RData")
+```
+
+# This chunk is what I put in as my R Script for kamiak
+
+## This is where you can specify different models and such and can be customized following the PopVar documentation.
+
+``` r
+load(file="TCAP_GBS.RData")
+library(PopVar)
+TCAP_PopVar=pop.predict(G.in = as.matrix(GBS_T9$PopVar), y.in =as.matrix(GBS_T9$pheno), map.in = as.matrix(GBS_T9$map[,c(1:3)]),
+                                                                  crossing.table = NULL, parents = "TP", tail.p = 0.1, nInd = 200,
+                                                                  map.plot = T, min.maf = 0.01, mkr.cutoff = 0.50, entry.cutoff = 0.50,
+                                                                  remove.dups = F, impute = "pass", nSim = 25, frac.train = 0.8,
+                                                                  nCV.iter = 10, nFold = 5, nFold.reps = 10, nIter = 12000,
+                                                                  burnIn = 3000, models = c("rrBLUP"), return.raw = T)
+save(TCAP_PopVar,file = "TCAP_PopVar_NC.RData")
+```
+
+# The PopVar output is a ton of lists which is hard to visualize and use. It consisted of 31 columns due to the secondary selection for the other 7 traits than Zn
+
+``` r
+load(file="TCAP_PopVar_NC.RData")
+TCAP_PopVar$CVs$Zn
+TCAP_PopVar$predictions$Zn_param.df
+TCAP_PopVar$preds.per.sim$Zn_param.df
+TCAP_PopVar$models.chosen
+TCAP_PopVar$markers.removed
+TCAP_PopVar$entries.removed
+try=data.frame(TCAP_PopVar$predictions$Zn_param.df)
+try1=unlist(try$Par1)
+try2=unlist(try$Par2)
+try3=unlist(try$midPar.Pheno)
+try4=unlist(try$midPar.GEBV)
+try5=unlist(try$pred.mu)
+try6=unlist(try$pred.mu_sd)
+try7=unlist(try$pred.varG)
+try8=unlist(try$pred.varG_sd)
+try9=unlist(try$mu.sp_low)
+try10=unlist(try$mu.sp_high)
+try11=unlist(try$low.resp_Mg)
+try12=unlist(try$low.resp_P)
+try13=unlist(try$low.resp_Ca)
+try14=unlist(try$low.resp_Mn)
+try15=unlist(try$low.resp_Fe)
+try16=unlist(try$low.resp_Cu)
+try17=unlist(try$low.resp_Zn)
+try18=unlist(try$high.resp_Mg)
+try19=unlist(try$high.resp_P)
+try20=unlist(try$high.resp_Ca)
+try21=unlist(try$high.resp_Mn)
+try22=unlist(try$high.resp_Fe)
+try23=unlist(try$high.resp_Cu)
+try24=unlist(try$high.resp_Zn)
+try25=unlist(try$cor_w._Mg)
+try26=unlist(try$cor_w._P)
+try27=unlist(try$cor_w._Ca)
+try28=unlist(try$cor_w._Mn)
+try29=unlist(try$cor_w._Fe)
+try30=unlist(try$cor_w._Cu)
+try31=unlist(try$cor_w._Zn)
+PopVar_Names=colnames(TCAP_PopVar$predictions$Zn_param.df)
+Popvar_Zn=data.frame(try1,try2,try3,try4,try5,try6,try7,try8,try9,try10,try11,try12,try13,try14,try15,try16,try18,try19,try20,try21,try22,try23,try25,try26,try27,try28,try29,try30)
+PopVar_Zn_Names=PopVar_Names[-c(17,24,31)]
+colnames(Popvar_Zn)<-PopVar_Zn_Names
+Popvar_Zn[1:10,1:28]
+
+View(Popvar_Zn[1:10,1:28])
+```
+
+``` r
+TCAP_PopVar$predictions$K_param.df
+```
+
+# Cross Prediction with other packages
+
+## Cross predictin with rrBLUP
+
+``` r
+library(rrBLUP) #load rrBLUP 
+library(BGLR) #load BLR 
+library(BLR)
+data(wheat) #load wheat data
+
+X=wheat.X
+Y=wheat.Y
+G <- 2*X-1  #recode genotypes
+y <- Y[,1] #yields from E1
+#marker-based
+ans1 <- mixed.solve(y=y,Z=G,SE=TRUE) 
+ans1$u
+ans1$beta
+ans1$u.SE
+
+GEBV=G%*%ans1$u
+fix=ans1$beta
+GEBVF=c(GEBV)+c(fix)
+GEBVSD=G%*%ans1$u.SE
+
+plot(GEBVF,GEBVSD)
+```
+
+``` r
+GEBV.pb <- GEBV # this are the BV
+rownames(GEBV.pb) <- 1:nrow(GEBV)
+crosses <- do.call(expand.grid, list(rownames(GEBV.pb),rownames(GEBV.pb))); 
+crosses
+cross2 <- duplicated(t(apply(crosses, 1, sort)))
+crosses2 <- crosses[cross2,]; head(crosses2); dim(crosses2)
+```
+
+``` r
+# get GCA1 and GCA2 of each hybrid
+GCA1 = GEBV.pb[match(crosses2[,1], rownames(GEBV.pb))] 
+GCA2 = GEBV.pb[match(crosses2[,2], rownames(GEBV.pb))] 
+#### join everything and get the mean BV for each combination 
+BV <- data.frame(crosses2,GCA1,GCA2); head(BV)
+BV$BVcross <- apply(BV[,c(3:4)],1,mean); head(BV)
+BV$BVcrossvar <- apply(BV[,c(3:4)],1,var); head(BV)
+BV$BVcrosssum <- apply(BV[,c(5:6)],1,sum); head(BV)
+BV$BVcrosssd <- apply(BV[,c(3:4)],1,sd); head(BV)
+dim(BV)
+plot(BV$BVcross~BV$BVcrosssd)
+library(ggplot2)
+ggplot(BV,aes(x=BVcrosssd,y=BVcross))+geom_point()
+BV
+BV[order(BV$BVcross,decreasing=TRUE),]
+```
+
+# Cross-Prediction with sommer
+
+``` r
+library(sommer)
+y <- Y[,1] # response grain yield
+Z1 <- diag(length(y)) # incidence matrix
+K <- A.mat(X) # additive relationship matrix
+#### perform the GBLUP pedigree-based approach by 
+### specifying your random effects (ETA) in a 2-level list 
+### structure and run it using the mmer function
+ETA <- list(add=list(Z=Z1, K=K))
+ans <- mmer(y=y, Z=ETA, method="EMMA") # kinship based
+summary(ans)
+```
+
 ### **Frequently asked questions**
 
 1.  Where can I get WhEATBreeders? WhEATBreeders is currently only
@@ -1337,8 +3595,8 @@ venn.diagram(
     section above where I show how to download and install WhEATBreeders
     using devtools.  
       
-3.  Where can I get help with issues regarding GWhEAT? All questions
-    should be directed to Lance F. Merrick at
+3.  Where can I get help with issues regarding WhEATBreeders? All
+    questions should be directed to Lance F. Merrick at
     <lance.merrick21@gmail.com>.
 
 ### **Further Information**
