@@ -99,7 +99,7 @@ BGLR_GAGS_VS_UT <- function(train_genotypes, train_phenotype,train_GM=NULL,train
 
       myCV<-as.matrix(genotypes[,sm])
 
-      if(!is.null(PCA)){
+      if(!is.null(train_PCA)){
         myPCA_train <- train_PCA
         myPCA_test <- test_PCA
         PCA<-rbind(train_PCA,test_PCA)
@@ -137,7 +137,7 @@ BGLR_GAGS_VS_UT <- function(train_genotypes, train_phenotype,train_GM=NULL,train
     GWASSM=top10[1:QTN,]$SNP
     myCV<-as.matrix(genotypes[,GWASSM])
 
-    if(!is.null(PCA)){
+    if(!is.null(train_PCA)){
       myPCA_train <- train_PCA
       myPCA_test <- test_PCA
       PCA<-rbind(train_PCA,test_PCA)

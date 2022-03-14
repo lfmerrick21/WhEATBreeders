@@ -87,7 +87,7 @@ BGLR_VS <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_CV=NUL
     }
 
 
-    if(length(CV)==0){
+    if(length(train_CV)==0){
 
       if(!is.null(train_PCA)){
         PCA<-rbind(train=train_PCA,test=test_PCA)
@@ -128,7 +128,7 @@ BGLR_VS <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_CV=NUL
 
       CV<-rbind(train=train_CV,test=test_CV)
 
-      if(!is.null(PCA)){
+      if(!is.null(train_PCA)){
         PCA<-rbind(train=train_PCA,test=test_PCA)
 
         fix_PC=as.matrix(cbind(CV,PCA))

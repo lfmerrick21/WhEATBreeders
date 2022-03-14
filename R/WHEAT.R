@@ -30,13 +30,13 @@ WHEAT<-function(Phenotype,
                 Scheme="K-Fold",
                 Method="Two-Step",
                 Package="rrBLUP",
-                Model="rrBLUP",
+                model="rrBLUP",
                 Kernel="Markers",
                 markers=NULL,
                 folds = 5,
                 nIter = 1500,
                 burnIn = 500,
-                Sparse=NULL,
+                Sparse=FALSE,
                 m=NULL,
                 degree=NULL,
                 nL=NULL,
@@ -50,7 +50,10 @@ WHEAT<-function(Phenotype,
                 threshold=NULL,
                 GE=TRUE,
                 UN=FALSE,
-                model="MTME",
+                GE_model="MTME",
+                sampling="up",
+                repeats=5,
+                method="repeatedcv",
                 Messages=TRUE){
 
                 Phenotype=Phenotype %>% filter(Env %in% c(Trial))
@@ -65,7 +68,7 @@ WHEAT<-function(Phenotype,
                     gname<-clean_names(gname)
                     #Filter Hapmap for Taxa
                     if(Geno_Type=="VCF"){
-                      genotypes_num<- VCF_2_numeric(Xbgl)
+                      genotypes_num<- VCF_2_numeric(Genotype)
                       GD=genotypes_num$genotypes
                       names.use <- names(GD)[(names(GD) %in% gname)]
                       GD <- GD[, names.use, with = FALSE]
@@ -161,7 +164,7 @@ WHEAT<-function(Phenotype,
                     if(Filter_Ind==FALSE){
                       GDmf = GDmf
                     }else{
-                      mr=calc_missrate(GD)
+                      mr=calc_missrate(t(GDmf))
                       mr_indices <- which(mr > Missing_Rate_Ind)
                       if(length(mr_indices)!=0){
                         GDmf = GDmf[-mr_indices,]
@@ -358,8 +361,8 @@ WHEAT<-function(Phenotype,
                       }
                     }
                     if(Method=="One-Step"){
-                      Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,GE=GE,UN=UN,model=model)
-                      mv(from = "Matrix", to = paste0("Matrix_",Study,model),envir = globalenv())
+                      Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,GE=GE,UN=UN,model=GE_model)
+                      mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
                       save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
                     }
 
@@ -475,8 +478,8 @@ WHEAT<-function(Phenotype,
                         }
                       }
                       if(Method=="One-Step"){
-                        Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,GE=GE,UN=UN,model=model)
-                        mv(from = "Matrix", to = paste0("Matrix_",Study,model),envir = globalenv())
+                        Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,GE=GE,UN=UN,model=GE_model)
+                        mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
                         save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
                       }
 
@@ -490,7 +493,7 @@ WHEAT<-function(Phenotype,
                       if(Outcome=="Tested"){
                         if(Scheme=="K-Fold"){
                           if(is.null(GBS_Train)){
-                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[j]))
+                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
                           }
                           if(Package=="rrBLUP"){
                             if(GAGS==TRUE){
@@ -594,7 +597,7 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No GAGS, No CV, No PC
                                   if(Messages==TRUE){
-                                    print(paste0("Peforming ",Method," ",Scheme," ",Type," using the package ",Package," with the model ",Model," and ",Kernel," on ",Trait[j]," using ",Training,"."))
+                                    print(paste0("Peforming ",Method," ",Scheme," ",Type," using the package ",Package," with the model ",Model," and ",Kernel," on ",Trait[model]," using ",Training,"."))
                                   }
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
                                                                                                    phenotype = GBS_Train$pheno,
@@ -1018,8 +1021,8 @@ WHEAT<-function(Phenotype,
                         }
                         if(Scheme=="VS"){
                           if(is.null(GBS_Train)){
-                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[j]))
-                            GBS_Predict=get(paste0("GBS_2_",Prediction,"_",Trait[j]))
+                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
+                            GBS_Predict=get(paste0("GBS_2_",Prediction,"_",Trait[i]))
                           }
                           if(Package=="rrBLUP"){
                             if(GAGS==TRUE){
@@ -1530,9 +1533,9 @@ WHEAT<-function(Phenotype,
                                                                                                    degree=degree,
                                                                                                    nL=nL,
                                                                                                    transformation=transformation,
-                                                                                                   sampling="up",
-                                                                                                   repeats=5,
-                                                                                                   method="repeatedcv"
+                                                                                                   sampling=sampling,
+                                                                                                   repeats=repeats,
+                                                                                                   method=method
                             )})
                           }
 
@@ -1594,7 +1597,7 @@ WHEAT<-function(Phenotype,
                       if(Outcome=="Untested"){
                         if(Scheme=="K-Fold"){
                           if(is.null(GBS_Train)){
-                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[j]))
+                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
                           }
                           #Is there even a point for K-fold for untested?
                           #We can do this if we include blank values, but not in rrBLUP or DL
@@ -1606,8 +1609,8 @@ WHEAT<-function(Phenotype,
                         }
                         if(Scheme=="VS"){
                           if(is.null(GBS_Train)){
-                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[j]))
-                            GBS_Predict=get(paste0("GBS_2_Untested_",Prediction,"_",Trait[j]))
+                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
+                            GBS_Predict=get(paste0("GBS_2_Untested_",Prediction,"_",Trait[i]))
                           }
                           if(Package=="rrBLUP"){
                             if(GAGS==TRUE){
@@ -2186,7 +2189,7 @@ WHEAT<-function(Phenotype,
                         CV_Message=NULL
                       }
 
-                      if(!is.null(PCA)){
+                      if(!is.null(PC)){
                         PCA_Message=TRUE
                       }else{
                         PCA_Message=NULL
@@ -2199,19 +2202,21 @@ WHEAT<-function(Phenotype,
                       }
 
                       if(Outcome=="Tested"){
-                        Results_Accuracy=Extract_ACC(Results,Replications,Training,Model,Kernel,CV_Message,Trait[j])
+                        Results_Accuracy=Extract_ACC(Results,Replications,Training,model,Kernel,CV_Message,Trait[i])
 
-                        Results_Predictions=Extract_Pred(Results,Replications,Training,Model,Kernel,CV_Message,Trait[j])
+                        Results_Predictions=Extract_Pred(Results,Replications,Training,model,Kernel,CV_Message,Trait[i])
 
-                        Results_All=list(Accuracy=Results_Accuracy,Predictions=Results_Predictions)
+                        Results_Both=list(Accuracy=Results_Accuracy,Predictions=Results_Predictions)
+                        Results_All[[i]]=Results_Both
+                        names(Results_All[[i]])<-Trait[i]
                       }
 
                       if(Outcome=="Untested"){
-                        Results_Predictions=Extract_Pred_UT(Results,Replications,Training,Model,Kernel,CV_Message,Trait[j])
+                        Results_Predictions=Extract_Pred_UT(Results,Replications,Training,model,Kernel,CV_Message,Trait[i])
 
-                        Results_Trait=list(Predictions=Results_Predictions)
-                        Results_All[[i]]=Results_Trait
-                        names(Results_All[[i]])<-Trait[j]
+                        Results_Both=list(Predictions=Results_Predictions)
+                        Results_All[[i]]=Results_Both
+                        names(Results_All[[i]])<-Trait[i]
                       }
 
                       return(Results_All)

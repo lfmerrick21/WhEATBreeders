@@ -136,7 +136,7 @@ rrBLUP_GAGS_VS <- function(train_genotypes, train_phenotype,train_GM=NULL,train_
         myCV_test <- myGD_test[,sm]
         myCV<-as.matrix(genotypes[,sm])
 
-        if(!is.null(PCA)){
+        if(!is.null(train_PCA)){
 
           if(Kernel=="Markers"){
             myPCA_train <- train_PCA
@@ -246,7 +246,7 @@ rrBLUP_GAGS_VS <- function(train_genotypes, train_phenotype,train_GM=NULL,train_
 
 
 
-      if(!is.null(PCA)){
+      if(!is.null(train_PCA)){
 
         gc()
         if(Kernel=="Markers"){

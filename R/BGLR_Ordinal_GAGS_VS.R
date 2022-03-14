@@ -80,7 +80,7 @@ BGLR_Ordinal_GAGS_VS <- function(train_genotypes, train_phenotype,train_GM=NULL,
 
         myCV<-as.matrix(genotypes[,sm])
 
-        if(!is.null(PCA)){
+        if(!is.null(train_PCA)){
           PCA<-rbind(train=train_PCA,test=test_PCA)
           fix_PC=as.matrix(cbind(myCV,PCA))
 
@@ -135,7 +135,7 @@ BGLR_Ordinal_GAGS_VS <- function(train_genotypes, train_phenotype,train_GM=NULL,
       GWASSM=top10[1:QTN,]$SNP
       myCV<-as.matrix(genotypes[,GWASSM])
 
-      if(!is.null(PCA)){
+      if(!is.null(train_PCA)){
         PCA<-rbind(train=train_PCA,test=test_PCA)
         fix_PC=as.matrix(cbind(myCV,PCA))
 

@@ -22,6 +22,8 @@ rrBLUP_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_C
     myGD_test=apply(myGD_test,2,function(x) recode(x,"0"="-1","1"="0","2"="1"))
     myGD_test=apply(myGD_test,2,as.numeric)
   }else{
+    myGD_train <- train_genotypes
+    myGD_test <- test_genotypes
     genotypes=rbind(train=myGD_train,test=myGD_test)
     maf <- calc_maf_apply(genotypes, encoding = c(0, 1, 2))
     mono_indices <- which(maf ==0)
@@ -101,7 +103,7 @@ rrBLUP_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_C
 
   if(length(train_CV)==0){
 
-    if(!is.null(PCA)){
+    if(!is.null(train_PCA)){
       if(Kernel=="Markers"){
         rrBLUP_model_PC <- mixed.solve(y = myY_train,
                                        Z = myGD_train,
@@ -142,7 +144,7 @@ rrBLUP_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_C
     myCV_test <- test_CV
     CV<-rbind(train=train_CV,test=test_CV)
 
-    if(!is.null(PCA)){
+    if(!is.null(train_PCA)){
       if(Kernel=="Markers"){
         fix_train_PC <- as.matrix(cbind(myCV_train,myPCA_train))
         fix_test_PC  <- as.matrix(cbind(myCV_test,myPCA_test))

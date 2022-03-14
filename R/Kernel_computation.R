@@ -54,7 +54,7 @@ Kernel_computation=function(X,name, degree, nL){
     colnames(AKl)<-colnames(AK1)
     return(AKl)
   }
-  ########Exponencial Kernel############
+  ########Exponential Kernel############
   K.exponential=function(x1,x2=x1, gamma=1){
     exp(-gamma*outer(1:nrow(x1<- as.matrix(x1)), 1:ncol
                      (x2<- t(x2)),

@@ -159,7 +159,7 @@ rrBLUP_VS <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_CV=N
         myCV_test <- test_CV
         CV<-rbind(train=train_CV,test=test_CV)
 
-      if(!is.null(PCA)){
+      if(!is.null(train_PCA)){
         if(Kernel=="Markers"){
           fix_train_PC <- as.matrix(cbind(myCV_train,myPCA_train))
           fix_test_PC  <- as.matrix(cbind(myCV_test,myPCA_test))

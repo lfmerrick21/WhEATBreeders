@@ -10,7 +10,6 @@ BGLR_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_CV=
       samp=sample(1:ncol(genotypes), markers)
       genotypes=genotypes[,samp]
     }else{
-      genotypes <- genotypes
       genotypes=rbind(train=train_genotypes,test=test_genotypes)
     }
 
@@ -82,7 +81,7 @@ BGLR_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_CV=
   }
 
 
-  if(length(CV)==0){
+  if(length(train_CV)==0){
 
     if(!is.null(train_PCA)){
       PCA<-rbind(train=train_PCA,test=test_PCA)
@@ -115,7 +114,7 @@ BGLR_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,train_CV=
 
     CV<-rbind(train=train_CV,test=test_CV)
 
-    if(!is.null(PCA)){
+    if(!is.null(train_PCA)){
       PCA<-rbind(train=train_PCA,test=test_PCA)
 
       fix_PC=as.matrix(cbind(CV,PCA))

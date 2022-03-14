@@ -63,7 +63,7 @@ MAS_GAGS_VS_UT <- function(train_genotypes, train_phenotype,train_GM=NULL,train_
       MAS_train <- data.frame(CV)
       MAS_test  <- data.frame(CV)
 
-      if(!is.null(PCA)){
+      if(!is.null(train_PCA)){
         myPCA_train <-PCA
         myPCA_test <- PCA
         MAS_train_PC <- data.frame(cbind(MAS_train,myPCA_train))
@@ -107,7 +107,7 @@ MAS_GAGS_VS_UT <- function(train_genotypes, train_phenotype,train_GM=NULL,train_
 
 
 
-    if(!is.null(PCA)){
+    if(!is.null(train_PCA)){
       myPCA_train <- PCA
       myPCA_test <- PCA
 

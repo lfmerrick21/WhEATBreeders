@@ -51,7 +51,7 @@ MAS_VS_UT <- function(train_phenotype,train_PCA=NULL,train_CV=NULL,test_phenotyp
 
 
 
-  if(!is.null(PCA)){
+  if(!is.null(train_PCA)){
     MAS_train_PC <- data.frame(cbind(CV,PCA))
     MAS_test_PC  <- data.frame(cbind(CV,PCA))
 

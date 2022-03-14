@@ -58,8 +58,8 @@ BGLR_Ordinal_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,t
   # Calculate the GS model using BGLR
   ##Ordinal
   #Without PCs
-  if(length(CV)==0){
-    if(!is.null(PCA)){
+  if(length(train_CV)==0){
+    if(!is.null(train_PCA)){
       PCA<-rbind(train=train_PCA,test=test_PCA)
       if(Kernel=="Markers"){
         BO_ETA<-list(list(X=PCA,model="FIXED"),list(X=as.matrix(genotypes),model=model))
@@ -86,7 +86,7 @@ BGLR_Ordinal_VS_UT <- function(train_genotypes, train_phenotype,train_PCA=NULL,t
     }
   }else{
     CV<-rbind(train=train_CV,test=test_CV)
-    if(!is.null(PCA)){
+    if(!is.null(train_PCA)){
       PCA<-rbind(train=train_PCA,test=test_PCA)
       fix_PC=as.matrix(cbind(CV,PCA))
       if(Kernel=="Markers"){

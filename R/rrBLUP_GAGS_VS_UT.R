@@ -4,7 +4,11 @@ rrBLUP_GAGS_VS_UT <- function(train_genotypes, train_phenotype,train_GM=NULL,tra
   # Make the CV list
   if(Kernel=="Markers"){
     if(!is.null(markers)){
-      samp=sample(1:ncol(train_genotypes), markers)
+      samp=sample(2:ncol(train_GD), markers)
+      m_samp=train_GD[,samp]
+      train_GM<-train_GM[]
+      train_GD <- m_samp[fold_indices,]
+
       myGD_train <- train_genotypes[,samp]
       myGD_test <- test_genotypes[,samp]
       genotypes=rbind(train=myGD_train,test=myGD_test)
@@ -54,13 +58,13 @@ rrBLUP_GAGS_VS_UT <- function(train_genotypes, train_phenotype,train_GM=NULL,tra
 
   }
   if(!is.null(markers)){
-    samp=sample(2:ncol(GD), markers)
-    m_samp=GD[,samp]
+    samp=sample(2:ncol(train_GD), markers)
+    m_samp=train_GD[,samp]
     myGD_train <- m_samp[fold_indices,]
     myGD_test <- m_samp[-fold_indices,]
   }else{
-    myGD_train <- GD[fold_indices,]
-    myGD_test <- GD[-fold_indices,]
+    myGD_train <- train_GD[fold_indices,]
+    myGD_test <- train_GD[-fold_indices,]
   }
 
 
@@ -120,7 +124,7 @@ rrBLUP_GAGS_VS_UT <- function(train_genotypes, train_phenotype,train_GM=NULL,tra
       myCV_test <- myGD_test[,sm]
       myCV<-as.matrix(genotypes[,sm])
 
-      if(!is.null(PCA)){
+      if(!is.null(train_PCA)){
 
         if(Kernel=="Markers"){
           myPCA_train <- train_PCA
@@ -222,7 +226,7 @@ rrBLUP_GAGS_VS_UT <- function(train_genotypes, train_phenotype,train_GM=NULL,tra
 
 
 
-    if(!is.null(PCA)){
+    if(!is.null(train_PCA)){
 
       gc()
       if(Kernel=="Markers"){
