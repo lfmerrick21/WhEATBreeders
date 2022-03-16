@@ -1,0 +1,894 @@
+---
+title: "User Manual and Tutorial for GWAS in WhEATBreeders"
+author: "Lance Merrick"
+date: "February 2, 2022"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+  github_document
+---
+
+<style type="text/css">
+
+h1.title {
+  font-size: 38px;
+  color: black;
+  text-align: center;
+}
+h4.author { /* Header 4 - and the author and data headers use this too  */
+    font-size: 25px;
+  font-family: "Times New Roman", Times, serif;
+  color: black;
+  text-align: center;
+}
+h4.date { /* Header 4 - and the author and data headers use this too  */
+  font-size: 18px;
+  font-family: "Times New Roman", Times, serif;
+  color: black;
+  text-align: center;
+}
+</style>
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+<!-- test inserting image-->
+
+<center>
+
+![](wheatclipart.png){#id .class width=300 height=300px}
+
+</center>
+
+<p>&nbsp;</p>
+
+<center> <font size="6"> **Wrappers for Easy Association, Tools, and Selection for Breeders (WhEATBreeders)** </font> </center> 
+
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+### **Table of contents**
+#### Introduction
+#### Description of package functions 
+#### Getting started
+#### Required Inputes
+#### Optional Inputes
+#### Outputs and Examples
+#### Examples with know QTNs
+#### Rapid run
+#### Rapid run options
+#### Frequently asked questions 
+#### Further Information
+
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+
+### **Introduction**
+
+A common problem associated with performing Genome Wide Association Studies (GWAS) is the abundance of false positive and false negative associated with population structure. One way of dealing with this issue is to first calculate Principal Components (PC) and then use those PCs as to account for population structure when running the GWAS. This method has shown to not only reduce false positives but also increase the power of the test. 
+Here we present an R based package that can preform GWAS using PCA and user imputed covariate to calculate SNPs associated with a phenotype called “GWhEAT”. It will also check to see if the PC are in linear dependence  to the covariates and remove the PCs if they are. Using the freely availably R studio software this packaged is designed to quickly and efficiently calculate a P-value for every SNP phenotype association. The results from this package are including but not limited to a Manhattan plot, QQ-plot and table with every recorded p-value. 
+
+### **Description of package functions**
+
+For a full list of functions within GWhEAT see “Reference_Manual.pdf” this file contains not only the full list of functions but also a description of each. The pdf also has each functions arguments listed. And like with all R packages once GWhEAT is installed and loaded you can type ?function_name and that specific function’s full descriptions will appear in the help tab on RStudio.
+
+### **Getting started**
+
+First if you do not already have R and R studio installed on your computer head over to https://www.r-project.org/ and install the version appropriate for you machine. Once R and R studio are installed you will need to install the GWhEAT package since this is a working package in it’s early stages of development it’s only available through Github. To download files off Github first download and load the library of the packaged “devtools” using the code below.
+
+```{r}
+#Read in GBS data
+file.choose()
+
+#save.image(file="GBS_Working_File.RData")
+rm(list = ls(all.names = TRUE))
+gc()
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(data.table,bigmemory,biganalytics,dplyr,compiler)
+
+library(data.table)
+library(data.table)
+library(bigmemory)
+library(biganalytics)
+library(ggplot2)
+library(ggrepel)
+library(grid)
+library(dplyr)
+require(compiler) #for cmpfun
+library(vcfR)
+
+#Can download gapit from internet
+#source("http://zzlab.net/GAPIT/GAPIT.library.R")
+#source("http://zzlab.net/GAPIT/gapit_functions.txt") #make sure compiler is running
+#source("http://zzlab.net/GAPIT/emma.txt")
+
+
+#Better for FDR function
+#install.packages("devtools")
+#devtools::install_github("jiabowang/GAPIT3",force=TRUE)
+library(GAPIT3)
+
+getwd()
+
+#This code is only necessary for Imputation or using BEAGLE
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(cvTools,vcfR)
+source("FUNCTIONS_GWAS.R")
+source("FUNCTIONS_GS.R")
+source("Marker_Effects_Function.R")
+source("Manhattan_Plots_Function.R")
+source('IMPUTATION_functions.R')
+source('FUNCTION_numeric_2_VCF.R')
+source('FUNCTION_VCF_2_numeric.R')
+source('Impute_functions.R')
+source("F:\\OneDrive\\OneDrive - Washington State University (email.wsu.edu)\\Documents\\Genomic Selection\\Genomic Selection Pipeline\\GS-Environment\\FUNCTIONS_GS.R")
+#memory.size()
+#gc()
+
+#Set WD
+#setwd("F:/OneDrive/OneDrive - Washington State University (email.wsu.edu)/Documents/Genomic Selection/Genomic Selection Pipeline/GWAS Pipeline")
+
+#Read in Phenotype
+
+
+```
+
+#IF VCF
+#Read in VCF
+##Currently do not have a VCF file in the folder
+```{r eval=FALSE}
+#setwd("F:/OneDrive/OneDrive - Washington State University (email.wsu.edu)/Documents/Genomic Selection/Genomic Selection Pipeline/GWAS Pipeline")
+Xvcf=read.vcfR("YR_Numeric_COMP1.vcf")
+Xvcf@fix
+Xvcf@gt
+```
+
+#Convert to Numeric
+```{r}
+Xbgl=data.frame(Xvcf@fix,Xvcf@gt)
+genotypes_num<- VCF_2_numeric(Xbgl)
+GDE=genotypes_num$genotypes
+GIE=genotypes_num$marker_map
+View(GDE[1:10,1:10])
+View(GIE[1:10,1:3])
+```
+
+#The majority of this code is my pipeline I use to take a hapmap file, convert it to numeric, filter and impute it.
+#If you just want the code for what I use for kamiak, you can just skip to the bottom or look at the R Script I provided.
+
+#Read in GBS data
+```{r}
+#file.choose()
+library(data.table)
+library(dplyr)
+#memory.size()
+#gc()
+gen1 <- fread("WAC_2016-2020_production_filt.hmp.txt",fill=TRUE)
+```
+
+#Create GBS Key
+```{r}
+gbskey=as.vector(names(gen1))
+gbskeyn=gbskey[-c(1:11)]
+dfgk=as.data.frame(gbskeyn)
+names(dfgk)<-"taxa"
+dfgk1=cbind(dfgk,rep("G",6419))
+names(dfgk1)<-c("taxa","GBS")
+write.csv(dfgk1,"15_20_GBS_Key.csv")
+```
+
+#Read in EM Taxa
+```{r}
+file.choose()
+#N x 1 with just taxa list
+gname=read.csv("Emergence_Trials_taxa.csv",header=T)
+#str(gname)
+names(gname)<-"taxa"
+gname$taxa=as.character(gname$taxa)
+gname=as.vector(gname$taxa)
+gname=gname[-1]
+#str(gname)
+```
+
+#Filter GBS for EM
+```{r}
+names.use <- names(gen1)[(names(gen1) %in% gname)]
+hapmap <- gen1[, names.use, with = FALSE]
+hapmap=cbind(gen1[,1:11],hapmap)
+#str(output)
+hapmap[output=="NA"]<-"NA"
+hapmap$`assembly#`=as.character(hapmap$`assembly#`)
+hapmap$center=as.character(hapmap$center)
+hapmap$protLSID=as.character(hapmap$protLSID)
+hapmap$assayLSID=as.character(hapmap$assayLSID)
+hapmap$panelLSID=as.character(hapmap$panelLSID)
+hapmap$QCcode=as.character(hapmap$QCcode)
+#str(output)
+fwrite(hapmap,"WA16_20_Em_filt.hmp.txt",sep="\t",row.names = FALSE,col.names = TRUE)
+#readLines(output)
+```
+
+#Convert Hapmap to Numeric
+```{r}
+hapmap <-read_hapmap("WA16_20_Em_filt.hmp.txt") #Fill-in genotype file
+dim(hapmap)
+hapmap[hapmap=="NA"]<-"NA"
+hapmap$`assembly#`=as.character(hapmap$`assembly#`)
+hapmap$center=as.character(hapmap$center)
+hapmap$protLSID=as.character(hapmap$protLSID)
+hapmap$assayLSID=as.character(hapmap$assayLSID)
+hapmap$panelLSID=as.character(hapmap$panelLSID)
+hapmap$QCcode=as.character(hapmap$QCcode)
+```
+
+#Convert to Numeric Format
+```{r}
+outG=GAPIT.HapMap(hapmap,SNP.impute="None") #Imputation is usually "None" because Middle imputation is not the most accurate or change to "Middle"
+GTS=outG$GT #Taxa
+GTS=cbind(rownames(GTS),GTS) #Taxa
+GDE=outG$GD #Numeric
+GIE=outG$GI #Map
+sum(is.na(GDE)) #0 missing values
+rownames(GDE)=rownames(GTS)
+colnames(GDE)=GIS$SNP
+View(GDE[1:10,1:10])
+```
+
+#Functions for filtering
+```{r}
+# A function that will filter a genotype matrix based on maf and missingness
+# Calculates the proportion of missing data for every marker in a genotype matrix (mising data is NA)
+calc_missrate <- function(gt_mat)
+{
+  col_func <- function(gt_col)
+  {
+    missrate <- sum(is.na(gt_col)) / length(gt_col)
+    return(missrate)
+  }
+  
+  missrate_vect <- apply(gt_mat, 2, col_func)
+  
+  return(missrate_vect)
+}
+
+# Calculates the minor allele frequency for every marker in a genotype matrix (coded as c(-1,0,1))
+calc_maf_apply <- function(gt_mat, encoding = c(-1, 0, 1))
+{
+  col_func1 <- function(gt_col)
+  {
+    allele1_ct <- (sum(gt_col == -1, na.rm = T) * 2) + sum(gt_col == 0, na.rm = T)
+    allele2_ct <- (sum(gt_col == 1, na.rm = T) * 2) + sum(gt_col == 0, na.rm = T)
+    
+    maf <- min(c(allele1_ct, allele2_ct)) / (sum(!is.na(gt_col))*2)
+  }
+  
+  col_func2 <- function(gt_col)
+  {
+    allele1_ct <- (sum(gt_col == 0, na.rm = T) * 2) + sum(gt_col == 1, na.rm = T)
+    allele2_ct <- (sum(gt_col == 2, na.rm = T) * 2) + sum(gt_col == 1, na.rm = T)
+    
+    maf <- min(c(allele1_ct, allele2_ct)) / (sum(!is.na(gt_col))*2)
+  }
+  
+  if (all(encoding == c(-1, 0, 1)))
+  {
+    maf_vect <- apply(gt_mat, 2, col_func1)
+  } else if (all(encoding == c(0, 1, 2)))
+  {
+    maf_vect <- apply(gt_mat, 2, col_func2)
+  } else{
+    print('Encoding not recognized, returning NULL')
+    maf_vect <- NULL
+  }
+  
+  return(maf_vect)
+}
+```
+
+#Filter
+#Remove makers with more than 20% missing
+```{r}
+mr=calc_missrate(GDE)
+mr_indices <- which(mr > 0.20)
+GDEmr = GDE[,-mr_indices]
+GIEmr = GIE[-mr_indices,]
+dim(GDEmr)
+dim(GIEmr)
+```
+
+#Remove Monomorphic Markers
+```{r}
+maf <- calc_maf_apply(GDEmr, encoding = c(0, 1, 2))
+mono_indices <- which(maf ==0)
+GDEmo = GDEmr[,-mono_indices]
+GIEmo = GIEmr[-mono_indices,]
+dim(GDEmo)
+dim(GIEmo)
+```
+
+#Remove MAF <5%
+```{r}
+maf <- calc_maf_apply(GDEmo, encoding = c(0, 1, 2))
+mono_indices <- which(maf <0.05)
+GDEmf = GDEmo[,-mono_indices]
+GIEmf = GIEmo[-mono_indices,]
+dim(GDEmf)
+dim(GIEmf)
+```
+
+#Imputation With Beagle
+```{r}
+str(GDS)
+str(GIS)
+
+GIEmf$chr <- GIEmf$Chromosome
+GIEmf$rs <- GIEmf$SNP
+GIEmf$pos <- GIEmf$Position
+
+#Set working directory to where your beagle file is
+#setwd("F:/OneDrive/OneDrive - Washington State University (email.wsu.edu)/Documents/Genomic Selection/Genomic Selection Pipeline/GWAS Pipeline")
+
+em_file <- "EM_Numeric"
+vcf_em <- numeric_2_VCF(GDEmf, GIEmf)
+write_vcf(vcf_em, outfile = em_file)#Exports vcf 
+# Assign parameters
+  genotype_file = "EM_Numeric.vcf" 
+  outfile = "EM_Numeric_imp"
+  
+  # Define a system command
+  command1_prefix <- "java -Xmx1g -jar beagle.25Nov19.28d.jar"
+  command_args <- paste(" gt=", genotype_file, " out=", outfile, sep = "")
+  command1 <- paste(command1_prefix, command_args)
+  test <- system(command1, intern = T)
+  # Run BEAGLE using the system function, this will produce a gzip .vcf file
+  Xvcf=read.vcfR("EM_Numeric_imp.vcf.gz")
+  Xbgl=data.frame(Xvcf@fix,Xvcf@gt)
+  genotypes_imp <- VCF_2_numeric(Xbgl)[[1]]
+  dim(GDEmf)
+  sum(is.na(GDEmf))
+  dim(genotypes_imp)
+  sum(is.na(genotypes_imp))
+  genotypes_imp[1:10,1:10]
+#Filter again
+#Remove MAF <5%
+maf <- calc_maf_apply(genotypes_imp, encoding = c(0, 1, 2))
+mono_indices <- which(maf <0.05)
+GDEre = genotypes_imp[,-mono_indices]
+GIEre = GIEmf[-mono_indices,]
+dim(GDEre)
+dim(GIEbe)
+
+```
+
+#Or Impute with KNN
+```{r}
+#Section for downloading package
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("impute")
+
+x=impute::impute.knn(as.matrix(t(GDEmf)))
+myGD_imp=t(x$data)
+myGD_imp<-round(myGD_imp,0)
+sum(is.na(myGD_imp))
+#Filter again
+#Remove MAF <5%
+maf <- calc_maf_apply(myGD_imp, encoding = c(0, 1, 2))
+mono_indices <- which(maf <0.05)
+GDEre = myGD_imp[,-mono_indices]
+GIEre = GIEmf[-mono_indices,]
+dim(GDEre)
+dim(GIEre)
+```
+
+
+#Save Files for easy reproducibility
+```{r}
+fwrite(GDEre,"GDE_numeric.csv")
+colnames(GIEre)
+fwrite(GIEre[,1:3],"GIE_map.csv")
+```
+
+#Make sure data is in Order
+```{r}
+#rename ID to taxa
+colnames(myY)[1]<-c("taxa")
+dim(GDEre)
+dim(GIEre)
+colnames(GIEre)<-c("SNP","Chromosome","Position")
+#Add taxa columns to numeric file for gapit format
+GDEre <- GDEre[order(rownames(GDEre)),]
+myGM<-GIEre[GIEre$SNP %in% colnames(GDEre),]
+myGD<-data.frame(rownames(GDEre),GDEre)
+myGD<-data.frame(myY$taxa,GDEre)
+colnames(myGD)[1]<-c("taxa")
+
+```
+
+#Function to get data in order as above chunck but integrated into a function to also combine all files for a nice list with PCs included.
+```{r}
+PandG <- function(Pheno_Em_bl=NULL,myGD_EM=NULL,mytaxa_EM=NULL,myGM_EM=NULL){
+  colnames(Pheno_Em_bl)[1]<-c("Genotype")
+  Pheno_Em_bl=data.frame(Pheno_Em_bl)
+  rownames(Pheno_Em_bl) <- Pheno_Em_bl$Genotype
+  
+  Markers_Em_bl<-myGD_EM
+  
+  rownames(Markers_Em_bl) <- mytaxa_EM$V1
+  colnames(Markers_Em_bl) <- myGM_EM$SNP
+  
+  
+  Pheno_Em_bl <- Pheno_Em_bl[rownames(Pheno_Em_bl) %in% rownames(Markers_Em_bl),]
+  Markers_Em_bl <- Markers_Em_bl[rownames(Markers_Em_bl) %in% rownames(Pheno_Em_bl),]
+  
+  Pheno_Em_bl <- Pheno_Em_bl[order(Pheno_Em_bl$Genotype),]
+  Markers_Em_bl <- Markers_Em_bl[order(rownames(Markers_Em_bl)),]
+  
+  Pheno_Em_bl <- Pheno_Em_bl[order(Pheno_Em_bl$Genotype),]
+  Markers_Em_bl <- Markers_Em_bl[order(rownames(Markers_Em_bl)),]
+  
+  myGM<-myGM_EM[myGM_EM$SNP %in% colnames(Markers_Em_bl),]
+  myGD<-data.frame(rownames(Markers_Em_bl),Markers_Em_bl)
+  colnames(myGD)[1]<-c("taxa")
+  
+  PCA_bl_em=prcomp(Markers_Em_bl)
+  myPCA_bl_em=PCA_bl_em$x
+  PGPCA=list(pheno=Pheno_Em_bl,geno=Markers_Em_bl,map=myGM,numeric=myGD,PC=myPCA_bl_em)
+  return(PGPCA)
+}
+
+#If you also want to integrate covariates into the list
+PGandCV <- function(Pheno_Em_bl=NULL,myGD_EM=NULL,mytaxa_EM=NULL,myGM_EM=NULL,CV=NULL){
+  colnames(Pheno_Em_bl)[1]<-c("Genotype")
+  rownames(Pheno_Em_bl) <- Pheno_Em_bl$Genotype
+  
+  Markers_Em_bl<-myGD_EM
+  
+  rownames(Markers_Em_bl) <- mytaxa_EM$V1
+  colnames(Markers_Em_bl) <- myGM_EM$SNP
+  
+  colnames(CV)[1]<-c("Genotype")
+  rownames(CV) <- CV$Genotype
+  library(tidyr)
+  library(Hmisc)
+  for(i in 2:ncol(CV)){
+    CV[,i]=impute(CV[,i])
+    CV[,i]=as.numeric(CV[,i])
+  }
+  
+  
+  Pheno_Em_bl <- Pheno_Em_bl[rownames(Pheno_Em_bl) %in% rownames(Markers_Em_bl),]
+  Markers_Em_bl <- Markers_Em_bl[rownames(Markers_Em_bl) %in% rownames(Pheno_Em_bl),]
+  
+  Pheno_Em_bl <- Pheno_Em_bl[order(Pheno_Em_bl$Genotype),]
+  Markers_Em_bl <- Markers_Em_bl[order(rownames(Markers_Em_bl)),]
+  
+  CV <- CV[rownames(CV) %in% rownames(Pheno_Em_bl),]
+  CV <- CV[order(rownames(CV)),]
+  
+  myGM<-myGM_EM[myGM_EM$SNP %in% colnames(Markers_Em_bl),]
+  myGD<-data.frame(rownames(Markers_Em_bl),Markers_Em_bl)
+  colnames(myGD)[1]<-c("taxa")
+  
+  PCA_bl_em=prcomp(Markers_Em_bl)
+  myPCA_bl_em=PCA_bl_em$x
+  PGPCA=list(pheno=Pheno_Em_bl,geno=Markers_Em_bl,map=myGM,numeric=myGD,PC=myPCA_bl_em,CV=CV)
+  return(PGPCA)
+}
+```
+
+
+#This gets into my own files This section gets your data in order but using a function
+```{r}
+#load phenotypic and genotypic data in.
+#setwd("F:/OneDrive/OneDrive - Washington State University (email.wsu.edu)/Documents/Genomic Selection/Genomic Selection Pipeline/GWAS Pipeline")
+load(file="Working_Files_EM.RData")
+#Without Covariates
+#Remove missing data
+Pheno_Em_qam_adj23<-qam_em_adj[complete.cases(qam_em_adj[,23]),]
+GBS_qam_adj23=PandG(Pheno_Em_qam_adj23,myGD_EM_Redo,mytaxa_EM,myGM_EM_Redo)
+# Other Population
+Pheno_Em_bl_adj13<-bl_em_adj[complete.cases(bl_em_adj[,13]),]
+GBS_adj13=PandG(Pheno_Em_bl_adj13,myGD_EM_Redo,mytaxa_EM,myGM_EM_Redo)
+
+
+
+Pheno_Em_qam_adj23<-qam_em_adj[complete.cases(qam_em_adj[,23]),]
+GBS_qam_adj23=PGandCV(Pheno_Em_qam_adj23,myGD_EM_Redo,mytaxa_EM,myGM_EM_Redo,myCV_EM)
+# Other Population
+Pheno_Em_bl_adj13<-bl_em_adj[complete.cases(bl_em_adj[,13]),]
+GBS_adj13=PGandCV(Pheno_Em_bl_adj13,myGD_EM_Redo,mytaxa_EM,myGM_EM_Redo,myCV_EM)
+
+
+
+
+```
+
+
+
+#GAPIT
+```{r}
+myGAPIT_BLINK_qam_adj_23<- GAPIT(Y = GBS_qam_adj23$pheno[,c(1,23)],
+                         GD = GBS_qam_adj23$numeric,
+                         GM = GBS_qam_adj23$map,
+                         PCA.total=3,
+                         model = "BLINK",
+                         file.output=T)
+#I like saving the results in a R data file.
+save(myGAPIT_BLINK_qam_adj_23,file="GWAS_EM_QAM_ADJ_BLINK_ZZ_Redo_5_11.RData")
+
+myGAPIT_BLINK_adj_13<- GAPIT(Y = GBS_adj13$pheno[,c(1,13)],
+                         GD = GBS_adj13$numeric,
+                         GM = GBS_adj13$map,
+                         PCA.total=3,
+                         model = "BLINK",
+                         file.output=T)
+save(myGAPIT_BLINK_adj_13,file="GWAS_EM_adj_BLINK_ZZ_Redo_5_11.RData")
+
+FarmCPU_qam_adj_23<- GAPIT(Y = GBS_qam_adj23$pheno[,c(1,23)],
+                         GD = GBS_qam_adj23$numeric,
+                         GM = GBS_qam_adj23$map,
+                         PCA.total=3,
+                         model = "FarmCPU",
+                         file.output=T)
+save(FarmCPU_qam_adj_23,file="GWAS_EM_QAM_ADJ_ZZ_FarmCPU_Redo_5_11.RData")
+
+FarmCPU_adj_13<- GAPIT(Y = GBS_adj13$pheno[,c(1,13)],
+                         GD = GBS_adj13$numeric,
+                         GM = GBS_adj13$map,
+                         PCA.total=3,
+                         model = "FarmCPU",
+                         file.output=T)
+save(FarmCPU_adj_13,file="GWAS_EM_adj_ZZ_FarmCPU_Redo_5_11.RData")
+
+myGAPIT_MLM_qam_adj_23<- GAPIT(Y = GBS_qam_adj23$pheno[,c(1,23)],
+                         GD = GBS_qam_adj23$numeric,
+                         GM = GBS_qam_adj23$map,
+                         PCA.total=3,
+                         model = c("MLM"),
+                         file.output=T)
+save(myGAPIT_MLM_qam_adj_23,file="GWAS_EM_QAM_ADJ_MLM_ZZ_Redo_5_11.RData")
+myGAPIT_MLM_adj_13<- GAPIT(Y = GBS_adj13$pheno[,c(1,13)],
+                         GD = GBS_adj13$numeric,
+                         GM = GBS_adj13$map,
+                         PCA.total=3,
+                         model = c("MLM"),
+                         file.output=T)
+save(myGAPIT_MLM_adj_13,file="GWAS_EM_adj_MLM_ZZ_Redo_5_11.RData")
+```
+
+#Marker effects and variation
+#This can be either FDR or Bonferonni
+```{r}
+BLINK_Effects=Marker_Effects(Pheno=myY[,2],GWAS=myGAPIT_BLINK_qam_adj_23,alpha=0.05,correction="Bonferonni",messages=TRUE,model="BLINK")
+BLINK_Effects
+```
+
+#Read in Hapmap
+```{r}
+load(file="EM_Hapmap_Redo.RData")
+output[1:10,1:14]
+#Extract Map and Allele Information
+EM_GBS_SNPs=output[,1:5]
+```
+
+
+#This version is much better but requires a hapmap. It creates a nice table with alleles in which allows you to identify the favorable allele. The numericalization makes the 2 the allele second in alphabetical order. If it is A/T then A=0 and T=2. So if the marker effect is negative such as -2, then A is the favorable allele because -2 is the effect of the T allele.
+#Calculate Effects
+#This can be either FDR or Bonferonni
+#IF you prefer the online functions for gapit, you will need to remove all functions  from the website since they don't all work. I use gapit functions in the below function. So to make it work, download the Github version if you did not do that above.
+```{r}
+#This removes just functions.
+#rm(list=lsf.str())
+#install.packages("devtools")
+#devtools::install_github("jiabowang/GAPIT3",force=TRUE)
+#library(GAPIT3)
+FDR_sig_B6 <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=myGAPIT_BLINK_qam_adj_23,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs)
+FDR_sig_B6
+FDR_sig_F6 <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=FarmCPU_qam_adj_23,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs)
+FDR_sig_F6
+FDR_sig_M6 <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=myGAPIT_MLM_qam_adj_23,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs,model="MLM")
+FDR_sig_M6
+FDR_sig_B1_bl <- Marker_Effects_Allele(Pheno=GBS_adj13$pheno[,c(13)],GWAS=myGAPIT_BLINK_adj_13,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs)
+FDR_sig_B1_bl
+FDR_sig_F1_bl <- Marker_Effects_Allele(Pheno=GBS_adj13$pheno[,c(13)],GWAS=FarmCPU_adj_13,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs)
+FDR_sig_F1_bl
+FDR_sig_M1_bl <- Marker_Effects_Allele(Pheno=GBS_adj13$pheno[,c(13)],GWAS=myGAPIT_MLM_adj_13,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs,model="MLM")
+FDR_sig_M1_bl
+```
+
+
+#This is for another trait that I don't want to create a manhattan plot but overlay significant markers within the other manhattan pltos
+```{r}
+FDR_sig_B1_Col_Len_blup=Marker_Effects_Allele(Pheno=GBS_qam_adj18$CV[,c(6)],GWAS=BLINK_Col_Length_qam_blup_18,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs,model="BLINK")
+FDR_sig_F1_Col_Len_blup=Marker_Effects_Allele(Pheno=GBS_qam_adj18$CV[,c(6)],GWAS=FarmCPU_Col_Length_qam_blup_18,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs,model="FarmCPU")
+FDR_sig_M1_Col_Len_blup=Marker_Effects_Allele(Pheno=GBS_qam_adj18$CV[,c(6)],GWAS=MLM_Col_Length_qam_blup_18,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs,model="MLM")
+Col_lenth=union(FDR_sig_B1_Col_Len_blup$SNP,FDR_sig_F1_Col_Len_blup$SNP)
+```
+
+# I reacreated the manahttan plots from the gapit code using ggplot which allows for far more customization, and the ability to edit the plot after it is initially made. 
+#I did this to allow easy labeling and allow multiple traits/models from two different GWAS results to be overlaid.
+#First you need to change Numeric to Number and Letter Chromosomes
+```{r}
+FarmCPU_qam_adj_23$GWAS=FarmCPU_qam_adj_23$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))  
+  
+FarmCPU_adj_13$GWAS=FarmCPU_adj_13$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))
+
+myGAPIT_BLINK_qam_adj_23$GWAS=myGAPIT_BLINK_qam_adj_23$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))  
+  
+myGAPIT_BLINK_adj_13$GWAS=myGAPIT_BLINK_adj_13$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))
+
+myGAPIT_MLM_qam_adj_23$GWAS=myGAPIT_MLM_qam_adj_23$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))  
+  
+myGAPIT_MLM_adj_13$GWAS=myGAPIT_MLM_adj_13$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))
+
+myGAPIT_MLM_qam_adj_23$GWAS=cbind(FarmCPU_Col_qam_adj_23$GWAS[,1:3],myGAPIT_MLM_qam_adj_23$GWAS[,-c(1:3)])
+myGAPIT_MLM_adj_13$GWAS=cbind(FarmCPU_Col_qam_adj_23$GWAS[,1:3],myGAPIT_MLM_adj_13$GWAS[,-c(1:3)])
+
+```
+
+
+#Single Manhattan Plot
+#If you don't want to overlay GWAS results do not use Multi options. Third labels is for a third trait where I just want to show the significant markers without plotting the GWAS results.
+#QTN is if you want to highlight certain markers with a vertical line.
+```{r}
+manhattan_plot_Multi(FarmCPU_qam_adj_23$GWAS,labels =NULL,
+                     model="FarmCPU",QTN_index=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP),
+                     Multi=NULL,Multi_labels=NULL,
+                     Third_Labels=Col_lenth,model_cor ="BLINK")
+
+manhattan_plot_Multi(myGAPIT_BLINK_qam_adj_23$GWAS,labels =FDR_sig_B6,
+                     model="BLINK",QTN_index=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[2],
+                     Multi=NULL,Multi_labels=NULL,
+                     Third_Labels=Col_lenth,Trait_one="Diversity Panel",Trait_two="Breeding Lines",model_cor = "BLINK")
+manhattan_plot_Multi(myGAPIT_MLM_qam_adj_23$GWAS,labels =FDR_sig_M6,
+                     model="MLM",QTN_index=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[2],
+                     Multi=NULL,Multi_labels=NULL,
+                     Third_Labels=Col_lenth,Trait_one="Diversity Panel",Trait_two="Breeding Lines",model_cor = "MLM")
+```
+
+#Overall Mulit Plot
+#This is to overlay multiple GWAS resutls. Multi is the second GWAS results and Multi_labels if you want to label those differently.
+```{r}
+intersect(FDR_sig_F6$SNP,FDR_sig_F1_bl$SNP)
+
+fmmp23=manhattan_plot_Multi(FarmCPU_qam_adj_23$GWAS,labels =FDR_sig_F6,
+                     model="FarmCPU",QTN_index=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[2],
+                     Multi=FarmCPU_adj_13$GWAS,Multi_labels=FDR_sig_F1_bl,
+                     Third_Labels=Col_lenth,Trait_one="Diversity Panel",Trait_two="Breeding Lines",model_cor = "BLINK")
+bmmp23=manhattan_plot_Multi(myGAPIT_BLINK_qam_adj_23$GWAS,labels =FDR_sig_B6,
+                     model="BLINK",QTN_index=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[2],
+                     Multi=myGAPIT_BLINK_adj_13$GWAS,Multi_labels=FDR_sig_B1_bl,
+                     Third_Labels=Col_lenth,Trait_one="Diversity Panel",Trait_two="Breeding Lines",model_cor = "BLINK")
+mmp23=manhattan_plot_Multi(myGAPIT_MLM_qam_adj_23$GWAS,labels =FDR_sig_M6,
+                     model="MLM",QTN_index=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[2],
+                     Multi=myGAPIT_MLM_adj_13$GWAS,Multi_labels=FDR_sig_M1_bl,
+                     Third_Labels=Col_lenth,Trait_one="Diversity Panel",Trait_two="Breeding Lines",model_cor = "MLM")
+
+
+mmp23=mmp23+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.title.x= element_blank())
+fmmp23=fmmp23+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.title.x= element_blank())
+bmmp23=bmmp23
+```
+
+#Zhiwu's version
+# This allows for labeling significant markers that are found in all models with a single large label at the top manahattan plot.
+#QTN_index2 is differnt then above. It's a different color that I used if a marker was found in 2 models.
+#QTN_index3 is like QTN_index2 but for 3 or more models.
+#Sig_L and Sig_multi allow the ability to create different threshold lines for the two different GWAS results since they may not be the same especially since FDR is based on p-values. Whereas for bonferonni, if the number of markers are the same so will the threshold line plotted.
+```{r}
+intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)
+intersect(FDR_sig_F6$SNP,FDR_sig_M6$SNP)
+intersect(FDR_sig_B6$SNP,FDR_sig_M6$SNP)
+
+fmmp23=manhattan_plot_Multi(FarmCPU_qam_adj_23$GWAS,labels =NULL,
+                     model="FarmCPU",
+                     QTN_index2=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[1],
+                     
+                     QTN_index3=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[2],
+                     Sig_L=FDR_sig_F6,
+                     Sig_Multi=FDR_sig_F1_bl,
+                     
+                     ZZ_label =intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP),
+                     
+                     Multi=FarmCPU_adj_13$GWAS,
+                     Multi_labels=NULL,
+                     Third_Labels=Col_lenth,Trait_one="Diversity Panel",Trait_two="Breeding Lines",model_cor = "BLINK")
+
+bmmp23=manhattan_plot_Multi(myGAPIT_BLINK_qam_adj_23$GWAS,labels =NULL,
+                     model="BLINK",
+                     QTN_index2=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[1],
+                     
+                     QTN_index3=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[2],
+                     Sig_L=FDR_sig_B6,
+                     Sig_Multi=FDR_sig_B1_bl,
+                     
+                     Multi=myGAPIT_BLINK_adj_13$GWAS,
+                     Multi_labels=NULL,
+                     Third_Labels=Col_lenth,Trait_one="Diversity Panel",Trait_two="Breeding Lines",model_cor = "BLINK")
+
+mmp23=manhattan_plot_Multi(myGAPIT_MLM_qam_adj_23$GWAS,labels =NULL,
+                     model="MLM",
+                     QTN_index2=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[1],
+                     
+                     QTN_index3=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)[2],
+                     Sig_L=FDR_sig_M6,
+                     Sig_Multi=FDR_sig_M1_bl,
+                     
+                     Multi=myGAPIT_MLM_adj_13$GWAS,
+                     Multi_labels=NULL,
+                     Third_Labels=Col_lenth,Trait_one="Diversity Panel",Trait_two="Breeding Lines",model_cor = "MLM")
+
+
+fmmp23=fmmp23+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.title.x= element_blank())
+bmmp23=bmmp23+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.title.x= element_blank())
+mmp23=mmp23
+
+
+```
+
+#This allows the stacking of multiple manhattan plots.
+```{r}
+library(grid)
+grid.newpage()
+grid.draw(rbind(
+                ggplotGrob(fmmp23),
+                ggplotGrob(bmmp23),
+                ggplotGrob(mmp23),
+                size = "last"))
+
+```
+
+#Multi Trait GWAS based on sommer multivariate gwas but includes results for three different p-values for common, interaction, and full effects.
+```{r}
+Gen_Table_JMP_DP23=left_join(GBS_qam_adj23$pheno[,c(1,23)],GBS_qam_adj23$CV[,c(1,6)],by="Genotype")
+myGM23=GBS_qam_adj23$geno
+myGM23=apply(myGM23,2,function(x) recode(x,"0"="-1","1"="0","2"="1"))
+myGM23=apply(myGM23,2,as.numeric)
+rownames(myGM23)=rownames(GBS_qam_adj23$geno)
+A23 <- A.mat(myGM23)
+colnames(Gen_Table_JMP_DP23)[2]<-"Y"
+
+ansx23 <- GWAS(cbind(Y,DP_BLUP)~1,
+random=~ vs(Genotype, Gu=A23, Gtc=unsm(2)),
+rcov=~ vs(units, Gtc=unsm(2)),
+data=Gen_Table_JMP_DP23,
+M=myGM23,n.PC=3,
+gTerm = "u:Genotype", verbose = TRUE)
+
+MTMM23=sommer_MTMM(Y=Gen_Table_JMP_DP23,SNP_INFO=GBS_qam_adj23$map,model=ansx23,X=myGM23,A=A23)
+```
+
+```{r}
+myGAPIT_BLINK_qam_adj_23$GWAS=myGAPIT_BLINK_qam_adj_23$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))
+
+#This is simply to creat teh same data frame to input our results so they can work with the other gapit functions we use.
+myGAPIT_MTMM_qam_adj23_EM=myGAPIT_BLINK_qam_adj_23
+myGAPIT_MTMM_qam_adj23_CL=myGAPIT_BLINK_qam_adj_23
+myGAPIT_MTMM_qam_adj23_FULL=myGAPIT_BLINK_qam_adj_23
+myGAPIT_MTMM_qam_adj23_IE=myGAPIT_BLINK_qam_adj_23
+myGAPIT_MTMM_qam_adj23_COM=myGAPIT_BLINK_qam_adj_23
+
+#INput our results into the data frames.
+myGAPIT_MTMM_qam_adj23_EM$GWAS$P.value=MTMM23$pvals$Y.score
+myGAPIT_MTMM_qam_adj23_CL$GWAS$P.value=MTMM23$pvals$DP_BLUP.score
+myGAPIT_MTMM_qam_adj23_FULL$GWAS$P.value=MTMM23$pvals$pval_full
+myGAPIT_MTMM_qam_adj23_IE$GWAS$P.value=MTMM23$pvals$pval_trait_specific
+myGAPIT_MTMM_qam_adj23_COM$GWAS$P.value=MTMM23$pvals$pval_trait_common
+
+
+```
+
+
+```{r}
+Bon_sig_MTMM23_EM <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=myGAPIT_MTMM_qam_adj23_EM,alpha=0.05,correction="Bon",messages=TRUE,Markers=EM_GBS_SNPs)
+Bon_sig_MTMM23_EM
+Bon_sig_MTMM23_CL <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=myGAPIT_MTMM_qam_adj23_CL,alpha=0.05,correction="Bon",messages=TRUE,Markers=EM_GBS_SNPs)
+Bon_sig_MTMM23_CL
+Bon_sig_MTMM23_FULL <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=myGAPIT_MTMM_qam_adj23_FULL,alpha=0.05,correction="Bon",messages=TRUE,Markers=EM_GBS_SNPs)
+Bon_sig_MTMM23_FULL
+#Bon_sig_MTMM23_IE <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=myGAPIT_MTMM_qam_adj23_IE,alpha=0.05,correction="Bon",messages=TRUE,Markers=EM_GBS_SNPs)
+#Bon_sig_MTMM23_IE
+Bon_sig_MTMM23_COM <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=myGAPIT_MTMM_qam_adj23_COM,alpha=0.05,correction="Bon",messages=TRUE,Markers=EM_GBS_SNPs)
+Bon_sig_MTMM23_COM
+```
+
+#You can use these with the above manhattan plot functions, but the below code is to create a venn diagram.
+```{r}
+Extract_Sig=function(results,pop,year,model,cov){
+nrep=nrow(results)
+po=rep(pop,nrep)
+yr=rep(year,nrep)
+mo=rep(model,nrep)
+cv=rep(cov,nrep)
+
+aca=data.frame(Population=po,Year=yr,Model=mo,Covariate=cv,results)
+#rownames(aca)<-names(ac)
+return(aca)
+}
+```
+
+#Combine results
+```{r}
+Bon_M23_EM=Extract_Sig(Bon_sig_MTMM23_EM,"DP","2015-2018","MTMM","EM")
+Bon_M22_CL=Extract_Sig(Bon_sig_MTMM22_CL,"DP","2015-2017","MTMM","CL")
+Bon_M23_FULL=Extract_Sig(Bon_sig_MTMM23_FULL,"DP","2015-2018","MTMM","FULL")
+#Bon_M23_IE=Extract_Sig(Bon_sig_MTMM23_IE,"DP","2015-2018","MTMM","IE")
+Bon_M23_COM=Extract_Sig(Bon_sig_MTMM23_COM,"DP","2015-2018","MTMM","COM")
+
+MTMMB_Sig=rbind(
+Bon_M23_EM,
+Bon_M23_CL,
+Bon_M23_FULL,
+#Bon_M23_IE,
+Bon_M23_COM)
+install.packages("xlsx")
+library(xlsx)
+write.xlsx(MTMMB_Sig,"Significant Markers_MTMM_Bon.xlsx", sheetName = "Sheet1", 
+  col.names = TRUE, row.names = FALSE, append = FALSE)
+
+
+```
+
+#Venn Diagram
+```{r}
+library(VennDiagram)
+venn.diagram(
+  x = list(
+    MTMMB_Sig %>% filter(Covariate=="EM") %>% select(SNP) %>% unlist() , 
+    MTMMB_Sig %>% filter(Covariate=="CL") %>% select(SNP) %>% unlist() , 
+    MTMMB_Sig %>% filter(Covariate=="FULL") %>% select(SNP) %>% unlist(),
+    MTMMB_Sig %>% filter(Covariate=="IE") %>% select(SNP) %>% unlist(),
+    MTMMB_Sig %>% filter(Covariate=="COM") %>% select(SNP) %>% unlist()
+    ),
+  category.names = c("EM" , "CL" , "FULL","IE","COM"),
+  filename = 'vennb.png',
+  output = TRUE ,
+          imagetype="png" ,
+          col = "black",
+	fill = c("dodgerblue", "goldenrod1", "darkorange1", "seagreen3", "orchid3"),
+	alpha = 0.50,
+	cex = c(1.5, 1.5, 1.5, 1.5, 1.5, 1, 0.8, 1, 0.8, 1, 0.8, 1, 0.8,
+	 1, 0.8, 1, 0.55, 1, 0.55, 1, 0.55, 1, 0.55, 1, 0.55, 1, 1, 1, 1, 1, 1.5),
+	cat.col = c("dodgerblue", "goldenrod1", "darkorange1", "seagreen3", "orchid3"),
+	cat.cex = 1.5,
+	cat.fontface = "bold",
+	margin = 0.05
+        )
+```
+
+### **Frequently asked questions**
+
+1. Where can I get GWhEAT? GWhEAT is currently only available on github via Samuel Prather’s public repository found at https://github.com/stp4freedom/GWhEAT. 
+\
+\
+2. How to download GWhEAT? Please refer the “Getting started” section above where I show how to download and install GWhEAT using devtools.
+\
+\
+3. What SNP format does GWhEAT take? Currently GWhEAT only accepts SNP data in numerical form.
+\
+\
+4. What are the required inputs to run GWhEAT? You will need SNP data in numerical form, phenotypic data and a genetic map that has SNP name, Chromosome and position on chromosome. Without all three components GWhEAT will not be able to run successfully.
+\
+\
+5. How is GWASapply_rapid different than GWASapply? Both GWASapply and GWASapply_rapid run the calculations the same way. The only difference is GWAsapply_rapid will not give you any of the output automatically, which makes it run faster and allows the user the develop their own output.
+\
+\
+6. Where can I get help with issues regarding GWhEAT? All questions should be directed to Samuel Prather at stp4freedom@gmail.com.
+\
+\
+7. Are there other R packages that can perform GWAS? Yes, I would strongly recommend you check out the packaged GAPIT http://www.zzlab.net/GAPIT/ as it has a much wider range of options and functions.
+
+
+
+### **Further Information**
+
+For more information on individual functions please see the “Reference_Manual.pdf” or type ?FUNCITON_NAME into the R console, this will pull up specific information of each function inside GWhEAT. For example typing ?manhattan_plot will pull of the help page with details about the function that creates the Manhattan plots.
+
+
+
+
