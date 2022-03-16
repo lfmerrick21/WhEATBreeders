@@ -12,8 +12,6 @@ GAPIT_GS_VS_UT <- function(train_genotypes, train_phenotype,train_GM=NULL,test_g
     myGD=cbind(genotypes[,1],m_samp)
     names(myGD)[1]=c("Taxa")
   }else{
-    myGD_train <- train_genotypes
-    myGD_test <- test_genotypes
     myGD <- rbind(train=train_genotypes,test=test_genotypes)
     names(myGD)[1]=c("Taxa")
   }

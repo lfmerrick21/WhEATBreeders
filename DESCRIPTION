@@ -43,5 +43,15 @@ Imports:
   impute,
   PopVar,
   BLR,
-  sommer
+  sommer,
+  heritability,
+  arm,
+  optimx,
+  purrr,
+  psych,
+  lme4,
+  lmerTest,
+  gridExtra,
+  grid,
+  readxl
 RoxygenNote: 7.0.2

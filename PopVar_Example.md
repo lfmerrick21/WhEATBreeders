@@ -9,6 +9,8 @@ to the bottom or look at the R Script I provided.
 # Packages needed
 
 ``` r
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(devtools)
 #Better for FDR function
 devtools::install_github("jiabowang/GAPIT3",force=TRUE)
 library(GAPIT3)
@@ -20,68 +22,67 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 
   BiocManager::install("impute")
 #From the source
-require(compiler) #for cmpfun
-source("http://zzlab.net/GAPIT/GAPIT.library.R")
-source("http://zzlab.net/GAPIT/gapit_functions.txt") #make sure compiler is running
-source("http://zzlab.net/GAPIT/emma.txt")
+#require(compiler) #for cmpfun
+#Only if you want the source code
+#source("http://zzlab.net/GAPIT/GAPIT.library.R")
+#source("http://zzlab.net/GAPIT/gapit_functions.txt") #make sure compiler is running
+#source("http://zzlab.net/GAPIT/emma.txt")
 
+#I prefer the Github version
 #Better for FDR function
 devtools::install_github("jiabowang/GAPIT3",force=TRUE)
 library(GAPIT3)
 
-  library(BGLR)
-  library(rrBLUP)
-  library(caret)
-  library(tidyr)
-  library(dplyr)
-  library(Hmisc)
-  library(WeightIt)
-  library(mpath)
-  library(glmnetUtils)
-  library(glmnet)
-  library(MASS)
-  library(Metrics)
-  library(stringr)
-  library(lsa)
-  library(keras)
-  library(tensorflow)
-  library(BMTME)
-  library(plyr)
-  library(data.table)
-  library(bigmemory)
-  library(biganalytics)
-  library(ggplot2)
-  library(tidyverse)
-  library(knitr)
-  library(cvTools)
-  library(vcfR)
-  library(compiler)
-  library(gdata)
-  library(BiocManager)
-  library(impute)
-  library(PopVar)
-  library(BLR)
-  library(sommer)
-  library(emmeans)
-  library(heritability)
-  library(arm)
-  library(optimx)
-  library(purrr)
-  library(psych)
-  library(lme4)
-  library(lmerTest)
-  library(gridExtra)
-  library(grid)
-  library(readxl)
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(data.table,bigmemory,biganalytics,dplyr,compiler)
+pacman::p_load(BGLR,
+  rrBLUP,
+  caret,
+  tidyr,
+  dplyr,
+  Hmisc,
+  WeightIt,
+  mpath,
+  glmnetUtils,
+  glmnet,
+  MASS,
+  Metrics,
+  stringr,
+  lsa,
+  keras,
+  tensorflow,
+  BMTME,
+  plyr,
+  data.table,
+  bigmemory,
+  biganalytics,
+  ggplot2,
+  tidyverse,
+  knitr,
+  cvTools,
+  vcfR,
+  compiler,
+  gdata,
+  PopVar,
+  BLR,
+  sommer,
+  heritability,
+  arm,
+  optimx,
+  purrr,
+  psych,
+  lme4,
+  lmerTest,
+  gridExtra,
+  grid,
+  readxl)
 ```
 
 ### **Load Package**
 
-Next using the code below download and install the package GWhEAT from
-Github. The bottom two line of code in the chunk below make sure the
-dependencies WhEATBReeders relies on are also downloaded and installed.
+Next using the code below download and install the package WhEATBreeders
+from Github. The bottom two line of code in the chunk below make sure
+the dependencies WhEATBReeders relies on are also downloaded and
+installed.
 
 ``` r
 #install package

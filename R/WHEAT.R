@@ -361,7 +361,7 @@ WHEAT<-function(Phenotype,
                       }
                     }
                     if(Method=="One-Step"){
-                      Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,GE=GE,UN=UN,model=GE_model)
+                      Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,Kernel=Kernel,GE=GE,UN=UN,model=GE_model,Sparse=Sparse,m=m,degree=degree, nL=nL)
                       mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
                       save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
                     }
@@ -477,11 +477,11 @@ WHEAT<-function(Phenotype,
                           save(list=paste0("GBS_1_",Study),file=paste0("GBS_1_",Study,".RData"))
                         }
                       }
-                      if(Method=="One-Step"){
-                        Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,GE=GE,UN=UN,model=GE_model)
-                        mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
-                        save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
-                      }
+                        if(Method=="One-Step"){
+                          Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,Kernel=Kernel,GE=GE,UN=UN,model=GE_model,Sparse=Sparse,m=m,degree=degree, nL=nL)
+                          mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
+                          save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
+                        }
 
                     }
                     }
