@@ -81,7 +81,7 @@ pacman::p_load(data.table,bigmemory,biganalytics,dplyr,compiler)
 
 Next using the code below download and install the package GWhEAT from
 Github. The bottom two line of code in the chunk below make sure the
-dependencies GWhEAT relies on are also downloaded and installed.
+dependencies WhEATBReeders relies on are also downloaded and installed.
 
 ``` r
 #install package

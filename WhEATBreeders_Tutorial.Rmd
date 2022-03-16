@@ -1,133 +1,64 @@
-User Manual and Tutorial for WhEATBreeders
-================
-Lance F. Merrick
-March 14, 2022
+---
+title: "User Manual and Tutorial for WhEATBreeders"
+author: "Lance F. Merrick"
+date: "March 14, 2022"
+output:
+  #html_document:
+    #df_print: paged
+  #pdf_document: default
+  github_document: default
+---
 
-<p>
-
- 
-
-</p>
-
-<p>
-
- 
-
-</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 
 <!-- test inserting image-->
 
 <center>
 
-![](WinterWheat.png)
+![](WinterWheat.png){#id .class width=300 height=300px}
 
 </center>
 
-<p>
+<p>&nbsp;</p>
 
- 
+<center> <font size="6"> **Wrappers for Easy Association, Tools, and Selection for Breeders (WhEATBreeders)** </font> </center> 
 
-</p>
 
-<center>
-
-<font size="6"> **Wrappers for Easy Association, Tools, and Selection
-for Breeders (WhEATBreeders)** </font>
-
-</center>
-
-<p>
-
- 
-
-</p>
-
-<p>
-
- 
-
-</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 
 ### **Table of contents**
-
 #### Introduction
-
-#### Description of package functions
-
+#### Description of package functions 
 #### Getting started
-
 #### Load Package
-
 #### Phenotypic Data
-
 #### Genotypic Data
-
 #### Genomic Selection Tutorial
-
 #### Genome-Wide Association Tutorial using GAPIT
-
 #### Cross Prediction
-
-#### Frequently asked questions
-
+#### Frequently asked questions 
 #### Further Information
 
-<p>
-
- 
-
-</p>
-
-<p>
-
- 
-
-</p>
-
-<p>
-
- 
-
-</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
 
 ### **Introduction**
 
-WhEATBreeders was created to lower the bar for implementing genomic
-selection models for plant breeders to utilize within their own breeding
-programs. Not only does include functions for genotype quality control
-and filtering, but it includes easy to use wrappers for the most
-commonly use models in many scenarios with K-Fold cross-validation or
-validation sets. You can also implement GWAS assisted genomic selection.
-We created a full wrapper for quality control and genomci selection in
-our function “WHEAT”. Additionaly we walk through the set up of
-unrpelicated data using adjuste means and calculate cullis heritability.
-We also go through multi-output and multi-trait wrappers for GWAS in
-GAPIt. Finally we walk through cross-prediction using PopVar, rrBLUP,
-and sommer.
+WhEATBreeders was created to lower the bar for implementing genomic selection models for plant breeders to utilize within their own breeding programs. Not only does include functions for genotype quality control and filtering, but it includes easy to use wrappers for the most commonly use models in many scenarios with K-Fold cross-validation or validation sets. You can also implement GWAS assisted genomic selection. We created a full wrapper for quality control and genomci selection in our function "WHEAT". Additionaly we walk through the set up of unrpelicated data using adjuste means and calculate cullis heritability. We also go through multi-output and multi-trait wrappers for GWAS in GAPIt. Finally we walk through cross-prediction using PopVar, rrBLUP, and sommer.
 
 ### **Description of package functions**
 
-For a full list of functions within WhEATBreeders see
-“Reference\_Manual.pdf” this file contains not only the full list of
-functions but also a description of each. The pdf also has each
-functions arguments listed. And like with all R packages once
-WhEATBreeders is installed and loaded you can type ?function\_name and
-that specific function’s full descriptions will appear in the help tab
-on RStudio.
+For a full list of functions within WhEATBreeders see “Reference_Manual.pdf” this file contains not only the full list of functions but also a description of each. The pdf also has each functions arguments listed. And like with all R packages once WhEATBreeders is installed and loaded you can type ?function_name and that specific function’s full descriptions will appear in the help tab on RStudio.
 
 ### **Getting started**
 
-First if you do not already have R and R studio installed on your
-computer head over to <https://www.r-project.org/> and install the
-version appropriate for you machine. Once R and R studio are installed
-you will need to install the WhEATBreeders package since this is a
-working package in it’s early stages of development it’s only available
-through Github. To download files off Github first download and load the
-library of the package “devtools” using the code below.
+First if you do not already have R and R studio installed on your computer head over to https://www.r-project.org/ and install the version appropriate for you machine. Once R and R studio are installed you will need to install the WhEATBreeders package since this is a working package in it’s early stages of development it’s only available through Github. To download files off Github first download and load the library of the package “devtools” using the code below.
 
 # Packages needed
-
-``` r
+```{r eval=FALSE}
 #Better for FDR function
 devtools::install_github("jiabowang/GAPIT3",force=TRUE)
 library(GAPIT3)
@@ -194,25 +125,21 @@ library(GAPIT3)
 
 if (!require("pacman")) install.packages("pacman")
 pacman::p_load(data.table,bigmemory,biganalytics,dplyr,compiler)
+
+
 ```
 
 ### **Load Package**
 
-Next using the code below download and install the package GWhEAT from
-Github. The bottom two line of code in the chunk below make sure the
-dependencies GWhEAT relies on are also downloaded and installed.
-
-``` r
+Next using the code below download and install the package GWhEAT from Github. The bottom two line of code in the chunk below make sure the dependencies GWhEAT relies on are also downloaded and installed. 
+```{r eval=FALSE,warning=FALSE}
 #install package
 install_github("lfmerrick21/WhEATBreeders")
 library(WhEATBreeders)#package name
 ```
 
-In order to have an effective tutorial you’ll need some data to play
-with, this code below downloads and loads into your environment data
-used for this tutorial. \#\#\#\# Read in GBS data
-
-``` r
+In order to have an effective tutorial you’ll need some data to play with, this code below downloads and loads into your environment data used for this tutorial. #### Read in GBS data
+```{r eval=FALSE}
 if (!file.exists("GAPIT_Tutorial_Data.zip"))
 {
   download.file("http://zzlab.net/GAPIT/GAPIT_Tutorial_Data.zip", destfile = "GAPIT_Tutorial_Data.zip")
@@ -231,13 +158,15 @@ phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors 
 
 
 hapmap <- fread("https://zzlab.net/GAPIT/data/mdp_genotype_test.hmp.txt",fill=TRUE)
+
+
+
 ```
 
 ### **Phenotypic Data**
 
 #### Read in Phenotypic Data
-
-``` r
+```{r eval=FALSE}
 #Read in phenotypic files
 em_trials=read.csv("C:\\Users\\lance\\OneDrive - Washington State University (email.wsu.edu)\\Documents\\Genomic Selection\\Genomic Selection Pipeline\\Selected Trials_C\\Selected Trials_Emergence\\Emergence_Trials.csv",header=TRUE)
 str(em_trials)
@@ -269,11 +198,12 @@ lq15_18=em_trials[em_trials$r_expt == "2015 QAM Plots Lind" | em_trials$r_expt =
 lq15_19=em_trials[em_trials$r_expt == "2015 QAM Plots Lind" | em_trials$r_expt == "2017 QAM Plots Lind" |em_trials$r_expt == "2018 QAM Rows Lind" |em_trials$r_expt == "2019 QAM Rows Lind", ]
 ```
 
+
+
 #### Cullis Heritability (From Shantel Martinez Github)
 
 ##### Single Environment Including genotype
-
-``` r
+```{r eval=FALSE}
 lq15_bp <- lmer(emer~check.ind + (1|Name:new.ind) + (1|ibloc), data=lq15)
 Cullis_H2(lq15_bp)
 summary(lq15_bp)
@@ -282,8 +212,7 @@ ranova(lq15_bp)
 ```
 
 ##### Multi Environment including genotype
-
-``` r
+```{r eval=FALSE}
 lq15_17_bp <- lmer(emer~check.ind + (1|Name:new.ind) + (1|ibloc)+(1|r_expt)+check.ind:r_expt + (1|Name:new.ind:r_expt) + (1|ibloc:r_expt), data=lq15_17)
 Cullis_H2(lq15_17_bp)
 summary(lq15_17_bp)
@@ -291,22 +220,19 @@ anova(lq15_17_bp)
 ranova(lq15_17_bp)
 ```
 
-\#\#\#Singularity
-Problems
+###Singularity Problems
 
 ##### If you run into singularity or convergence problems you can always add in an lmerControl and then mess around with the maxfun number to get rid of the problem.
-
-``` r
+```{r eval=FALSE}
 lb1_2_bp <- lmer(emer~check.ind + (1|Name:new.ind) + (1|ibloc)+(1|r_expt)+check.ind:r_expt + (1|Name:new.ind:r_expt) + (1|ibloc:r_expt), data=lbl1_2,
             control=lmerControl(optimizer="Nelder_Mead",
                                  optCtrl=list(maxfun=1e3)))
 ```
 
+
 #### Adjusted Means
-
 ##### Single Environment
-
-``` r
+```{r eval=FALSE}
 #Adjustments
 lq15_r <- lm(emer~ibloc+checks, data=lq15)
 #residuals(lq15_r)
@@ -316,8 +242,7 @@ colnames(lq15_ap)<-c("Name","emer_f15_ap")
 ```
 
 ##### Multi Environment
-
-``` r
+```{r eval=FALSE}
 lq15_17_r <- lm(emer~ibloc+checks+r_expt+ibloc*r_expt+checks*r_expt, data=lq15_17)
 #lq15_17_r$residuals
 lq15_17=lq15_17 %>% mutate(ap_adj = emer+lq15_17_r$residuals)
@@ -325,18 +250,17 @@ lq15_17_ap=aggregate(lq15_17[,c(21)],list(lq15_17$Name),mean)
 colnames(lq15_17_ap)<-c("Name","emer_15_17_ap")
 ```
 
-\#Combine Environments
-
-``` r
+#Combine Environments
+```{r eval=FALSE}
 d1=left_join(lq15_r,lq15_17_r,by="Name")
 d2=left_join(d1,lq18_raw,by="Name")
 ```
 
-#### True version of Cullis heritability code that I’m working on which has been adapted from the Comparison of heritability papers and the github “<https://github.com/PaulSchmidtGit/Heritability>”. I’m still working on this code, but I figured I’d give you an overview.
+
+#### True version of Cullis heritability code that I'm working on which has been adapted from the Comparison of heritability papers and the github "https://github.com/PaulSchmidtGit/Heritability". I'm still working on this code, but I figured I'd give you an overview.
 
 ##### Single Environment
-
-``` r
+```{r eval=FALSE}
 g.ran <- lmer(data    = lq15,
               formula = emer~check.ind + (1|Name:new.ind) + (1|ibloc))
 
@@ -399,9 +323,9 @@ H2Cullis <- 1 - (vdBLUP_avg / 2 / vc_g)
 H2Cullis #0.4911897
 ```
 
-##### Multi Environment
 
-``` r
+##### Multi Environment
+```{r eval=FALSE}
 g.ran <- lmer(data    = lq15_17,
               formula = emer~check.ind + (1|Name:new.ind) + (1|ibloc)+(1|r_expt)+check.ind:r_expt + (1|Name:new.ind:r_expt) + (1|ibloc:r_expt))
 
@@ -482,19 +406,18 @@ H2Cullis <- 1 - (vdBLUP_avg / 2 / vc_g)
 H2Cullis #0.4911897
 ```
 
+
+
 #### **Genotypic Data**
-
 ##### Read in Genotype Data and/or Phenotype Data
-
-``` r
+```{r eval=FALSE}
 library(data.table)
 Genotype<-fread("F:\\OneDrive\\OneDrive - Washington State University (email.wsu.edu)\\Documents\\Genomic Selection\\Genomic Selection Pipeline\\Jason_GBS\\WAC_2016-2020_production_filt.hmp.txt",fill=TRUE)
 Phenotype<-fread("F:\\OneDrive\\OneDrive - Washington State University (email.wsu.edu)\\Documents\\Genomic Selection\\Genomic Selection Pipeline\\GS-Complex-Traits\\BL_EM_Pheno.csv",header=T)
 ```
 
 #### Phenotypic data wide to long format
-
-``` r
+```{r eval=FALSE}
 Phenotype=Phenotype[,-1]
 Phenotype1=Phenotype %>%
   pivot_longer(!Genotype, names_to = "Env", values_to = "EM")
@@ -502,16 +425,14 @@ Phenotype=Phenotype1
 ```
 
 ### Individual Options and overview of WHEAT wrapper function
-
 ##### Name Study
-
-``` r
+```{r eval=FALSE}
 Study="Tutorial"
 ```
 
-##### Obtain
 
-``` r
+##### Obtain
+```{r eval=FALSE}
 Pheno_Names=Phenotype
 names(Pheno_Names)[1]<-"Taxa"
 Pheno_Names$Taxa=as.character(Pheno_Names$Taxa)
@@ -520,12 +441,9 @@ gname<-clean_names(gname)
 ```
 
 ##### IF VCF
-
 ##### Read in VCF
-
 ##### Currently do not have a VCF file in the folder
-
-``` r
+```{r eval=FALSE}
 #setwd("F:/OneDrive/OneDrive - Washington State University (email.wsu.edu)/Documents/Genomic Selection/Genomic Selection Pipeline/GWAS Pipeline")
 Xvcf=read.vcfR(Genotype)
 Xvcf@fix
@@ -533,8 +451,7 @@ Xvcf@gt
 ```
 
 #### Convert to Numeric
-
-``` r
+```{r eval=FALSE}
 Xbgl=data.frame(Xvcf@fix,Xvcf@gt)
 genotypes_num<- VCF_2_numeric(Genotype)
 GD=genotypes_num$genotypes
@@ -550,16 +467,12 @@ fwrite(GI,paste0(Study,"_GI_map_Raw.csv"))
 save(GD,GI,GT,file=paste0(Study,"_Raw.RData"))
 ```
 
-The majority of this code is my pipeline I use to take a hapmap file,
-convert it to numeric, filter and impute it. If you just want the code
-for what I use for kamiak, you can just skip to the bottom or look at
-the R Script I provided.
+The majority of this code is my pipeline I use to take a hapmap file, convert it to numeric, filter and impute it.
+If you just want the code for what I use for kamiak, you can just skip to the bottom or look at the R Script I provided.
 
 ##### IF Hapmap
-
 #### Filter GBS for Phenotype data
-
-``` r
+```{r eval=FALSE}
 names.use <- names(Genotype)[(names(Genotype) %in% gname)]
 hapmap <- Genotype[, names.use, with = FALSE]
 hapmap=cbind(Genotype[,1:11],hapmap)
@@ -578,8 +491,7 @@ fwrite(hapmap,paste0(Study,"_Filtered_Hapmap.hmp.txt"),sep="\t",row.names = FALS
 ```
 
 #### Convert to Numeric
-
-``` r
+```{r eval=FALSE}
 #If you want to impute with mean
 outG=GAPIT.HapMap(hapmap,SNP.impute="Middle")
 #If you want to use a different imputation method
@@ -597,19 +509,16 @@ fwrite(GI,paste0(Study,"_GI_map_Raw.csv"))
 save(GD,GI,GT,file=paste0(Study,"_Raw.RData"))
 ```
 
-#### Filter Remove Missing Data \>20%, MAF \<5% and Monomorphic Markers and Lines with more than 80% missing
-
-``` r
+#### Filter Remove Missing Data >20%, MAF <5% and Monomorphic Markers and Lines with more than 80% missing
+```{r eval=FALSE}
 Missing_Rate=0.20
 MAF=0.05
 Missing_Rate_Ind=0.80
 ```
 
 #### Filter
-
 ##### Remove makers with more than 20% missing
-
-``` r
+```{r eval=FALSE}
 ##### Remove makers based on missing data
 mr=calc_missrate(GD)
 mr_indices <- which(mr > Missing_Rate)
@@ -625,8 +534,7 @@ if(length(mr_indices)!=0){
 ```
 
 ##### Remove Monomorphic Markers
-
-``` r
+```{r eval=FALSE}
 ##### Remove Monomorphic Markers
 maf <- calc_maf_apply(GDmr, encoding = c(0, 1, 2))
 mono_indices <- which(maf ==0)
@@ -641,9 +549,8 @@ if(length(mono_indices)!=0){
   dim(GImo)
 ```
 
-##### Remove MAF \<5%
-
-``` r
+##### Remove MAF <5%
+```{r eval=FALSE}
 ##### Remove MAF
 maf <- calc_maf_apply(GDmo, encoding = c(0, 1, 2))
 mono_indices <- which(maf < MAF)
@@ -659,8 +566,7 @@ if(length(mono_indices)!=0){
 ```
 
 ##### Filter Individuals
-
-``` r
+```{r eval=FALSE}
 mr=calc_missrate(t(GDmf))
 mr_indices <- which(mr > Missing_Rate_Ind)
 if(length(mr_indices)!=0){
@@ -674,11 +580,10 @@ if(length(mr_indices)!=0){
     dim(GImf)
 ```
 
+
 #### Imputation
-
 ##### Imputation Using BEAGLE
-
-``` r
+```{r eval=FALSE}
 GImf$chr <- GImf$Chromosome
 GImf$rs <- GImf$SNP
 GImf$pos <- GImf$Position
@@ -731,8 +636,7 @@ dim(GT)
 ```
 
 ##### Or Impute with KNN
-
-``` r
+```{r eval=FALSE}
 x=impute::impute.knn(as.matrix(t(GDmf)))
 myGD_imp=t(x$data)
 myGD_imp<-round(myGD_imp,0)
@@ -757,12 +661,9 @@ save(GDre,GIre,GT,file=paste0(Study,"_Filt_Imputed.RData"))
 ```
 
 ### **START HERE IF GENOTYPE DATA IS DONE**
-
 #### This gets into my own files This section gets your data in order but using a function
-
 #### Function to get data in order as above chunck but integrated into a function to also combine all files for a nice list with PCs included.
-
-``` r
+```{r eval=FALSE}
 CV=NULL
 PC=NULL
 Trait="EM"
@@ -866,13 +767,13 @@ Method="Two-Step"
                       mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
                       save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
                     }
+
+
 ```
 
 #### Or we can do all of this with the wrapper WHEAT function
-
 ##### Make QC=TRUE and GS=FALSE
-
-``` r
+```{r eval=FALSE}
 LIND_QC=WHEAT(Phenotype=Phenotype,
                 Genotype=Genotype,
                 QC=TRUE,
@@ -896,90 +797,51 @@ LIND_QC=WHEAT(Phenotype=Phenotype,
 ```
 
 ### **Genomic Selection Tutorial**
-
 ### Optional Input
-
 #### if you want to use the numeric files
-
 ##### GDre (Numeric Matrix from output)
-
 ##### GT (Taxa file from output)
-
 ##### GIre (Map file from output)
-
-##### GBS\_Train (GBS RData output you want to use for training population)
-
-##### GBS\_Predict (GBS RData output you want to use for validation set if you’re using VS)
-
+##### GBS_Train (GBS RData output you want to use for training population)
+##### GBS_Predict (GBS RData output you want to use for validation set if you're using VS)
 ### Multipe Trait Output
-
-#### Method: “Two-Step”
-
-#### Scheme: Cross-Validation (“K-Fold”) or Validation Sets (“VS”)
-
+#### Method: "Two-Step"
+#### Scheme: Cross-Validation ("K-Fold") or Validation Sets ("VS")
 #### fold (Number of folds in K-Fold)
-
 #### Training (Select trial for training population)
-
 #### Prediction (Select trial if using validation sets)
-
-#### Outcome: “Tested” or “Untested”
-
+#### Outcome: "Tested" or "Untested"
 ##### Tested allows predictions and accuracy and error comparisons
-
 ##### Untested for new predictions without comparisons
-
-#### Packages: “rrBLUP”, “MAS”, “BGLR”, “caret”, “GLM”,
-
-#### Type: “Regression” or “Classification” with caret package
-
+#### Packages: "rrBLUP", "MAS", "BGLR", "caret", "GLM",
+#### Type: "Regression" or "Classification" with caret package
 #### Models: rrBLUP, MAS, BGLR(BayesA,BayesB,BayesC,BayesL,BayesRR,RKHS, Ordinal), caret(any model available in the caret package), GAPIT(gBLUP,cBLUP, or sBLUP)
-
 #### nIter (Number of iterations for BGLR models)
-
 #### burnIn (Number of burn-ins for BGLR models)
-
-#### With/without Principal Components (“PC”: Number included or NULL)
-
-#### With/without Covariates (“CV”: CV set (Genotypes and CVs) or NULL)
-
-#### Phenotype transformation (“none”,“sqrt”,“log”,“boxcox”)
-
+#### With/without Principal Components ("PC": Number included or NULL)
+#### With/without Covariates ("CV": CV set (Genotypes and CVs) or NULL)
+#### Phenotype transformation ("none","sqrt","log","boxcox")
 #### Subsampling of markers (markers: Number of markers to sample or NULL)
-
-#### Kernel (“Markers”,“Linear”,Gaussian“,”Polynomial“,”Sigmoid“,”Arc-cosine with 1 layer or multiple layers:nl (“AK1”,“AKL”),“Exponential”)
-
-#### Kernel (caret package allows above kernels with addition of “VanRaden”,“PC”,“Zhang”,“Endelman”(A-mat),)
-
+#### Kernel ("Markers","Linear",Gaussian","Polynomial","Sigmoid","Arc-cosine with 1 layer or multiple layers:nl ("AK1","AKL"),"Exponential")
+#### Kernel (caret package allows above kernels with addition of "VanRaden","PC","Zhang","Endelman"(A-mat),)
 #### nl (Number of layers for arc-cosine kernel)
-
 #### degree (degree for polynomial kernel)
-
 #### Sparse Matrix (Sparese=TRUE or FALSE)
-
 #### m (Number of lines to keep in sparse matrix)
-
 #### Replications (Number of Replications)
-
 #### GWAS-Assisted GS (GAGS:TRUE or FALSE)
-
 #### PCA.total (Number of PCs for GAGS and GAPIT models)
-
 #### QTN (Number of top QTN or markers to include for GAGS)
-
-#### GWAS (GWAS model for GAGS c(“BLINK) or any GAPIT model) \#\#\#\# threshold (”Bonferonni" or NULL for GAGS)
-
+#### GWAS (GWAS model for GAGS c("BLINK) or any GAPIT model)
+#### threshold ("Bonferonni" or NULL for GAGS)
 #### alpha (0.5, or any other threshold for Bonferonni for GAGS)
-
 #### Messages (TRUE or FALSE)
 
 #### All of the above can be done with the wrapper function WHEAT
-
 #### Option shown below displays the function after QC and just GS with the GBS RData as input for validation sets using Two-step rrBLUP
 
 #### Input using numeric data.
-
-``` r
+```{r eval=FALSE}
 load(file="Tutorial_Filt_Imputed.RData")
 #Input
 F515_DH20=WHEAT(Phenotype=Phenotype,
@@ -1028,8 +890,7 @@ F515_DH20=WHEAT(Phenotype=Phenotype,
 ```
 
 #### Input using GBS RData.
-
-``` r
+```{r eval=FALSE}
 load(file ='GBS_2_Tutorial.RData')
 #Input
 F515_DH20=WHEAT(Phenotype=Phenotype,
@@ -1077,16 +938,12 @@ F515_DH20=WHEAT(Phenotype=Phenotype,
 ```
 
 ### Full Wrapper for Quality Control and Genomic Selection
-
 #### Input using Phenotype with Genotype, Environment, and Trait(s)
-
 #### Use hapmap as Genotype file
-
 #### Set QC and GS to TRUE
-
 #### Option shown below displays the function after QC and just GS with the GBS RData as input for validation sets using Two-step rrBLUP
 
-``` r
+```{r eval=FALSE}
 F515_DH20=WHEAT(Phenotype=Phenotype,
                 Genotype=Genotype,
                 QC=TRUE,
@@ -1146,13 +1003,11 @@ F515_DH20=WHEAT(Phenotype=Phenotype,
                 Messages=TRUE)
 ```
 
+
 #### If you want to look at individual functions
-
 ### Options with rrBLUP
-
 #### GS with K-Fold with all opotions
-
-``` r
+```{r eval=FALSE}
 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
                                                                                                    phenotype = GBS_Train$pheno,
                                                                                                    Kernel="Markers",
@@ -1169,8 +1024,7 @@ Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS
 ```
 
 #### rrBLUP Validation sets with all options
-
-``` r
+```{r eval=FALSE}
 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
                                                                                                    train_phenotype = GBS_Train$pheno,
                                                                                                    train_PCA=GBS_Train$PC[,1:PC],
@@ -1190,8 +1044,7 @@ Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes
 ```
 
 #### rrBLUP with GAGS in K-Fold
-
-``` r
+```{r eval=FALSE}
 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_CV(genotypes = GBS_Train$geno,
                                                                                                       phenotype = GBS_Train$pheno,
                                                                                                       Kernel="Markers",
@@ -1215,9 +1068,9 @@ Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_CV(genotypes 
                                 )})
 ```
 
-### Classification with caret in K-Fold
 
-``` r
+### Classification with caret in K-Fold
+```{r eval=FALSE}
 Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV(genotypes = GBS_Train$geno,
                                                                                                    phenotype = GBS_Train$pheno,
                                                                                                    type="Classification",
@@ -1236,9 +1089,9 @@ Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV(genotypes
                             )})
 ```
 
-#### R Script for Kamiak
 
-``` r
+#### R Script for Kamiak
+```{r eval=FALSE}
   load(file ='GBS_2_Tutorial.RData')
 library()  
 library(dplyr)
@@ -1277,14 +1130,13 @@ save(Results,file = "Results.RData")
 ### **Genome-Wide Association Tutorial using GAPIT**
 
 #### load GBS data ouput form WHEAT
-
-``` r
+```{r eval=FALSE}
 load(file='GBS_2_Tutorial.RData')
 ```
 
-#### Model Selection in GAPIT (aka PC number selection)
 
-``` r
+#### Model Selection in GAPIT (aka PC number selection)
+```{r eval=FALSE}
 #QAM
 myGAPIT_MS<- GAPIT(Y = GBS_qam_adj18$pheno[,c(1,18)],
                          GD = GBS_qam_adj18$numeric,
@@ -1296,8 +1148,7 @@ myGAPIT_MS<- GAPIT(Y = GBS_qam_adj18$pheno[,c(1,18)],
 ```
 
 #### GAPIT
-
-``` r
+```{r eval=FALSE}
 myGAPIT_BLINK_qam_adj_23<- GAPIT(Y = GBS_qam_adj23$pheno[,c(1,23)],
                          GD = GBS_qam_adj23$numeric,
                          GM = GBS_qam_adj23$map,
@@ -1348,40 +1199,28 @@ save(myGAPIT_MLM_adj_13,file="GWAS_EM_adj_MLM_ZZ_Redo_5_11.RData")
 ```
 
 #### Marker effects and variation
-
 ##### This can be either FDR or Bonferonni
-
-``` r
+```{r eval=FALSE}
 BLINK_Effects=Marker_Effects(Pheno=myY[,2],GWAS=myGAPIT_BLINK_qam_adj_23,alpha=0.05,correction="Bonferonni",messages=TRUE,model="BLINK")
 BLINK_Effects
 ```
 
 ##### Read in Hapmap
-
-``` r
+```{r eval=FALSE}
 load(file="EM_Hapmap_Redo.RData")
 output[1:10,1:14]
 #Extract Map and Allele Information
 EM_GBS_SNPs=output[,1:5]
 ```
 
-This version is much better but requires a hapmap. It creates a nice
-table with alleles in which allows you to identify the favorable allele.
-The numericalization makes the 2 the allele second in alphabetical
-order. If it is A/T then A=0 and T=2. So if the marker effect is
-negative such as -2, then A is the favorable allele because -2 is the
-effect of the T allele.
+
+This version is much better but requires a hapmap. It creates a nice table with alleles in which allows you to identify the favorable allele. The numericalization makes the 2 the allele second in alphabetical order. If it is A/T then A=0 and T=2. So if the marker effect is negative such as -2, then A is the favorable allele because -2 is the effect of the T allele.
 
 #### Calculate Effects
-
 #### This can be either FDR or Bonferonni
 
-IF you prefer the online functions for gapit, you will need to remove
-all functions from the website since they don’t all work. I use gapit
-functions in the below function. So to make it work, download the Github
-version if you did not do that above.
-
-``` r
+IF you prefer the online functions for gapit, you will need to remove all functions  from the website since they don't all work. I use gapit functions in the below function. So to make it work, download the Github version if you did not do that above.
+```{r eval=FALSE}
 #This removes just functions.
 #rm(list=lsf.str())
 #install.packages("devtools")
@@ -1402,29 +1241,20 @@ FDR_sig_M1_bl
 ```
 
 #### Secondary Trait
-
-This is for another trait that I don’t want to create a manhattan plot
-but overlay significant markers within the other manhattan
-pltos
-
-``` r
+This is for another trait that I don't want to create a manhattan plot but overlay significant markers within the other manhattan pltos
+```{r eval=FALSE}
 FDR_sig_B1_Col_Len_blup=Marker_Effects_Allele(Pheno=GBS_qam_adj18$CV[,c(6)],GWAS=BLINK_Col_Length_qam_blup_18,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs,model="BLINK")
 FDR_sig_F1_Col_Len_blup=Marker_Effects_Allele(Pheno=GBS_qam_adj18$CV[,c(6)],GWAS=FarmCPU_Col_Length_qam_blup_18,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs,model="FarmCPU")
 FDR_sig_M1_Col_Len_blup=Marker_Effects_Allele(Pheno=GBS_qam_adj18$CV[,c(6)],GWAS=MLM_Col_Length_qam_blup_18,alpha=0.05,correction="FDR",messages=TRUE,Markers=EM_GBS_SNPs,model="MLM")
 Col_lenth=union(FDR_sig_B1_Col_Len_blup$SNP,FDR_sig_F1_Col_Len_blup$SNP)
 ```
 
-I reacreated the manahttan plots from the gapit code using ggplot which
-allows for far more customization, and the ability to edit the plot
-after it is initially made.
+I reacreated the manahttan plots from the gapit code using ggplot which allows for far more customization, and the ability to edit the plot after it is initially made.
 
-I did this to allow easy labeling and allow multiple traits/models from
-two different GWAS results to be
-overlaid.
+I did this to allow easy labeling and allow multiple traits/models from two different GWAS results to be overlaid.
 
 #### First you need to change Numeric to Number and Letter Chromosomes
-
-``` r
+```{r eval=FALSE}
 FarmCPU_qam_adj_23$GWAS=FarmCPU_qam_adj_23$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))  
   
 FarmCPU_adj_13$GWAS=FarmCPU_adj_13$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))
@@ -1439,17 +1269,16 @@ myGAPIT_MLM_adj_13$GWAS=myGAPIT_MLM_adj_13$GWAS%>%mutate(Chromosome=recode(Chrom
 
 myGAPIT_MLM_qam_adj_23$GWAS=cbind(FarmCPU_Col_qam_adj_23$GWAS[,1:3],myGAPIT_MLM_qam_adj_23$GWAS[,-c(1:3)])
 myGAPIT_MLM_adj_13$GWAS=cbind(FarmCPU_Col_qam_adj_23$GWAS[,1:3],myGAPIT_MLM_adj_13$GWAS[,-c(1:3)])
+
 ```
 
-\#\#\#\#Single Manhattan Plot
 
-If you don’t want to overlay GWAS results do not use Multi options.
-Third labels is for a third trait where I just want to show the
-significant markers without plotting the GWAS results.
+####Single Manhattan Plot
+
+If you don't want to overlay GWAS results do not use Multi options. Third labels is for a third trait where I just want to show the significant markers without plotting the GWAS results.
 
 QTN is if you want to highlight certain markers with a vertical line.
-
-``` r
+```{r eval=FALSE}
 manhattan_plot_Multi(FarmCPU_qam_adj_23$GWAS,labels =NULL,
                      model="FarmCPU",QTN_index=intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP),
                      Multi=NULL,Multi_labels=NULL,
@@ -1467,10 +1296,8 @@ manhattan_plot_Multi(myGAPIT_MLM_qam_adj_23$GWAS,labels =FDR_sig_M6,
 
 #### Overall Mulit Plot
 
-This is to overlay multiple GWAS resutls. Multi is the second GWAS
-results and Multi\_labels if you want to label those differently.
-
-``` r
+This is to overlay multiple GWAS resutls. Multi is the second GWAS results and Multi_labels if you want to label those differently.
+```{r eval=FALSE}
 intersect(FDR_sig_F6$SNP,FDR_sig_F1_bl$SNP)
 
 fmmp23=manhattan_plot_Multi(FarmCPU_qam_adj_23$GWAS,labels =FDR_sig_F6,
@@ -1492,22 +1319,15 @@ fmmp23=fmmp23+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank()
 bmmp23=bmmp23
 ```
 
-#### Zhiwu’s version
+#### Zhiwu's version
+This allows for labeling significant markers that are found in all models with a single large label at the top manahattan plot.
 
-This allows for labeling significant markers that are found in all
-models with a single large label at the top manahattan plot.
+QTN_index2 is differnt then above. It's a different color that I used if a marker was found in 2 models.
 
-QTN\_index2 is differnt then above. It’s a different color that I used
-if a marker was found in 2 models.
+QTN_index3 is like QTN_index2 but for 3 or more models.
 
-QTN\_index3 is like QTN\_index2 but for 3 or more models.
-
-Sig\_L and Sig\_multi allow the ability to create different threshold
-lines for the two different GWAS results since they may not be the same
-especially since FDR is based on p-values. Whereas for bonferonni, if
-the number of markers are the same so will the threshold line plotted.
-
-``` r
+Sig_L and Sig_multi allow the ability to create different threshold lines for the two different GWAS results since they may not be the same especially since FDR is based on p-values. Whereas for bonferonni, if the number of markers are the same so will the threshold line plotted.
+```{r eval=FALSE}
 intersect(FDR_sig_F6$SNP,FDR_sig_B6$SNP)
 intersect(FDR_sig_F6$SNP,FDR_sig_M6$SNP)
 intersect(FDR_sig_B6$SNP,FDR_sig_M6$SNP)
@@ -1554,11 +1374,12 @@ mmp23=manhattan_plot_Multi(myGAPIT_MLM_qam_adj_23$GWAS,labels =NULL,
 fmmp23=fmmp23+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.title.x= element_blank())
 bmmp23=bmmp23+theme(axis.ticks.x = element_blank(),axis.text.x = element_blank(),axis.title.x= element_blank())
 mmp23=mmp23
+
+
 ```
 
 #### Stacking of multiple manhattan plots.
-
-``` r
+```{r eval=FALSE}
 library(grid)
 grid.newpage()
 grid.draw(rbind(
@@ -1566,11 +1387,11 @@ grid.draw(rbind(
                 ggplotGrob(bmmp23),
                 ggplotGrob(mmp23),
                 size = "last"))
+
 ```
 
 #### Multi Trait GWAS based on sommer multivariate gwas but includes results for three different p-values for common, interaction, and full effects.
-
-``` r
+```{r eval=FALSE}
 Gen_Table_JMP_DP23=left_join(GBS_qam_adj23$pheno[,c(1,23)],GBS_qam_adj23$CV[,c(1,6)],by="Genotype")
 myGM23=GBS_qam_adj23$geno
 myGM23=apply(myGM23,2,function(x) recode(x,"0"="-1","1"="0","2"="1"))
@@ -1590,8 +1411,7 @@ MTMM23=sommer_MTMM(Y=Gen_Table_JMP_DP23,SNP_INFO=GBS_qam_adj23$map,model=ansx23,
 ```
 
 #### Extract Values
-
-``` r
+```{r eval=FALSE}
 myGAPIT_BLINK_qam_adj_23$GWAS=myGAPIT_BLINK_qam_adj_23$GWAS%>%mutate(Chromosome=recode(Chromosome,"1"="1A","2"="1B","3"="1D","4"="2A","5"="2B","6"="2D","7"="3A","8"="3B","9"="3D","10"="4A","11"="4B","12"="4D","13"="5A","14"="5B","15"="5D","16"="6A","17"="6B","18"="6D","19"="7A","20"="7B","21"="7D","22"="UN"))
 
 #This is simply to creat teh same data frame to input our results so they can work with the other gapit functions we use.
@@ -1607,11 +1427,12 @@ myGAPIT_MTMM_qam_adj23_CL$GWAS$P.value=MTMM23$pvals$DP_BLUP.score
 myGAPIT_MTMM_qam_adj23_FULL$GWAS$P.value=MTMM23$pvals$pval_full
 myGAPIT_MTMM_qam_adj23_IE$GWAS$P.value=MTMM23$pvals$pval_trait_specific
 myGAPIT_MTMM_qam_adj23_COM$GWAS$P.value=MTMM23$pvals$pval_trait_common
+
+
 ```
 
 #### Marker Effects
-
-``` r
+```{r eval=FALSE}
 Bon_sig_MTMM23_EM <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=myGAPIT_MTMM_qam_adj23_EM,alpha=0.05,correction="Bon",messages=TRUE,Markers=EM_GBS_SNPs)
 Bon_sig_MTMM23_EM
 Bon_sig_MTMM23_CL <- Marker_Effects_Allele(Pheno=GBS_qam_adj23$pheno[,c(23)],GWAS=myGAPIT_MTMM_qam_adj23_CL,alpha=0.05,correction="Bon",messages=TRUE,Markers=EM_GBS_SNPs)
@@ -1626,10 +1447,8 @@ Bon_sig_MTMM23_COM
 
 #### Prepare for Venn Diagram
 
-You can use these with the above manhattan plot functions, but the below
-code is to create a venn diagram.
-
-``` r
+You can use these with the above manhattan plot functions, but the below code is to create a venn diagram.
+```{r eval=FALSE}
 Extract_Sig=function(results,pop,year,model,cov){
 nrep=nrow(results)
 po=rep(pop,nrep)
@@ -1644,8 +1463,7 @@ return(aca)
 ```
 
 #### Combine results
-
-``` r
+```{r eval=FALSE}
 Bon_M23_EM=Extract_Sig(Bon_sig_MTMM23_EM,"DP","2015-2018","MTMM","EM")
 Bon_M22_CL=Extract_Sig(Bon_sig_MTMM22_CL,"DP","2015-2017","MTMM","CL")
 Bon_M23_FULL=Extract_Sig(Bon_sig_MTMM23_FULL,"DP","2015-2018","MTMM","FULL")
@@ -1662,11 +1480,12 @@ install.packages("xlsx")
 library(xlsx)
 write.xlsx(MTMMB_Sig,"Significant Markers_MTMM_Bon.xlsx", sheetName = "Sheet1", 
   col.names = TRUE, row.names = FALSE, append = FALSE)
+
+
 ```
 
 #### Venn Diagram
-
-``` r
+```{r eval=FALSE}
 library(VennDiagram)
 venn.diagram(
   x = list(
@@ -1681,20 +1500,19 @@ venn.diagram(
   output = TRUE ,
           imagetype="png" ,
           col = "black",
-    fill = c("dodgerblue", "goldenrod1", "darkorange1", "seagreen3", "orchid3"),
-    alpha = 0.50,
-    cex = c(1.5, 1.5, 1.5, 1.5, 1.5, 1, 0.8, 1, 0.8, 1, 0.8, 1, 0.8,
-     1, 0.8, 1, 0.55, 1, 0.55, 1, 0.55, 1, 0.55, 1, 0.55, 1, 1, 1, 1, 1, 1.5),
-    cat.col = c("dodgerblue", "goldenrod1", "darkorange1", "seagreen3", "orchid3"),
-    cat.cex = 1.5,
-    cat.fontface = "bold",
-    margin = 0.05
+	fill = c("dodgerblue", "goldenrod1", "darkorange1", "seagreen3", "orchid3"),
+	alpha = 0.50,
+	cex = c(1.5, 1.5, 1.5, 1.5, 1.5, 1, 0.8, 1, 0.8, 1, 0.8, 1, 0.8,
+	 1, 0.8, 1, 0.55, 1, 0.55, 1, 0.55, 1, 0.55, 1, 0.55, 1, 1, 1, 1, 1, 1.5),
+	cat.col = c("dodgerblue", "goldenrod1", "darkorange1", "seagreen3", "orchid3"),
+	cat.cex = 1.5,
+	cat.fontface = "bold",
+	margin = 0.05
         )
 ```
 
 ### Read in phenotypic file and rename columns
-
-``` r
+```{r eval=FALSE}
 Phenotype <- read.csv(file="F:\\OneDrive\\OneDrive - Washington State University (email.wsu.edu)\\Documents\\MN Grant\\TCAP\\TCAP_EDX_GP.csv", header=T, sep=",", stringsAsFactors=F) #Fill-in phenotype file 
 colnames(Phenotype)<-c("Genotype","Mg","P","K","Ca","Mn","Fe","Cu","Zn")
 length(unique(Phenotype$Genotype))
@@ -1705,10 +1523,8 @@ sum(is.na(Genotype))
 ```
 
 ### Get data in order
-
 #### In this example the phenotype file consisted of the first colum of genotype and the other 8 as nutrients
-
-``` r
+```{r eval=FALSE}
 TCAP_QC=WHEAT(Phenotype=Phenotype,
                 Genotype=Genotype,
                 QC=TRUE,
@@ -1733,13 +1549,9 @@ TCAP_QC=WHEAT(Phenotype=Phenotype,
 ```
 
 ### PopVar need to be in a certain format
-
 #### Here I focused on T9 which was zinc
-
-You can do it for all columns but only needs to be done for the trait
-you intend to use in PopVar
-
-``` r
+You can do it for all columns but only needs to be done for the trait you intend to use in PopVar
+```{r eval=FALSE}
 load(file="GBS_2_TCAP.RData")
 GBS_2_TCAP_MN_Zn$pheno
 View(GBS_2_TCAP_MN_Zn$numeric)
@@ -1778,12 +1590,11 @@ dim(GBS_2_TCAP_MN_Zn$pheno)
 dim(GBS_2_TCAP_MN_Zn$map)
 ```
 
+
+
 ### This chunk is what I put in as my R Script for kamiak
-
-This is where you can specify different models and such and can be
-customized following the PopVar documentation.
-
-``` r
+This is where you can specify different models and such and can be customized following the PopVar documentation.
+```{r eval=FALSE}
 load(file="TCAP_MN_Zn.RData")
 library(PopVar)
 TCAP_PopVar=pop.predict(G.in = as.matrix(GBS_2_TCAP_MN_Zn$PopVar), y.in =as.matrix(GBS_2_TCAP_MN_Zn$pheno), map.in = as.matrix(GBS_2_TCAP_MN_Zn$map),
@@ -1793,13 +1604,11 @@ TCAP_PopVar=pop.predict(G.in = as.matrix(GBS_2_TCAP_MN_Zn$PopVar), y.in =as.matr
                                                                   nCV.iter = 10, nFold = 5, nFold.reps = 10, nIter = 12000,
                                                                   burnIn = 3000, models = c("rrBLUP"), return.raw = T)
 save(TCAP_PopVar,file = "TCAP_PopVar_NC.RData")
+
 ```
 
-The PopVar output is a ton of lists which is hard to visualize and use.
-It consisted of 31 columns due to the secondary selection for the other
-7 traits than Zn
-
-``` r
+The PopVar output is a ton of lists which is hard to visualize and use. It consisted of 31 columns due to the secondary selection for the other 7 traits than Zn
+```{r eval=FALSE}
 load(file="TCAP_PopVar_NC.RData")
 TCAP_PopVar$CVs$Zn
 TCAP_PopVar$predictions$Zn_param.df
@@ -1846,13 +1655,12 @@ colnames(Popvar_Zn)<-PopVar_Zn_Names
 Popvar_Zn[1:10,1:28]
 
 View(Popvar_Zn[1:10,1:28])
+
 ```
 
 # Cross Prediction with other packages
-
 ## Cross predictin with rrBLUP
-
-``` r
+```{r eval=FALSE}
 library(rrBLUP) #load rrBLUP 
 library(BGLR) #load BLR 
 library(BLR)
@@ -1874,9 +1682,11 @@ GEBVF=c(GEBV)+c(fix)
 GEBVSD=G%*%ans1$u.SE
 
 plot(GEBVF,GEBVSD)
+
+
 ```
 
-``` r
+```{r eval=FALSE}
 GEBV.pb <- GEBV # this are the BV
 rownames(GEBV.pb) <- 1:nrow(GEBV)
 crosses <- do.call(expand.grid, list(rownames(GEBV.pb),rownames(GEBV.pb))); 
@@ -1885,7 +1695,7 @@ cross2 <- duplicated(t(apply(crosses, 1, sort)))
 crosses2 <- crosses[cross2,]; head(crosses2); dim(crosses2)
 ```
 
-``` r
+```{r eval=FALSE}
 # get GCA1 and GCA2 of each hybrid
 GCA1 = GEBV.pb[match(crosses2[,1], rownames(GEBV.pb))] 
 GCA2 = GEBV.pb[match(crosses2[,2], rownames(GEBV.pb))] 
@@ -1904,8 +1714,7 @@ BV[order(BV$BVcross,decreasing=TRUE),]
 ```
 
 # Cross-Prediction with sommer
-
-``` r
+```{r eval=FALSE}
 library(sommer)
 y <- Y[,1] # response grain yield
 Z1 <- diag(length(y)) # incidence matrix
@@ -1920,22 +1729,17 @@ summary(ans)
 
 ### **Frequently asked questions**
 
-1.  Where can I get WhEATBreeders? WhEATBreeders is currently only
-    available on github via Lance F. Merrick’s public repository found
-    at <https://github.com/lfmerrick21/WhEATBreeders>.  
-      
-2.  How to download WhEATBreeders? Please refer the “Getting started”
-    section above where I show how to download and install WhEATBreeders
-    using devtools.  
-      
-3.  Where can I get help with issues regarding WhEATBreeders? All
-    questions should be directed to Lance F. Merrick at
-    <lance.merrick21@gmail.com>.
+1. Where can I get WhEATBreeders? WhEATBreeders is currently only available on github via Lance F. Merrick’s public repository found at https://github.com/lfmerrick21/WhEATBreeders. 
+\
+\
+2. How to download WhEATBreeders? Please refer the “Getting started” section above where I show how to download and install WhEATBreeders using devtools.
+\
+\
+3. Where can I get help with issues regarding WhEATBreeders? All questions should be directed to Lance F. Merrick at lance.merrick21@gmail.com.
+
+
+
 
 ### **Further Information**
 
-For more information on individual functions please see the
-“Reference\_Manual.pdf” or type ?FUNCITON\_NAME into the R console,
-this will pull up specific information of each function inside
-WhEATBreeders. For example typing ?manhattan\_plot will pull of the help
-page with details about the function that creates the Manhattan plots.
+For more information on individual functions please see the “Reference_Manual.pdf” or type ?FUNCITON_NAME into the R console, this will pull up specific information of each function inside WhEATBreeders. For example typing ?manhattan_plot will pull of the help page with details about the function that creates the Manhattan plots.
