@@ -128,6 +128,8 @@ library of the package “devtools” using the code below.
 # Packages needed
 
 ``` r
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(devtools)
 #Better for FDR function
 devtools::install_github("jiabowang/GAPIT3",force=TRUE)
 library(GAPIT3)
@@ -139,61 +141,59 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 
   BiocManager::install("impute")
 #From the source
-require(compiler) #for cmpfun
-source("http://zzlab.net/GAPIT/GAPIT.library.R")
-source("http://zzlab.net/GAPIT/gapit_functions.txt") #make sure compiler is running
-source("http://zzlab.net/GAPIT/emma.txt")
+#require(compiler) #for cmpfun
+#Only if you want the source code
+#source("http://zzlab.net/GAPIT/GAPIT.library.R")
+#source("http://zzlab.net/GAPIT/gapit_functions.txt") #make sure compiler is running
+#source("http://zzlab.net/GAPIT/emma.txt")
 
+#I prefer the Github version
 #Better for FDR function
 devtools::install_github("jiabowang/GAPIT3",force=TRUE)
 library(GAPIT3)
 
-  library(BGLR)
-  library(rrBLUP)
-  library(caret)
-  library(tidyr)
-  library(dplyr)
-  library(Hmisc)
-  library(WeightIt)
-  library(mpath)
-  library(glmnetUtils)
-  library(glmnet)
-  library(MASS)
-  library(Metrics)
-  library(stringr)
-  library(lsa)
-  library(keras)
-  library(tensorflow)
-  library(BMTME)
-  library(plyr)
-  library(data.table)
-  library(bigmemory)
-  library(biganalytics)
-  library(ggplot2)
-  library(tidyverse)
-  library(knitr)
-  library(cvTools)
-  library(vcfR)
-  library(compiler)
-  library(gdata)
-  library(BiocManager)
-  library(impute)
-  library(PopVar)
-  library(BLR)
-  library(sommer)
-  library(emmeans)
-  library(heritability)
-  library(arm)
-  library(optimx)
-  library(purrr)
-  library(psych)
-  library(lme4)
-  library(lmerTest)
-  library(gridExtra)
-  library(grid)
-
 if (!require("pacman")) install.packages("pacman")
-pacman::p_load(data.table,bigmemory,biganalytics,dplyr,compiler)
+pacman::p_load(BGLR,
+  rrBLUP,
+  caret,
+  tidyr,
+  dplyr,
+  Hmisc,
+  WeightIt,
+  mpath,
+  glmnetUtils,
+  glmnet,
+  MASS,
+  Metrics,
+  stringr,
+  lsa,
+  keras,
+  tensorflow,
+  BMTME,
+  plyr,
+  data.table,
+  bigmemory,
+  biganalytics,
+  ggplot2,
+  tidyverse,
+  knitr,
+  cvTools,
+  vcfR,
+  compiler,
+  gdata,
+  PopVar,
+  BLR,
+  sommer,
+  heritability,
+  arm,
+  optimx,
+  purrr,
+  psych,
+  lme4,
+  lmerTest,
+  gridExtra,
+  grid,
+  readxl)
 ```
 
 ### **Load Package**
@@ -879,17 +879,17 @@ LIND_QC=WHEAT(Phenotype=Phenotype,
                 GS=FALSE,
                 #QC Info
                 Geno_Type="Hapmap",
-                Imputation="KNN",
+                Imputation="Beagle",
                 Filter=TRUE,
                 Missing_Rate=0.20,
                 MAF=0.05,
                 #Do not remove individuals
                 Filter_Ind=FALSE,
                 Missing_Rate_Ind=0.80,
-                Trait=c("Mg","P","K","Ca","Mn","Fe","Cu","Zn"),
+                Trait=c("EM"),
                 Study="Tutorial",
                 Outcome="Tested",
-                Trial=c("TCAP_MN"),
+                Trial=c("F5_2015","DH_2020"),
                 Scheme="K-Fold",#K-Fold or VS
                 Method="Two-Step", #Two-Step or #One-Step
                 Messages=TRUE)
@@ -1234,6 +1234,432 @@ Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV(genotypes
                                                                                                    repeats=5,
                                                                                                    method="repeatedcv"
                             )})
+```
+
+### One-Step Genomic Selection
+
+#### We can get the proper matrices with the wrapper WHEAT function
+
+##### Make QC=TRUE and GS=FALSE
+
+##### Gaussian Kernel output: Kernel=“Gaussian”
+
+``` r
+LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
+                Genotype=Genotype,
+                QC=TRUE,
+                GS=FALSE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                #Do not remove individuals
+                Filter_Ind=FALSE,
+                Missing_Rate_Ind=0.80,
+                Trait=c("EM"),
+                Study="Tutorial",
+                Outcome="Tested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",#K-Fold or VS
+                Method="One-Step", #Two-Step or #One-Step
+                Kernel="Gaussian",
+                folds = 5,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                GE=TRUE
+                UN=FALSE
+                GE_model="MTME"
+                Messages=TRUE)
+```
+
+#### Bayesian without GE: model=“ST”
+
+``` r
+load("Matrix_Tutorial.RData")
+Results=sapply(1:Replications, function(i,...){MTME(Matrix_Tutorial_ST,
+                                                      trait=c("EM"),
+                                                      model="ST",
+                                                      nIter = 80000, 
+                                                      burnIn = 10000, 
+                                                      folds = 5,
+                                                      UN=FALSE
+                                                      )})
+```
+
+#### Output with 3-Way Covariance Matrices
+
+#### GE\_model=“BMTME”
+
+#### UN=“FALSE”
+
+``` r
+LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
+                Genotype=Genotype,
+                QC=TRUE,
+                GS=FALSE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                #Do not remove individuals
+                Filter_Ind=FALSE,
+                Missing_Rate_Ind=0.80,
+                Trait=c("EM"),
+                Study="Tutorial",
+                Outcome="Tested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",#K-Fold or VS
+                Method="One-Step", #Two-Step or #One-Step
+                Kernel="Gaussian",
+                folds = 5,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                GE=TRUE
+                UN=FALSE
+                GE_model="BMTME"
+                Messages=TRUE)
+```
+
+#### Bayesian with 3-Way Covariance: model=“BME” and UN=FALSE
+
+``` r
+load("Matrix_Tutorial.RData")
+Results=sapply(1:Replications, function(i,...){MTME(Matrix_Tutorial_BME,
+                                                      trait=c("EM"),
+                                                      model="BME",
+                                                      nIter = 80000, 
+                                                      burnIn = 10000, 
+                                                      folds = 5,
+                                                      UN=FALSE
+                                                      )})
+```
+
+#### Output with Factor Analytic Matrix
+
+#### GE\_model=“MTME”
+
+#### UN=“FALSE”
+
+``` r
+LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
+                Genotype=Genotype,
+                QC=TRUE,
+                GS=FALSE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                #Do not remove individuals
+                Filter_Ind=FALSE,
+                Missing_Rate_Ind=0.80,
+                Trait=c("EM"),
+                Study="Tutorial",
+                Outcome="Tested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",#K-Fold or VS
+                Method="One-Step", #Two-Step or #One-Step
+                Kernel="Gaussian",
+                folds = 5,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                GE=TRUE
+                UN=FALSE
+                GE_model="MTME"
+                Messages=TRUE)
+```
+
+#### Bayesian with Factor Analytic Model: model=“BME” and UN=FALSE
+
+``` r
+load("Matrix_Tutorial.RData")
+Results=sapply(1:Replications, function(i,...){MTME(Matrix_Tutorial_BME,
+                                                      trait=c("EM"),
+                                                      model="BME",
+                                                      nIter = 80000, 
+                                                      burnIn = 10000, 
+                                                      folds = 5,
+                                                      UN=TRUE
+                                                      )})
+```
+
+#### Output with Marker-Environment Interaction Matrix
+
+#### GE\_model=“MEI”
+
+#### UN=“TRUE”
+
+``` r
+LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
+                Genotype=Genotype,
+                QC=TRUE,
+                GS=FALSE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                #Do not remove individuals
+                Filter_Ind=FALSE,
+                Missing_Rate_Ind=0.80,
+                Trait=c("EM"),
+                Study="Tutorial",
+                Outcome="Tested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",#K-Fold or VS
+                Method="One-Step", #Two-Step or #One-Step
+                Kernel="Gaussian",
+                folds = 5,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                GE=TRUE
+                UN=TRUE
+                GE_model="MEI"
+                Messages=TRUE)
+```
+
+#### Bayesian with Marker-Environment Interaction Model: model=“BME” and function is MTME\_UN
+
+``` r
+load("Matrix_Tutorial.RData")
+Results=sapply(1:Replications, function(i,...){MTME_UN(Matrix_Tutorial_BME,
+                                                      trait=c("EM"),
+                                                      model="BME",
+                                                      nIter = 80000, 
+                                                      burnIn = 10000, 
+                                                      folds = 5
+                                                      )})
+```
+
+#### One-Step With Machine Linear MLP Model
+
+#### We can get the proper matrices with the wrapper WHEAT function
+
+##### Make QC=TRUE and GS=FALSE
+
+##### Gaussian Kernel output: Kernel=“Gaussian”
+
+``` r
+LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
+                Genotype=Genotype,
+                QC=TRUE,
+                GS=FALSE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                #Do not remove individuals
+                Filter_Ind=FALSE,
+                Missing_Rate_Ind=0.80,
+                Trait=c("EM"),
+                Study="Tutorial",
+                Outcome="Tested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",#K-Fold or VS
+                Method="One-Step", #Two-Step or #One-Step
+                Kernel="Gaussian",
+                folds = 5,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                GE=TRUE
+                UN=FALSE
+                GE_model="MTME"
+                Messages=TRUE)
+```
+
+#### MLP without GE: model=“ST”
+
+``` r
+load("Matrix_Tutorial.RData")
+Results=sapply(1:Replications, function(i,...){MLP_CV(Matrix_Tutorial_ST,
+                                                      trait=c("EM"),
+                                                      model="ST",
+                                                      digits=4,
+                                                      nCVI=5,
+                                                      K=5,
+                                                      Sparse=NULL,
+                                                      folds = 5,
+                                                      UN=FALSE
+                                                      )})
+```
+
+#### Output with 3-Way Covariance Matrices
+
+#### GE\_model=“BMTME”
+
+#### UN=“FALSE”
+
+``` r
+LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
+                Genotype=Genotype,
+                QC=TRUE,
+                GS=FALSE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                #Do not remove individuals
+                Filter_Ind=FALSE,
+                Missing_Rate_Ind=0.80,
+                Trait=c("EM"),
+                Study="Tutorial",
+                Outcome="Tested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",#K-Fold or VS
+                Method="One-Step", #Two-Step or #One-Step
+                Kernel="Gaussian",
+                folds = 5,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                GE=TRUE
+                UN=FALSE
+                GE_model="BMTME"
+                Messages=TRUE)
+```
+
+#### MLP with 3-Way Covariance: model=“BME” and UN=FALSE
+
+``` r
+load("Matrix_Tutorial.RData")
+Results=sapply(1:Replications, function(i,...){MLP_CV(Matrix_Tutorial_BME,
+                                                      trait=c("EM"),
+                                                      model="BME",
+                                                      digits=4,
+                                                      nCVI=5,
+                                                      K=5,
+                                                      Sparse=NULL,
+                                                      folds = 5,
+                                                      UN=FALSE
+                                                      )})
+```
+
+#### Output with Factor Analytic Matrix
+
+#### GE\_model=“MTME”
+
+#### UN=“FALSE”
+
+``` r
+LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
+                Genotype=Genotype,
+                QC=TRUE,
+                GS=FALSE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                #Do not remove individuals
+                Filter_Ind=FALSE,
+                Missing_Rate_Ind=0.80,
+                Trait=c("EM"),
+                Study="Tutorial",
+                Outcome="Tested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",#K-Fold or VS
+                Method="One-Step", #Two-Step or #One-Step
+                Kernel="Gaussian",
+                folds = 5,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                GE=TRUE
+                UN=FALSE
+                GE_model="MTME"
+                Messages=TRUE)
+```
+
+#### MLP with Factor Analytic Model: model=“BME” and UN=FALSE
+
+``` r
+load("Matrix_Tutorial.RData")
+Results=sapply(1:Replications, function(i,...){MLP_CV(Matrix_Tutorial_BME,
+                                                      trait=c("EM"),
+                                                      model="BME",
+                                                      digits=4,
+                                                      nCVI=5,
+                                                      K=5,
+                                                      Sparse=NULL,
+                                                      folds = 5,
+                                                      UN=TRUE
+                                                      )})
+```
+
+#### Output with Marker-Environment Interaction Matrix
+
+#### GE\_model=“MEI”
+
+#### UN=“TRUE”
+
+``` r
+LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
+                Genotype=Genotype,
+                QC=TRUE,
+                GS=FALSE,
+                #QC Info
+                Geno_Type="Hapmap",
+                Imputation="Beagle",
+                Filter=TRUE,
+                Missing_Rate=0.20,
+                MAF=0.05,
+                #Do not remove individuals
+                Filter_Ind=FALSE,
+                Missing_Rate_Ind=0.80,
+                Trait=c("EM"),
+                Study="Tutorial",
+                Outcome="Tested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",#K-Fold or VS
+                Method="One-Step", #Two-Step or #One-Step
+                Kernel="Gaussian",
+                folds = 5,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                GE=TRUE
+                UN=TRUE
+                GE_model="MEI"
+                Messages=TRUE)
+```
+
+#### MLP with Marker-Environment Interaction Model: model=“BME” and function is MLP\_CV\_UN
+
+``` r
+load("Matrix_Tutorial.RData")
+Results=sapply(1:Replications, function(i,...){MLP_CV_UN(Matrix_Tutorial_BME,
+                                                      trait=c("EM"),
+                                                      model="BME",
+                                                      digits=4,
+                                                      nCVI=5,
+                                                      K=5,
+                                                      Sparse=NULL,
+                                                      folds = 5
+                                                      )})
 ```
 
 #### R Script for Kamiak
