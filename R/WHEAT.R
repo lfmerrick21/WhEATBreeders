@@ -16,6 +16,7 @@ WHEAT<-function(Phenotype,
                 GIre=NULL,
                 GBS_Train=NULL,
                 GBS_Predict=NULL,
+                Matrix=NULL,
                 #GS Info
                 Type="Regression",
                 Replications=1,
@@ -54,6 +55,8 @@ WHEAT<-function(Phenotype,
                 sampling="up",
                 repeats=5,
                 method="repeatedcv",
+                digits=4,
+                nCVI=5,
                 Messages=TRUE){
 
                 Phenotype=Phenotype %>% filter(Env %in% c(Trial))
@@ -361,9 +364,16 @@ WHEAT<-function(Phenotype,
                       }
                     }
                     if(Method=="One-Step"){
-                      Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,Kernel=Kernel,GE=GE,UN=UN,model=GE_model,Sparse=Sparse,m=m,degree=degree, nL=nL)
-                      mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
-                      save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
+                      if(Scheme=="K-Fold"){
+                        Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study))$geno, phenotype=get(paste0("GBS_1_",Study))$pheno,trait=Trait,Kernel=Kernel,GE=GE,model=GE_model,Sparse=Sparse,m=m,degree=degree, nL=nL)
+                        mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
+                        save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
+                      }else{
+                        Matrix<<-GE_Matrix_IND(train_genotypes=get(paste0("GBS_1_",Study))$geno, train_phenotype=get(paste0("GBS_1_",Study))$pheno,test_genotypes=get(paste0("GBS_1_",Study))$geno, test_phenotype=get(paste0("GBS_1_",Study))$pheno,trait=Trait,Kernel=Kernel,GE=GE,model=GE_model,Sparse=Sparse,m=m,degree=degree, nL=nL)
+                        mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
+                        save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
+                      }
+
                     }
 
 
@@ -478,9 +488,16 @@ WHEAT<-function(Phenotype,
                         }
                       }
                         if(Method=="One-Step"){
-                          Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study,"$geno")), phenotype=get(paste0("GBS_1_",Study,"$pheno")),trait=Trait,Kernel=Kernel,GE=GE,UN=UN,model=GE_model,Sparse=Sparse,m=m,degree=degree, nL=nL)
-                          mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
-                          save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
+                          if(Scheme=="K-Fold"){
+                            Matrix<<-GE_Matrix_IND(genotypes=get(paste0("GBS_1_",Study))$geno, phenotype=get(paste0("GBS_1_",Study))$pheno,trait=Trait,Kernel=Kernel,GE=GE,model=GE_model,Sparse=Sparse,m=m,degree=degree, nL=nL)
+                            mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
+                            save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
+                          }else{
+                            Matrix<<-GE_Matrix_IND(train_genotypes=get(paste0("GBS_1_",Study))$geno, train_phenotype=get(paste0("GBS_1_",Study))$pheno,test_genotypes=get(paste0("GBS_1_",Study))$geno, test_phenotype=get(paste0("GBS_1_",Study))$pheno,trait=Trait,Kernel=Kernel,GE=GE,model=GE_model,Sparse=Sparse,m=m,degree=degree, nL=nL)
+                            mv(from = "Matrix", to = paste0("Matrix_",Study,GE_model),envir = globalenv())
+                            save(list=paste0("Matrix_",Study),file=paste0("Matrix_",Study,".RData"))
+                          }
+
                         }
 
                     }
@@ -2224,12 +2241,78 @@ WHEAT<-function(Phenotype,
 
                     }
                     if(Method=="One-Step"){
+                      if(is.null(Matrix)){
+                        Matrix=get(paste0("Matrix_",Study))
+                      }
+
                       #We can do this with rrBLUP if we use Kernel/kin.blup
                       if(Outcome=="Tested"){
                         if(Scheme=="K-Fold"){
+                          if(Package=="rrBLUP"){
+
+
+                          }
+                          if(Package=="BGLR"){
+                            if(UN==TRUE){
+                              Results=sapply(1:Replications, function(i,...){MTME(Matrix=Matrix,
+                                                                                  trait=trait,
+                                                                                  model=model,
+                                                                                  nIter = nIter,
+                                                                                  burnIn = burnIn,
+                                                                                  folds = folds,
+                                                                                  UN=UN
+                              )})
+                            }else{
+                              Results=sapply(1:Replications, function(i,...){MTME_UN(Matrix=Matrix,
+                                                                                     trait=trait,
+                                                                                     model=model,
+                                                                                     nIter = nIter,
+                                                                                     burnIn = burnIn,
+                                                                                     folds = folds
+                              )})
+
+                            }
+
+
+                          }
+                          if(Package=="tensorflow"){
+                            if(UN==TRUE){
+                              Results=sapply(1:Replications, function(i,...){MLP_CV(Matrix=Matrix,
+                                                                                    trait=trait,
+                                                                                    model=model,
+                                                                                    digits=digits,
+                                                                                    nCVI=nCVI,
+                                                                                    K=folds,
+                                                                                    Sparse=Sparse,
+                                                                                    folds = folds,
+                                                                                    UN=UN
+                              )})
+
+
+                            }else{
+                              Results=sapply(1:Replications, function(i,...){MLP_CV_UN(Matrix=Matrix,
+                                                                                       trait=trait,
+                                                                                       model=model,
+                                                                                       digits=digits,
+                                                                                       nCVI=nCVI,
+                                                                                       K=folds,
+                                                                                       Sparse=Sparse,
+                                                                                       folds = folds
+                              )})
+
+                            }
+
+
+                          }
+
 
                         }
+
+
                         if(Scheme=="VS"){
+
+
+
 
                         }
                       }
@@ -2238,18 +2321,21 @@ WHEAT<-function(Phenotype,
                           #We can do this if we include blank values, but not in rrBLUP or DL
                           if(package=="rrBLUP"){
                             if(Kernel=="Markers"){
-                              NULL
-                            }else{}
-                          }
-                          if(Scheme=="VS"){
 
+
+                            }else{
+
+
+                            }
                           }
                         }
+                        if(Scheme=="VS"){
+
+
+
+
+                        }
                       }
-
-
-
-
                     }
                   }
 }

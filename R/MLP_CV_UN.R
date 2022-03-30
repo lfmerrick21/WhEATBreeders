@@ -2,7 +2,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
 
 
   if(model=="ST"){
-    Phenotype=matrix$BUN$Y[,c("Genotype","ENV",trait)]
+    Phenotype=matrix$BUN$Y[,c("Genotype","Env",trait)]
     #K <- matrix$BUN$K
     #ZG <- model.matrix(~0 + as.factor(rownames(Y)))
     #K_expanded=ZG%*%K%*%t(ZG)
@@ -21,10 +21,10 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
       #Y=as.matrix(Y2[,-c(1, 2)])
       ####Training testing sets using the BMTMEpackage###############
       pheno=data.frame(Genotype = Y2[, 1],
-                       ENV=Y2[, 2],
+                       Env=Y2[, 2],
                        Response=Y2[,trait[j]])
       pheno$Genotype=as.character(pheno$Genotype)
-      pheno$ENV=as.character(pheno$ENV)
+      pheno$Env=as.character(pheno$Env)
       CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
       #fold_list <- make_CV_sets(length(phenotypes), k = folds)
       #######Final X and y for fitting the model###################
@@ -179,7 +179,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
                                          Trait = trait[j],
                                          Partition = o,
                                          Genotype = Y2$Genotype[tst_set],
-                                         Environment = Y2$ENV[tst_set],
+                                         Environment = Y2$Env[tst_set],
                                          Units = Units_O,
                                          Epochs = Epoch_O,
                                          Drop_Out = Drop_O,
@@ -198,7 +198,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
   }
 
   if(model=="MT"){
-    Phenotype=matrix$BUN$Y[,c("Genotype","ENV",trait)]
+    Phenotype=matrix$BUN$Y[,c("Genotype","Env",trait)]
     #K <- matrix$BUN$K
     #ZG <- model.matrix(~0 + as.factor(rownames(Y)))
     #K_expanded=ZG%*%K%*%t(ZG)
@@ -217,10 +217,10 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
     #Y=as.matrix(Y2[,-c(1, 2)])
     ####Training testing sets using the BMTMEpackage###############
     pheno=data.frame(Genotype = Y2[, 1],
-                     ENV=Y2[, 2],
+                     Env=Y2[, 2],
                      Response=Y2[,trait])
     pheno$Genotype=as.character(pheno$Genotype)
-    pheno$ENV=as.character(pheno$ENV)
+    pheno$Env=as.character(pheno$Env)
     CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
     #fold_list <- make_CV_sets(length(phenotypes), k = folds)
     #######Final X and y for fitting the model###################
@@ -636,7 +636,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
                                          Trait = Names_Traits[j],
                                          Partition = o,
                                          Genotype = Y2$Genotype[tst_set],
-                                         Environment = Y2$ENV[tst_set],
+                                         Environment = Y2$Env[tst_set],
                                          Units = Units_O,
                                          Epochs = Epoch_O,
                                          Drop_Out = Drop_O,
@@ -657,7 +657,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
   }
 
   if(model=="BME"){
-    Phenotype=matrix$BUN$Y[,c("Genotype","ENV",trait)]
+    Phenotype=matrix$BUN$Y[,c("Genotype","Env",trait)]
     #K <- matrix$BUN$K
     #ZG <- model.matrix(~0 + as.factor(rownames(Y)))
     #K_expanded=ZG%*%K%*%t(ZG)
@@ -666,7 +666,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
     K_expanded=matrix$BUN$K_expanded
     K_GE=matrix$BUN$K_GE
 
-    nEnv=length(levels(as.factor(Phenotype$ENV)))
+    nEnv=length(levels(as.factor(Phenotype$Env)))
     Genotype=cbind(Z_E,K_expanded)
     for(k in 1:nEnv){
       Genotype=cbind(Genotype,K=matrix$BUN$KUN[[k]])
@@ -683,10 +683,10 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
       #Y=as.matrix(Y2[,-c(1, 2)])
       ####Training testing sets using the BMTMEpackage###############
       pheno=data.frame(Genotype = Y2[, 1],
-                       ENV=Y2[, 2],
+                       Env=Y2[, 2],
                        Response=Y2[,trait[j]])
       pheno$Genotype=as.character(pheno$Genotype)
-      pheno$ENV=as.character(pheno$ENV)
+      pheno$Env=as.character(pheno$Env)
       CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
       #fold_list <- make_CV_sets(length(phenotypes), k = folds)
       #######Final X and y for fitting the model###################
@@ -841,7 +841,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
                                          Trait = trait[j],
                                          Partition = o,
                                          Genotype = Y2$Genotype[tst_set],
-                                         Environment = Y2$ENV[tst_set],
+                                         Environment = Y2$Env[tst_set],
                                          Units = Units_O,
                                          Epochs = Epoch_O,
                                          Drop_Out = Drop_O,
@@ -860,7 +860,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
   }
 
   if(model=="BMTME"){
-    Phenotype=matrix$BUN$Y[,c("Genotype","ENV",trait)]
+    Phenotype=matrix$BUN$Y[,c("Genotype","Env",trait)]
     #K <- matrix$BUN$K
     #ZG <- model.matrix(~0 + as.factor(rownames(Y)))
     #K_expanded=ZG%*%K%*%t(ZG)
@@ -869,7 +869,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
     K_expanded=matrix$BUN$K_expanded
     K_GE=matrix$BUN$K_GE
 
-    nEnv=length(levels(as.factor(Phenotype$ENV)))
+    nEnv=length(levels(as.factor(Phenotype$Env)))
     Genotype=cbind(K_expanded,Z_E)
     for(k in 1:nEnv){
       Genotype=cbind(Genotype,K=matrix$BUN$KUN[[k]])
@@ -885,10 +885,10 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
     #Y=as.matrix(Y2[,-c(1, 2)])
     ####Training testing sets using the BMTMEpackage###############
     pheno=data.frame(Genotype = Y2[, 1],
-                     ENV=Y2[, 2],
+                     Env=Y2[, 2],
                      Response=Y2[,trait])
     pheno$Genotype=as.character(pheno$Genotype)
-    pheno$ENV=as.character(pheno$ENV)
+    pheno$Env=as.character(pheno$Env)
     CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
     #fold_list <- make_CV_sets(length(phenotypes), k = folds)
     #######Final X and y for fitting the model###################
@@ -1304,7 +1304,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
                                          Trait = Names_Traits[j],
                                          Partition = o,
                                          Genotype = Y2$Genotype[tst_set],
-                                         Environment = Y2$ENV[tst_set],
+                                         Environment = Y2$Env[tst_set],
                                          Units = Units_O,
                                          Epochs = Epoch_O,
                                          Drop_Out = Drop_O,

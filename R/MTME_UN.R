@@ -14,7 +14,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
       for (i in 1:length(fold_list)){
         fold_indices <- which(fold_list[[i]])
         # Split into training and testing data
-        phenotype=matrix$BUN$Y[,c("Genotype","ENV",trait)]
+        phenotype=matrix$BUN$Y[,c("Genotype","Env",trait)]
         Y <- as.matrix(matrix$BUN$Y[,-c(1,2)])
         Y[-fold_indices,] <- NA
         K <- matrix$BUN$K
@@ -39,7 +39,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
         #model_results<-list(IT=ST_IT_model_results,SEV=ST_SEV_model_results)
         #results<-list(results_IT)
         #names(results)<-trait[j]
-        prediction=data.frame(Fold=rep(i,nrow(phenotype[-fold_indices,])),Trait=rep(trait[j],nrow(phenotype[-fold_indices,])),Genotype=phenotype$Genotype[-fold_indices],Env=phenotype$ENV[-fold_indices],Obs=phenotype[-fold_indices,trait[j]],Pred=ST_IT_predictions[-fold_indices])
+        prediction=data.frame(Fold=rep(i,nrow(phenotype[-fold_indices,])),Trait=rep(trait[j],nrow(phenotype[-fold_indices,])),Genotype=phenotype$Genotype[-fold_indices],Env=phenotype$Env[-fold_indices],Obs=phenotype[-fold_indices,trait[j]],Pred=ST_IT_predictions[-fold_indices])
         #prediction=prediction %>% mutate_if(is.character,as.factor)
         #prediction$Fold=as.factor(prediction$Fold)
         results=prediction%>%
@@ -78,7 +78,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
     BGLR_acc_results_ALL=list()
     for (i in 1:length(fold_list)){
       fold_indices <- which(fold_list[[i]])
-      phenotype=matrix$BUN$Y[,c("Genotype","ENV",trait)]
+      phenotype=matrix$BUN$Y[,c("Genotype","Env",trait)]
       Y <- as.matrix(matrix$BUN$Y[,-c(1,2)])
       Y[-fold_indices,] <- NA
       K <- matrix$BUN$K
@@ -97,7 +97,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
       Predictions=list()
       BGLR_acc_results=list()
       for(j in 1:length(trait)){
-        prediction=data.frame(Fold=rep(i,nrow(phenotype[-fold_indices,])),Trait=rep(trait[j],nrow(phenotype[-fold_indices,])),Genotype=phenotype$Genotype[-fold_indices],Env=phenotype$ENV[-fold_indices],Obs=phenotype[-fold_indices,trait[j]],Pred=MT_predictions[-fold_indices,j])
+        prediction=data.frame(Fold=rep(i,nrow(phenotype[-fold_indices,])),Trait=rep(trait[j],nrow(phenotype[-fold_indices,])),Genotype=phenotype$Genotype[-fold_indices],Env=phenotype$Env[-fold_indices],Obs=phenotype[-fold_indices,trait[j]],Pred=MT_predictions[-fold_indices,j])
         results=prediction%>%
           group_by(Fold,Env)%>%
           summarise(ACC=cor(Obs, Pred, use = "pairwise.complete"),
@@ -144,7 +144,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
       for (i in 1:length(fold_list)){
         fold_indices <- which(fold_list[[i]])
         # Split into training and testing data
-        phenotype=matrix$BUN$Y[,c("Genotype","ENV",trait)]
+        phenotype=matrix$BUN$Y[,c("Genotype","Env",trait)]
         Y <- as.matrix(matrix$BUN$Y[,-c(1,2)])
         Y[-fold_indices,] <- NA
         K <- matrix$BUN$K
@@ -165,7 +165,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
 
         BME_IT_ETA=list(Env=list(model="FIXED",X=Z_E),Lines=list(model="RKHS",K=K_expanded))
 
-        nEnv=length(levels(as.factor(phenotype$ENV)))
+        nEnv=length(levels(as.factor(phenotype$Env)))
 
         for(k in 1:nEnv){
           BME_IT_ETA[[k+2]]<-list(K=matrix$BUN$KUN[[k]],model='RKHS')
@@ -183,7 +183,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
         #model_results<-list(IT=ST_IT_model_results,SEV=ST_SEV_model_results)
         #results<-list(results_IT)
         #names(results)<-trait[j]
-        prediction=data.frame(Fold=rep(i,nrow(phenotype[-fold_indices,])),Trait=rep(trait[j],nrow(phenotype[-fold_indices,])),Genotype=phenotype$Genotype[-fold_indices],Env=phenotype$ENV[-fold_indices],Obs=phenotype[-fold_indices,trait[j]],Pred=BME_IT_predictions[-fold_indices])
+        prediction=data.frame(Fold=rep(i,nrow(phenotype[-fold_indices,])),Trait=rep(trait[j],nrow(phenotype[-fold_indices,])),Genotype=phenotype$Genotype[-fold_indices],Env=phenotype$Env[-fold_indices],Obs=phenotype[-fold_indices,trait[j]],Pred=BME_IT_predictions[-fold_indices])
         #prediction=prediction %>% mutate_if(is.character,as.factor)
         #prediction$Fold=as.factor(prediction$Fold)
         results=prediction%>%
@@ -222,7 +222,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
     BGLR_acc_results_ALL=list()
     for (i in 1:length(fold_list)){
       fold_indices <- which(fold_list[[i]])
-      phenotype=matrix$BUN$Y[,c("Genotype","ENV",trait)]
+      phenotype=matrix$BUN$Y[,c("Genotype","Env",trait)]
       Y <- as.matrix(matrix$BUN$Y[,-c(1,2)])
       Y[-fold_indices,] <- NA
       K <- matrix$BUN$K
@@ -242,7 +242,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
 
       BMTME_ETA=list(Env=list(model="FIXED",X=Z_E),Lines=list(model="RKHS",K=K_expanded))
 
-      nEnv=length(levels(as.factor(phenotype$ENV)))
+      nEnv=length(levels(as.factor(phenotype$Env)))
 
       for(k in 1:nEnv){
         BMTME_ETA[[k+2]]<-list(K=matrix$BUN$KUN[[k]],model='RKHS')
@@ -255,7 +255,7 @@ MTME_UN <- function(matrix,model="MT",trait=c("IT","SEV"),nIter = 80000, burnIn 
       Predictions=list()
       BGLR_acc_results=list()
       for(j in 1:length(trait)){
-        prediction=data.frame(Fold=rep(i,nrow(phenotype[-fold_indices,])),Trait=rep(trait[j],nrow(phenotype[-fold_indices,])),Genotype=phenotype$Genotype[-fold_indices],Env=phenotype$ENV[-fold_indices],Obs=phenotype[-fold_indices,trait[j]],Pred=BMTME_predictions[-fold_indices,j])
+        prediction=data.frame(Fold=rep(i,nrow(phenotype[-fold_indices,])),Trait=rep(trait[j],nrow(phenotype[-fold_indices,])),Genotype=phenotype$Genotype[-fold_indices],Env=phenotype$Env[-fold_indices],Obs=phenotype[-fold_indices,trait[j]],Pred=BMTME_predictions[-fold_indices,j])
         results=prediction%>%
           group_by(Fold,Env)%>%
           summarise(ACC=cor(Obs, Pred, use = "pairwise.complete"),
