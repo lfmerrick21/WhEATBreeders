@@ -131,40 +131,15 @@ pacman::p_load(BGLR,
 
 ### **Load Package**
 
-Next using the code below download and install the package GWhEAT from Github. The bottom two line of code in the chunk below make sure the dependencies GWhEAT relies on are also downloaded and installed. 
+Next using the code below download and install the package WhEATBreeders from Github. The bottom two line of code in the chunk below make sure the dependencies WhEATBreeders relies on are also downloaded and installed. 
 ```{r eval=FALSE,warning=FALSE}
 #install package
 install_github("lfmerrick21/WhEATBreeders")
 library(WhEATBreeders)#package name
 ```
 
-In order to have an effective tutorial you’ll need some data to play with, this code below downloads and loads into your environment data used for this tutorial. #### Read in GBS data
-```{r eval=FALSE}
-if (!file.exists("GAPIT_Tutorial_Data.zip"))
-{
-  download.file("http://zzlab.net/GAPIT/GAPIT_Tutorial_Data.zip", destfile = "GAPIT_Tutorial_Data.zip")
-  unzip("GAPIT_Tutorial_Data.zip")
-}
-download.file("http://zzlab.net/GAPIT/data/CROP545_Covariates.txt", destfile = "CROPS545_Covariates.txt")
-download.file("http://zzlab.net/GAPIT/data/CROP545_Phenotype.txt", destfile = "CROPS545_Phenotype.txt")
-# Import the GAPIT demo data genotypes
-gt_scan <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, stringsAsFactors = F, sep = "\t", nrows = 1))
-classes <- sapply(gt_scan, class)
-genotypes <- data.frame(read.table("GAPIT_Tutorial_Data/mdp_numeric.txt", header = T, row.names = 1, colClasses = classes, stringsAsFactors = F, sep = "\t"))
-
-GM <- read.table("GAPIT_Tutorial_Data/mdp_SNP_information.txt", header = T, stringsAsFactors = F, sep = "\t")
-CV <- read.table("CROPS545_Covariates.txt", header = T, stringsAsFactors = F, sep = "\t")
-phenotypes <- read.table("CROPS545_Phenotype.txt", header = T, stringsAsFactors = F, sep = "\t")
-
-
-hapmap <- fread("https://zzlab.net/GAPIT/data/mdp_genotype_test.hmp.txt",fill=TRUE)
-
-
-
-```
-
+In order to have an effective tutorial you’ll need some data to play with, this code below downloads and loads into your environment data used for this tutorial.
 ### **Phenotypic Data**
-
 #### Read in Phenotypic Data
 ```{r eval=FALSE}
 #Read in phenotypic files
@@ -660,7 +635,6 @@ fwrite(GIre[,1:3],paste0(Study,"_GI_Filt_Imputed.csv"))
 save(GDre,GIre,GT,file=paste0(Study,"_Filt_Imputed.RData"))
 ```
 
-### **START HERE IF GENOTYPE DATA IS DONE**
 #### This gets into my own files This section gets your data in order but using a function
 #### Function to get data in order as above chunck but integrated into a function to also combine all files for a nice list with PCs included.
 ```{r eval=FALSE}
@@ -796,6 +770,7 @@ LIND_QC=WHEAT(Phenotype=Phenotype,
                 Messages=TRUE)
 ```
 
+### **START HERE IF GENOTYPE DATA IS DONE**
 ### **Genomic Selection Tutorial**
 ### Optional Input
 #### if you want to use the numeric files
@@ -845,9 +820,9 @@ LIND_QC=WHEAT(Phenotype=Phenotype,
 load(file="Tutorial_Filt_Imputed.RData")
 #Input
 F515_DH20=WHEAT(Phenotype=Phenotype,
-                GDre=NULL,
-                GT=NULL,
-                GIre=NULL,
+                GDre=GDre,
+                GT=GT,
+                GIre=GIre,
                 #GS Info
                 Type="Regression",
                 Replications=2,
@@ -886,6 +861,8 @@ F515_DH20=WHEAT(Phenotype=Phenotype,
                 sampling="up",
                 repeats=5,
                 method="repeatedcv",
+                digits=4,
+                nCVI=5,
                 Messages=TRUE)
 ```
 
@@ -934,6 +911,8 @@ F515_DH20=WHEAT(Phenotype=Phenotype,
                 sampling="up",
                 repeats=5,
                 method="repeatedcv",
+                digits=4,
+                nCVI=5,
                 Messages=TRUE)
 ```
 
@@ -960,11 +939,9 @@ F515_DH20=WHEAT(Phenotype=Phenotype,
                 GDre=NULL,
                 GT=NULL,
                 GIre=NULL,
-                #GDre=GDre,
-                #GT=GT,
-                #GIre=GIre,
                 GBS_Train=NULL,
                 GBS_Predict=NULL,
+                Matrix=NULL,
                 #GS Info
                 Type="Regression",
                 Replications=2,
@@ -1009,62 +986,62 @@ F515_DH20=WHEAT(Phenotype=Phenotype,
 #### GS with K-Fold with all opotions
 ```{r eval=FALSE}
 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
-                                                                                                   Kernel="Markers",
-                                                                                                   PCA=GBS_Train$PC[,1:PC],
-                                                                                                   CV=GBS_Train$CV[,-1],
-                                                                                                   markers=NULL,
-                                                                                                   folds = 5,
-                                                                                                   Sparse=FALSE,
-                                                                                                   m=NULL,
-                                                                                                   degree=NULL,
-                                                                                                   nL=NULL,
-                                                                                                   transformation="none"
+                                               phenotype = GBS_Train$pheno,
+                                               Kernel="Markers",
+                                               PCA=GBS_Train$PC[,1:PC],
+                                               CV=GBS_Train$CV[,-1],
+                                               markers=NULL,
+                                               folds = 5,
+                                               Sparse=FALSE,
+                                               m=NULL,
+                                               degree=NULL,
+                                               nL=NULL,
+                                               transformation="none"
                                   )})
 ```
 
 #### rrBLUP Validation sets with all options
 ```{r eval=FALSE}
 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
-                                                                                                   train_PCA=GBS_Train$PC[,1:PC],
-                                                                                                   train_CV=GBS_Train$CV[,-1],
-                                                                                                   test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
-                                                                                                   test_PCA=GBS_Predict$PC[,1:PC],
-                                                                                                   test_CV=GBS_Predict$CV[,-1],
-                                                                                                   Kernel="Markers",
-                                                                                                   markers=NULL,
-                                                                                                   Sparse=FALSE,
-                                                                                                   m=NULL,
-                                                                                                   degree=NULL,
-                                                                                                   nL=NULL,
-                                                                                                   transformation="none"
+                                               train_phenotype = GBS_Train$pheno,
+                                               train_PCA=GBS_Train$PC[,1:PC],
+                                               train_CV=GBS_Train$CV[,-1],
+                                               test_genotypes= GBS_Predict$geno,
+                                               test_phenotype= GBS_Predict$pheno,
+                                               test_PCA=GBS_Predict$PC[,1:PC],
+                                               test_CV=GBS_Predict$CV[,-1],
+                                               Kernel="Markers",
+                                               markers=NULL,
+                                               Sparse=FALSE,
+                                               m=NULL,
+                                               degree=NULL,
+                                               nL=NULL,
+                                               transformation="none"
                                   )})
 ```
 
 #### rrBLUP with GAGS in K-Fold
 ```{r eval=FALSE}
 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_CV(genotypes = GBS_Train$geno,
-                                                                                                      phenotype = GBS_Train$pheno,
-                                                                                                      Kernel="Markers",
-                                                                                                      PCA=GBS_Train$PC[,1:PC],
-                                                                                                      CV=NULL,
-                                                                                                      markers=NULL,
-                                                                                                      folds = 5,
-                                                                                                      Sparse=FALSE,
-                                                                                                      m=NULL,
-                                                                                                      degree=NULL,
-                                                                                                      nL=NULL,
-                                                                                                      transformation="none",
-                                                                                                      Y=GBS_Train$pheno,
-                                                                                                      GM=GBS_Train$map,
-                                                                                                      GD=GBS_Train$numeric,
-                                                                                                      GWAS=c("BLINK"),
-                                                                                                      alpha=0.5,
-                                                                                                      threshold="Bonferonni",
-                                                                                                      QTN=NULL,
-                                                                                                      PCA.total=3
+                                               phenotype = GBS_Train$pheno,
+                                               Kernel="Markers",
+                                               PCA=GBS_Train$PC[,1:PC],
+                                               CV=NULL,
+                                               markers=NULL,
+                                               folds = 5,
+                                               Sparse=FALSE,
+                                               m=NULL,
+                                               degree=NULL,
+                                               nL=NULL,
+                                               transformation="none",
+                                               Y=GBS_Train$pheno,
+                                               GM=GBS_Train$map,
+                                               GD=GBS_Train$numeric,
+                                               GWAS=c("BLINK"),
+                                               alpha=0.5,
+                                               threshold="Bonferonni",
+                                               QTN=NULL,
+                                               PCA.total=3
                                 )})
 ```
 
@@ -1072,20 +1049,20 @@ Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_CV(genotypes 
 ### Classification with caret in K-Fold
 ```{r eval=FALSE}
 Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
-                                                                                                   type="Classification",
-                                                                                                   model="SVM",
-                                                                                                   Kernel="VanRaden",
-                                                                                                   markers=NULL,
-                                                                                                   folds = 5,
-                                                                                                   Sparse=FALSE,
-                                                                                                   m=NULL,
-                                                                                                   degree=NULL,
-                                                                                                   nL=NULL,
-                                                                                                   transformation="none",
-                                                                                                   sampling="up",
-                                                                                                   repeats=5,
-                                                                                                   method="repeatedcv"
+                                               phenotype = GBS_Train$pheno,
+                                               type="Classification",
+                                               model="SVM",
+                                               Kernel="VanRaden",
+                                               markers=NULL,
+                                               folds = 5,
+                                               Sparse=FALSE,
+                                               m=NULL,
+                                               degree=NULL,
+                                               nL=NULL,
+                                               transformation="none",
+                                               sampling="up",
+                                               repeats=5,
+                                               method="repeatedcv"
                             )})
 ```
 
@@ -1131,12 +1108,12 @@ LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
 ```{r eval=FALSE}
 load("Matrix_Tutorial.RData")
 Results=sapply(1:Replications, function(i,...){MTME(Matrix_Tutorial_ST,
-                                                      trait=c("EM"),
-                                                      model="ST",
-                                                      nIter = 80000, 
-                                                      burnIn = 10000, 
-                                                      folds = 5,
-                                                      UN=FALSE
+                                               trait=c("EM"),
+                                               model="ST",
+                                               nIter = 80000, 
+                                               burnIn = 10000, 
+                                               folds = 5,
+                                               UN=FALSE
                                                       )})
 ```
 
@@ -1179,12 +1156,12 @@ LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
 ```{r eval=FALSE}
 load("Matrix_Tutorial.RData")
 Results=sapply(1:Replications, function(i,...){MTME(Matrix_Tutorial_BME,
-                                                      trait=c("EM"),
-                                                      model="BME",
-                                                      nIter = 80000, 
-                                                      burnIn = 10000, 
-                                                      folds = 5,
-                                                      UN=FALSE
+                                               trait=c("EM"),
+                                               model="BME",
+                                               nIter = 80000, 
+                                               burnIn = 10000, 
+                                               folds = 5,
+                                               UN=FALSE
                                                       )})
 ```
 
@@ -1227,12 +1204,12 @@ LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
 ```{r eval=FALSE}
 load("Matrix_Tutorial.RData")
 Results=sapply(1:Replications, function(i,...){MTME(Matrix_Tutorial_BME,
-                                                      trait=c("EM"),
-                                                      model="BME",
-                                                      nIter = 80000, 
-                                                      burnIn = 10000, 
-                                                      folds = 5,
-                                                      UN=TRUE
+                                               trait=c("EM"),
+                                               model="BME",
+                                               nIter = 80000, 
+                                               burnIn = 10000, 
+                                               folds = 5,
+                                               UN=TRUE
                                                       )})
 ```
 
@@ -1275,11 +1252,11 @@ LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
 ```{r eval=FALSE}
 load("Matrix_Tutorial.RData")
 Results=sapply(1:Replications, function(i,...){MTME_UN(Matrix_Tutorial_BME,
-                                                      trait=c("EM"),
-                                                      model="BME",
-                                                      nIter = 80000, 
-                                                      burnIn = 10000, 
-                                                      folds = 5
+                                               trait=c("EM"),
+                                               model="BME",
+                                               nIter = 80000, 
+                                               burnIn = 10000, 
+                                               folds = 5
                                                       )})
 ```
 
@@ -1326,14 +1303,14 @@ LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
 ```{r eval=FALSE}
 load("Matrix_Tutorial.RData")
 Results=sapply(1:Replications, function(i,...){MLP_CV(Matrix_Tutorial_ST,
-                                                      trait=c("EM"),
-                                                      model="ST",
-                                                      digits=4,
-                                                      nCVI=5,
-                                                      K=5,
-                                                      Sparse=NULL,
-                                                      folds = 5,
-                                                      UN=FALSE
+                                               trait=c("EM"),
+                                               model="ST",
+                                               digits=4,
+                                               nCVI=5,
+                                               K=5,
+                                               Sparse=NULL,
+                                               folds = 5,
+                                               UN=FALSE
                                                       )})
 ```
 
@@ -1376,14 +1353,14 @@ LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
 ```{r eval=FALSE}
 load("Matrix_Tutorial.RData")
 Results=sapply(1:Replications, function(i,...){MLP_CV(Matrix_Tutorial_BME,
-                                                      trait=c("EM"),
-                                                      model="BME",
-                                                      digits=4,
-                                                      nCVI=5,
-                                                      K=5,
-                                                      Sparse=NULL,
-                                                      folds = 5,
-                                                      UN=FALSE
+                                               trait=c("EM"),
+                                               model="BME",
+                                               digits=4,
+                                               nCVI=5,
+                                               K=5,
+                                               Sparse=NULL,
+                                               folds = 5,
+                                               UN=FALSE
                                                       )})
 ```
 
@@ -1426,14 +1403,14 @@ LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
 ```{r eval=FALSE}
 load("Matrix_Tutorial.RData")
 Results=sapply(1:Replications, function(i,...){MLP_CV(Matrix_Tutorial_BME,
-                                                      trait=c("EM"),
-                                                      model="BME",
-                                                      digits=4,
-                                                      nCVI=5,
-                                                      K=5,
-                                                      Sparse=NULL,
-                                                      folds = 5,
-                                                      UN=TRUE
+                                               trait=c("EM"),
+                                               model="BME",
+                                               digits=4,
+                                               nCVI=5,
+                                               K=5,
+                                               Sparse=NULL,
+                                               folds = 5,
+                                               UN=TRUE
                                                       )})
 ```
 
@@ -1466,8 +1443,8 @@ LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
                 m=NULL,
                 degree=NULL,
                 nL=NULL,
-                GE=TRUE
-                UN=TRUE
+                GE=TRUE,
+                UN=TRUE,
                 GE_model="MEI"
                 Messages=TRUE)
 ```
@@ -1476,13 +1453,13 @@ LIND_QC_One_Step=WHEAT(Phenotype=Phenotype,
 ```{r eval=FALSE}
 load("Matrix_Tutorial.RData")
 Results=sapply(1:Replications, function(i,...){MLP_CV_UN(Matrix_Tutorial_BME,
-                                                      trait=c("EM"),
-                                                      model="BME",
-                                                      digits=4,
-                                                      nCVI=5,
-                                                      K=5,
-                                                      Sparse=NULL,
-                                                      folds = 5
+                                               trait=c("EM"),
+                                               model="BME",
+                                               digits=4,
+                                               nCVI=5,
+                                               K=5,
+                                               Sparse=NULL,
+                                               folds = 5
                                                       )})
 ```
 
@@ -1504,17 +1481,17 @@ cl <- makeForkCluster(cores)
 clusterSetRNGStream(cl)
 
 Results=parSapply(cl, 1:50, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
-                                                                                                   Kernel="Markers",
-                                                                                                   PCA=GBS_Train$PC[,1:PC],
-                                                                                                   CV=GBS_Train$CV[,-1],
-                                                                                                   markers=NULL,
-                                                                                                   folds = 5,
-                                                                                                   Sparse=FALSE,
-                                                                                                   m=NULL,
-                                                                                                   degree=NULL,
-                                                                                                   nL=NULL,
-                                                                                                   transformation="none"
+                                            phenotype = GBS_Train$pheno,
+                                            Kernel="Markers",
+                                            PCA=GBS_Train$PC[,1:PC],
+                                            CV=GBS_Train$CV[,-1],
+                                            markers=NULL,
+                                            folds = 5,
+                                            Sparse=FALSE,
+                                            m=NULL,
+                                            degree=NULL,
+                                            nL=NULL,
+                                            transformation="none"
                                   )
 save(Results,file=paste0("Results_",i,".RData"))
 Results})

@@ -1,4 +1,12 @@
-#create a beagle impuation function to easily create results over different missing rates
+#' Beagle Imputation Accuarcy
+#'
+#' This function creates a beagle impuation function to easily create results over different missing rates. Beagle software must be available in the working directory.
+#'
+#' @param data numeric marker matrix for imputation.
+#' @param map map file for numeric marker matrix.
+#' @param missing_rate missing rate to remove for accuracy calculations.
+#' @return accuracy of impuation method.
+#' @export
 bgl_imputation <- function(data,map,missing_rate)
 {
   X.raw=data#create dataframe that is just the marker data
