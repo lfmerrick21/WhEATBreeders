@@ -458,7 +458,7 @@ WHEAT<-function(Phenotype,
                               Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
                               Pheno=Pheno[,c("Genotype","Env",Trait)]
                               for(j in 1:length(Trait)){
-                                #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
+                                #Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
                                 GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
                                 mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
 
