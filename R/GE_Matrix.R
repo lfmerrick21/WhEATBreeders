@@ -38,7 +38,7 @@ GE_Matrix <- function(genotypes, phenotype,trait,GE=FALSE,UN=TRUE,Kernel="Gaussi
 
   Pheno=phenotype
   Pheno=droplevels(Pheno)
-  Pheno=complete(Pheno, Genotype, ENV)
+  Pheno=complete(Pheno, Genotype, Env)
   maf <- calc_maf_apply(genotypes, encoding = c(0, 1, 2))
   mono_indices <- which(maf ==0)
   if(length(mono_indices)!=0){
@@ -92,18 +92,18 @@ GE_Matrix <- function(genotypes, phenotype,trait,GE=FALSE,UN=TRUE,Kernel="Gaussi
     LG <- cholesky(K)
     ZG <- model.matrix(~0 + as.factor(Pheno$Genotype))
     Z.G <- ZG %*% LG
-    Z.E <- model.matrix(~0 + as.factor(Pheno$ENV))
-    ZEG <- model.matrix(~0 + as.factor(Pheno$Genotype):as.factor(Pheno$ENV))
-    G2 <- kronecker(diag(length(unique(Pheno$ENV))), data.matrix(K))
+    Z.E <- model.matrix(~0 + as.factor(Pheno$Env))
+    ZEG <- model.matrix(~0 + as.factor(Pheno$Genotype):as.factor(Pheno$Env))
+    G2 <- kronecker(diag(length(unique(Pheno$Env))), data.matrix(K))
     LG2 <- cholesky(G2)
     Z.EG <- ZEG %*% LG2
     Y <- as.matrix(Pheno[,trait])
-    YUN=phenotype[,c("Genotype","ENV",trait)]
+    YUN=phenotype[,c("Genotype","Env",trait)]
     YUN=droplevels(YUN)
 
     Z_L=model.matrix(~0+Genotype,data=YUN)
     dim(Z_L)
-    Z_E=model.matrix(~0+ENV,data=YUN)
+    Z_E=model.matrix(~0+Env,data=YUN)
     dim(Z_E)
     K_E=Z_E%*%t(Z_E)
 
@@ -152,14 +152,14 @@ GE_Matrix <- function(genotypes, phenotype,trait,GE=FALSE,UN=TRUE,Kernel="Gaussi
           K=Kernel_computation(X=X,name=Kernel,degree=degree, nL=nL)
         }
       }
-      YUN=phenotype[,c("Genotype","ENV",trait)]
+      YUN=phenotype[,c("Genotype","Env",trait)]
       YUN=droplevels(YUN)
-      env=YUN$ENV
+      env=YUN$Env
       env=droplevels(env)
       #MEI Kernel
       Z_L=model.matrix(~0+Genotype,data=YUN)
       dim(Z_L)
-      Z_E=model.matrix(~0+ENV,data=YUN)
+      Z_E=model.matrix(~0+Env,data=YUN)
       dim(Z_E)
       K_E=Z_E%*%t(Z_E)
       K_expanded=Z_L%*%K%*%t(Z_L)
@@ -188,7 +188,7 @@ GE_Matrix <- function(genotypes, phenotype,trait,GE=FALSE,UN=TRUE,Kernel="Gaussi
       rownames(X)<-rownames(genotypes)
       y=YUN[,3]
       names(y)=YUN$Genotype
-      env=YUN$ENV
+      env=YUN$Env
       env=droplevels(env)
       X0=X[names(y),] # Matrix for main effects
       stopifnot(all(rownames(X0)==names(y)))
@@ -252,11 +252,11 @@ GE_Matrix <- function(genotypes, phenotype,trait,GE=FALSE,UN=TRUE,Kernel="Gaussi
     ZG <- model.matrix(~0 + as.factor(Pheno$Genotype))
     Z.G <- ZG %*% LG
     Y <- as.matrix(Pheno[,trait])
-    YUN=phenotype[,c("Genotype","ENV",trait)]
+    YUN=phenotype[,c("Genotype","Env",trait)]
     YUN=droplevels(YUN)
     Z_L=model.matrix(~0+Genotype,data=YUN)
     #dim(Z_L)
-    #Z_E=model.matrix(~0+ENV,data=Pheno)
+    #Z_E=model.matrix(~0+Env,data=Pheno)
     #dim(Z_E)
     #K_E=Z_E%*%t(Z_E)
 
@@ -305,7 +305,7 @@ GE_Matrix <- function(genotypes, phenotype,trait,GE=FALSE,UN=TRUE,Kernel="Gaussi
           K=Kernel_computation(X=X,name=Kernel,degree=degree, nL=nL)
         }
       }
-      YUN=phenotype[,c("Genotype","ENV",trait)]
+      YUN=phenotype[,c("Genotype","Env",trait)]
       YUN=droplevels(YUN)
       X=apply(genotypes,2,as.numeric)
       #sum(rowSums(is.na(X)))
@@ -325,7 +325,7 @@ GE_Matrix <- function(genotypes, phenotype,trait,GE=FALSE,UN=TRUE,Kernel="Gaussi
   Y=list()
   Z1=list()
   for(i in 1:length(trait)){
-    Trait_Pheno=Pheno[,c("Genotype","ENV",paste0(trait[i]))] %>% spread(ENV,c(paste0(trait[i])))
+    Trait_Pheno=Pheno[,c("Genotype","Env",paste0(trait[i]))] %>% spread(Env,c(paste0(trait[i])))
     if(Kernel=="Endelman"){
       X=as.matrix(genotypes)
       X=apply(genotypes,2,as.numeric)
@@ -373,7 +373,7 @@ GE_Matrix <- function(genotypes, phenotype,trait,GE=FALSE,UN=TRUE,Kernel="Gaussi
     Trait_ZG <- Trait_ZG %*% LG
     Y[[paste0(trait[i])]]=Trait_Pheno
     Z1[[paste0(trait[i])]]=Trait_ZG
-    YUN=phenotype[,c("Genotype","ENV",trait)]
+    YUN=phenotype[,c("Genotype","Env",trait)]
     YUN=droplevels(YUN)
   }
   BME_Matrix=list(Y=Y,YUN,K=K,LG=LG,Z1=Z1)
