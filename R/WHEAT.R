@@ -58,7 +58,7 @@ WHEAT<-function(Phenotype,
                 digits=4,
                 nCVI=5,
                 Messages=TRUE){
-
+                colnames(Phenotype)[1:2]<-c("Genotype","Env")
                 Phenotype=Phenotype %>% filter(Env %in% c(Trial))
                   if(QC==TRUE){
                     #############PandG#########################
