@@ -82,5 +82,5 @@ $TASSEL -fork1 -SNPQualityProfilerPlugin -db database/$STUDY.db -statFile SNPQua
 $TASSEL -fork1 -ProductionSNPCallerPluginV2 -ko false -db database/$STUDY.db -e $E -i $FASTQ_Folder -k $KEY -kmerLength 64 -o ProductionSNPCallerPluginV2/${project}.h5 -endPlugin -runfork1 > ./logs/ProductionSNPCallerPluginV2_NF.log
 
 ##Step9: Convert the h5 file into vcf and hapmap formats
-$TASSEL -h5 ProductionSNPCallerPluginV2/DiscoveryBuild_NF.h5 -export ProductionSNPCallerPluginV2/${project} -exportType Hapmap
-$TASSEL -h5 ProductionSNPCallerPluginV2/DiscoveryBuild_NF.h5 -export ProductionSNPCallerPluginV2/${project} -exportType VCF
+$TASSEL -h5 ProductionSNPCallerPluginV2/${project}.h5 -export ProductionSNPCallerPluginV2/${project} -exportType Hapmap
+$TASSEL -h5 ProductionSNPCallerPluginV2/${project}.h5 -export ProductionSNPCallerPluginV2/${project} -exportType VCF

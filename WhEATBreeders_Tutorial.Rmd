@@ -1067,6 +1067,108 @@ Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV(genotypes
 ```
 
 ### One-Step Genomic Selection
+#### Input using numeric data.
+##### Gaussian Kernel output: Kernel="Gaussian"
+```{r eval=FALSE}
+load(file="Tutorial_Filt_Imputed.RData")
+#Input
+F515_DH20=WHEAT(Phenotype=Phenotype,
+                GDre=GDre,
+                GT=GT,
+                GIre=GIre,
+                #GS Info
+                Type="Regression",
+                Replications=2,
+                Training="F5_2015",
+                Prediction="DH_2020",
+                CV=NULL,
+                PC=NULL,
+                Trait="EM",
+                Study="Tutorial",
+                Outcome="Untested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",
+                Method="One-Step",
+                Package="BGLR",
+                Kernel="Gaussian",
+                markers=NULL,
+                folds = 5,
+                nIter = 1500,
+                burnIn = 500,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                transformation="none",
+                #GAGS Info
+                GAGS=FALSE,
+                PCA.total=3,
+                QTN=10,
+                GWAS=c("BLINK"),
+                alpha=0.05,
+                threshold=NULL,
+                GE=TRUE,
+                UN=FALSE,
+                GE_model="MTME",
+                sampling="up",
+                repeats=5,
+                method="repeatedcv",
+                digits=4,
+                nCVI=5,
+                Messages=TRUE)
+```
+
+#### Input using GBS RData using Matrix Input.
+#### BGLR using MTME for
+##### Gaussian Kernel output: Kernel="Gaussian"
+```{r eval=FALSE}
+load(file ='GBS_2_Tutorial.RData')
+#Input
+F515_DH20=WHEAT(Phenotype=Phenotype,
+                Matrix=Matrix,
+                #GS Info
+                Type="Regression",
+                Replications=2,
+                Training="F5_2015",
+                Prediction="DH_2020",
+                CV=NULL,
+                PC=NULL,
+                Trait="EM",
+                Study="Tutorial",
+                Outcome="Untested",
+                Trial=c("F5_2015","DH_2020"),
+                Scheme="K-Fold",
+                Method="One-Step",
+                Package="BGLR",
+                Kernel="Gaussian",
+                markers=NULL,
+                folds = 5,
+                nIter = 1500,
+                burnIn = 500,
+                Sparse=FALSE,
+                m=NULL,
+                degree=NULL,
+                nL=NULL,
+                transformation="none",
+                #GAGS Info
+                GAGS=FALSE,
+                PCA.total=3,
+                QTN=10,
+                GWAS=c("BLINK"),
+                alpha=0.05,
+                threshold=NULL,
+                GE=TRUE,
+                UN=FALSE,
+                GE_model="MTME",
+                sampling="up",
+                repeats=5,
+                method="repeatedcv",
+                digits=4,
+                nCVI=5,
+                Messages=TRUE)
+```
+
+### Individual Functions
 #### We can get the proper matrices with the wrapper WHEAT function
 ##### Make QC=TRUE and GS=FALSE
 ##### Gaussian Kernel output: Kernel="Gaussian"
