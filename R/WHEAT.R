@@ -64,6 +64,7 @@ WHEAT<-function(Phenotype,
                     #############PandG#########################
                     ###############################################################################
                     #Get Taxa
+                    #Phenotype=Phenotype1
                     Pheno_Names=Phenotype
                     names(Pheno_Names)[1]<-"Taxa"
                     Pheno_Names$Taxa=as.character(Pheno_Names$Taxa)
@@ -71,12 +72,22 @@ WHEAT<-function(Phenotype,
                     gname<-clean_names(gname)
                     #Filter Hapmap for Taxa
                     if(Geno_Type=="VCF"){
-                      genotypes_num<- VCF_2_numeric(Genotype)
+                      #Genotype1=Genotype
+                      Genotype1=data.frame(Genotype@fix,Genotype@gt)
+                      genotypes_num<- VCF_2_numeric(Genotype1)
                       GD=genotypes_num$genotypes
-                      names.use <- names(GD)[(names(GD) %in% gname)]
-                      GD <- GD[, names.use, with = FALSE]
+                      rownames(GD)<-clean_names_op(rownames(GD))
+                      names.use <- rownames(GD)[(rownames(GD) %in% gname)]
+                      GD <-GD[row.names(GD) %in% c(names.use),]
+                      #GD <- GD[, names.use, with = FALSE]
                       GI=genotypes_num$marker_map
-                      GT
+                      #setnames(GI, old = c('rs','chr','pos'),
+                               #new = c('SNP','Chromosome','Position'))
+                      GI <- GI %>%
+                        rename(SNP=rs,
+                               Chromosome=chr,
+                               Position=pos)
+                      GT=data.frame(V1=rownames(GD))
                       #Save Raw Files
                       fwrite(GT,paste0(Study,"_GT_taxa.csv"))
                       fwrite(GD,paste0(Study,"_GD_numeric_Raw.csv"))
@@ -269,6 +280,7 @@ WHEAT<-function(Phenotype,
                         }
                         dim(GDre)
                         dim(GIre)
+                        GIre=GIre[,1:3]
 
                         fwrite(GDre,paste0(Study,"_GD_Filt_Imputed.csv"))
                         fwrite(GIre[,1:3],paste0(Study,"_GI_Filt_Imputed.csv"))
@@ -277,19 +289,27 @@ WHEAT<-function(Phenotype,
                     }
                     ##########PG################################
                     if(Method=="Two-Step"){
+                      if(Outcome=="Tested"){
                       if(!is.null(CV)){
                         GBS.list=c()
                         for(i in 1:length(Trial)){
                           Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
-                          Pheno=Pheno[,c("Genotype","Env",Trait)]
-                          for(j in 1:length(Trait)){
-                            Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
-                            GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
-                            mv(from = "GBS", to = paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),envir = globalenv())
+                          Pheno=data.frame(Pheno)
+                          Namescol=c("Genotype","Env",Trait)
+                          Pheno=Pheno[,Namescol]
+                          Namescole=c("Genotype",Trait)
+                          #for(j in 1:length(Trait)){
+                            #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
+                            #GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
+                            #mv(from = "GBS", to = paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),envir = globalenv())
+                            #GBS<<-PGandCV(Pheno[,c("Genotype",Trait)],GDre,GT,GIre,CV)
+                            GBS<<-PGandCV(Pheno[,Namescole],GDre,GT,GIre,CV)
+                            mv(from = "GBS", to = paste0("GBS_2_CV_",Trial[i]),envir = globalenv())
 
-                            GBS.list=c(GBS.list,paste0("GBS_2_CV_",Trial[i],"_",Trait[j]))
+                            #GBS.list=c(GBS.list,paste0("GBS_2_CV_",Trial[i],"_",Trait[j]))
+                            GBS.list=c(GBS.list,paste0("GBS_2_CV_",Trial[i]))
                             #save(list=paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_CV_",Trial[i],"_",Trait[j],".RData"))
-                          }
+                          #}
 
                         }
                         save(list = GBS.list, file=paste0("GBS_2_CV_",Study,".RData"))
@@ -297,18 +317,26 @@ WHEAT<-function(Phenotype,
                         GBS.list=c()
                         for(i in 1:length(Trial)){
                           Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
-                          Pheno=Pheno[,c("Genotype","Env",Trait)]
-                          for(j in 1:length(Trait)){
-                            Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
-                            GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
-                            mv(from = "GBS", to = paste0("GBS_2_",Trial[i],"_",Trait[j]),envir = globalenv())
+                          Pheno=data.frame(Pheno)
+                          Namescol=c("Genotype","Env",Trait)
+                          Pheno=Pheno[,Namescol]
+                          Namescole=c("Genotype",Trait)
+                          #for(j in 1:length(Trait)){
+                            #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
+                            #GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
+                            #mv(from = "GBS", to = paste0("GBS_2_",Trial[i],"_",Trait[j]),envir = globalenv())
+                            #GBS<<-PandG(Pheno[,c("Genotype",Trait)],GDre,GT,GIre)
+                            GBS<<-PandG(Pheno[,Namescole],GDre,GT,GIre)
+                            mv(from = "GBS", to = paste0("GBS_2_",Trial[i]),envir = globalenv())
 
-                            GBS.list=c(GBS.list,paste0("GBS_2_",Trial[i],"_",Trait[j]))
+                            #GBS.list=c(GBS.list,paste0("GBS_2_",Trial[i],"_",Trait[j]))
+                            GBS.list=c(GBS.list,paste0("GBS_2_",Trial[i]))
                             #save(list=paste0("GBS_2_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_",Trial[i],"_",Trait[j],".RData"))
-                          }
+                          #}
 
                         }
                         save(list = GBS.list, file=paste0("GBS_2_",Study,".RData"))
+                      }
                       }
 
                       if(Outcome=="Untested"){
@@ -316,15 +344,22 @@ WHEAT<-function(Phenotype,
                           GBS.list=c()
                           for(i in 1:length(Trial)){
                             Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
-                            Pheno=Pheno[,c("Genotype","Env",Trait)]
-                            for(j in 1:length(Trait)){
+                            Pheno=data.frame(Pheno)
+                            Namescol=c("Genotype","Env",Trait)
+                            Pheno=Pheno[,Namescol]
+                            Namescole=c("Genotype",Trait)
+                            #for(j in 1:length(Trait)){
                               #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
-                              GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
-                              mv(from = "GBS", to = paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+                              #GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
+                              #mv(from = "GBS", to = paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+                              #GBS<<-PGandCV(Pheno[,c("Genotype",Trait)],GDre,GT,GIre,CV)
+                              GBS<<-PGandCV(Pheno[,Namescole],GDre,GT,GIre,CV)
+                              mv(from = "GBS", to = paste0("GBS_2_CV_Untested_",Trial[i]),envir = globalenv())
 
-                              GBS.list=c(GBS.list,paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]))
+                              #GBS.list=c(GBS.list,paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]))
+                              GBS.list=c(GBS.list,paste0("GBS_2_CV_Untested_",Trial[i]))
                               #save(list=paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_CV_",Trial[i],"_",Trait[j],".RData"))
-                            }
+                            #}
 
                           }
                           save(list = GBS.list, file=paste0("GBS_2_CV_Untested_",Study,".RData"))
@@ -332,15 +367,22 @@ WHEAT<-function(Phenotype,
                           GBS.list=c()
                           for(i in 1:length(Trial)){
                             Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
-                            Pheno=Pheno[,c("Genotype","Env",Trait)]
-                            for(j in 1:length(Trait)){
+                            Pheno=data.frame(Pheno)
+                            Namescol=c("Genotype","Env",Trait)
+                            Pheno=Pheno[,Namescol]
+                            Namescole=c("Genotype",Trait)
+                            #for(j in 1:length(Trait)){
                               #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
-                              GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
-                              mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+                              #GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
+                              #mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+                              #GBS<<-PandG(Pheno[,c("Genotype",Trait)],GDre,GT,GIre)
+                              GBS<<-PandG(Pheno[,Namescole],GDre,GT,GIre)
+                              mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i]),envir = globalenv())
 
-                              GBS.list=c(GBS.list,paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]))
+                              #GBS.list=c(GBS.list,paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]))
+                              GBS.list=c(GBS.list,paste0("GBS_2_Untested_",Trial[i]))
                               #save(list=paste0("GBS_2_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_",Trial[i],"_",Trait[j],".RData"))
-                            }
+                            #}
 
                           }
                           save(list = GBS.list, file=paste0("GBS_2_Untested_",Study,".RData"))
@@ -401,20 +443,29 @@ WHEAT<-function(Phenotype,
                     #####################GS######################################################
                     if(QC==FALSE){
                       if(is.null(GBS_Train)){
+
                       if(Method=="Two-Step"){
+                        if(Outcome=="Tested"){
                         if(!is.null(CV)){
                           GBS.list=c()
                           for(i in 1:length(Trial)){
                             Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
-                            Pheno=Pheno[,c("Genotype","Env",Trait)]
-                            for(j in 1:length(Trait)){
-                              Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
-                              GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
-                              mv(from = "GBS", to = paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),envir = globalenv())
+                            Pheno=data.frame(Pheno)
+                            Namescol=c("Genotype","Env",Trait)
+                            Pheno=Pheno[,Namescol]
+                            Namescole=c("Genotype",Trait)
+                            #for(j in 1:length(Trait)){
+                              #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
+                              #GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
+                              #mv(from = "GBS", to = paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),envir = globalenv())
+                              #GBS<<-PGandCV(Pheno[,c("Genotype",Trait)],GDre,GT,GIre,CV)
+                              GBS<<-PGandCV(Pheno[,Namescole],GDre,GT,GIre,CV)
+                              mv(from = "GBS", to = paste0("GBS_2_CV_",Trial[i]),envir = globalenv())
 
-                              GBS.list=c(GBS.list,paste0("GBS_2_CV_",Trial[i],"_",Trait[j]))
+                              #GBS.list=c(GBS.list,paste0("GBS_2_CV_",Trial[i],"_",Trait[j]))
+                              GBS.list=c(GBS.list,paste0("GBS_2_CV_",Trial[i]))
                               #save(list=paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_CV_",Trial[i],"_",Trait[j],".RData"))
-                            }
+                            #}
 
                           }
                           save(list = GBS.list, file=paste0("GBS_2_CV_",Study,".RData"))
@@ -422,33 +473,47 @@ WHEAT<-function(Phenotype,
                           GBS.list=c()
                           for(i in 1:length(Trial)){
                             Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
-                            Pheno=Pheno[,c("Genotype","Env",Trait)]
-                            for(j in 1:length(Trait)){
-                              Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
-                              GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
-                              mv(from = "GBS", to = paste0("GBS_2_",Trial[i],"_",Trait[j]),envir = globalenv())
+                            Pheno=data.frame(Pheno)
+                            Namescol=c("Genotype","Env",Trait)
+                            Pheno=Pheno[,Namescol]
+                            Namescole=c("Genotype",Trait)
+                            #for(j in 1:length(Trait)){
+                              #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),]
+                              #GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
+                              #mv(from = "GBS", to = paste0("GBS_2_",Trial[i],"_",Trait[j]),envir = globalenv())
+                              #GBS<<-PandG(Pheno[,c("Genotype",Trait)],GDre,GT,GIre)
+                              GBS<<-PandG(Pheno[,Namescole],GDre,GT,GIre)
+                              mv(from = "GBS", to = paste0("GBS_2_",Trial[i]),envir = globalenv())
 
-                              GBS.list=c(GBS.list,paste0("GBS_2_",Trial[i],"_",Trait[j]))
+                              #GBS.list=c(GBS.list,paste0("GBS_2_",Trial[i],"_",Trait[j]))
+                              GBS.list=c(GBS.list,paste0("GBS_2_",Trial[i]))
                               #save(list=paste0("GBS_2_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_",Trial[i],"_",Trait[j],".RData"))
-                            }
+                            #}
 
                           }
                           save(list = GBS.list, file=paste0("GBS_2_",Study,".RData"))
-                        }
+                        }}
                         if(Outcome=="Untested"){
                           if(!is.null(CV)){
                             GBS.list=c()
                             for(i in 1:length(Trial)){
                               Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
-                              Pheno=Pheno[,c("Genotype","Env",Trait)]
-                              for(j in 1:length(Trait)){
+                              Pheno=data.frame(Pheno)
+                              Namescol=c("Genotype","Env",Trait)
+                              Pheno=Pheno[,Namescol]
+                              Namescole=c("Genotype",Trait)
+                              #for(j in 1:length(Trait)){
                                 #Pheno<-Pheno[complete.cases(Pheno[,Trait[j]]),c(1,Trait[j])]
-                                GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
-                                mv(from = "GBS", to = paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+                                #GBS<<-PGandCV(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre,CV)
+                                #mv(from = "GBS", to = paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+                                #GBS<<-PGandCV(Pheno[,c("Genotype",Trait)],GDre,GT,GIre,CV)
+                                GBS<<-PGandCV(Pheno[,Namescole],GDre,GT,GIre,CV)
+                                mv(from = "GBS", to = paste0("GBS_2_CV_Untested_",Trial[i]),envir = globalenv())
 
-                                GBS.list=c(GBS.list,paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]))
+                                #GBS.list=c(GBS.list,paste0("GBS_2_CV_Untested_",Trial[i],"_",Trait[j]))
+                                GBS.list=c(GBS.list,paste0("GBS_2_CV_Untested_",Trial[i]))
                                 #save(list=paste0("GBS_2_CV_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_CV_",Trial[i],"_",Trait[j],".RData"))
-                              }
+                              #}
 
                             }
                             save(list = GBS.list, file=paste0("GBS_2_CV_Untested_",Study,".RData"))
@@ -456,15 +521,22 @@ WHEAT<-function(Phenotype,
                             GBS.list=c()
                             for(i in 1:length(Trial)){
                               Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
-                              Pheno=Pheno[,c("Genotype","Env",Trait)]
-                              for(j in 1:length(Trait)){
+                              Pheno=data.frame(Pheno)
+                              Namescol=c("Genotype","Env",Trait)
+                              Pheno=Pheno[,Namescol]
+                              Namescole=c("Genotype",Trait)
+                              #for(j in 1:length(Trait)){
                                 #Pheno=Phenotype %>% filter(Env %in% c(Trial[i]))
-                                GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
-                                mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+                                #GBS<<-PandG(Pheno[,c("Genotype",Trait[j])],GDre,GT,GIre)
+                                #mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]),envir = globalenv())
+                                #GBS<<-PandG(Pheno[,c("Genotype",Trait)],GDre,GT,GIre)
+                                GBS<<-PandG(Pheno[,Namescole],GDre,GT,GIre)
+                                mv(from = "GBS", to = paste0("GBS_2_Untested_",Trial[i]),envir = globalenv())
 
-                                GBS.list=c(GBS.list,paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]))
+                                #GBS.list=c(GBS.list,paste0("GBS_2_Untested_",Trial[i],"_",Trait[j]))
+                                GBS.list=c(GBS.list,paste0("GBS_2_Untested_",Trial[i]))
                                 #save(list=paste0("GBS_2_",Trial[i],"_",Trait[j]),file=paste0("GBS_2_",Trial[i],"_",Trait[j],".RData"))
-                              }
+                              #}
 
                             }
                             save(list = GBS.list, file=paste0("GBS_2_Untested_",Study,".RData"))
@@ -506,11 +578,12 @@ WHEAT<-function(Phenotype,
 
                     if(Method=="Two-Step"){
                     Results_All=list()
-                    for(i in 1:length(Trait)){
+                    for(j in 1:length(Trait)){
                       if(Outcome=="Tested"){
                         if(Scheme=="K-Fold"){
                           if(is.null(GBS_Train)){
-                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
+                            #GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
+                            GBS_Train=get(paste0("GBS_2_",Training))
                           }
                           if(Package=="rrBLUP"){
                             if(GAGS==TRUE){
@@ -518,7 +591,7 @@ WHEAT<-function(Phenotype,
                                 #No CV
 
                                 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_CV(genotypes = GBS_Train$geno,
-                                                                                                      phenotype = GBS_Train$pheno,
+                                                                                                      phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       Kernel=Kernel,
                                                                                                       PCA=GBS_Train$PC[,1:PC],
                                                                                                       CV=CV,
@@ -541,7 +614,7 @@ WHEAT<-function(Phenotype,
                               }else{
                                 #No CV, No PC
                                 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_CV(genotypes = GBS_Train$geno,
-                                                                                                      phenotype = GBS_Train$pheno,
+                                                                                                      phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       Kernel=Kernel,
                                                                                                       PCA=PC,
                                                                                                       CV=CV,
@@ -567,7 +640,7 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No GAGS
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    Kernel=Kernel,
                                                                                                    PCA=GBS_Train$PC[,1:PC],
                                                                                                    CV=GBS_Train$CV[,-1],
@@ -582,7 +655,7 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No GAGS, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    Kernel=Kernel,
                                                                                                    PCA=PC,
                                                                                                    CV=GBS_Train$CV[,-1],
@@ -599,7 +672,7 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No GAGS, No CV
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    Kernel=Kernel,
                                                                                                    PCA=GBS_Train$PC[,1:PC],
                                                                                                    CV=CV,
@@ -614,10 +687,10 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No GAGS, No CV, No PC
                                   if(Messages==TRUE){
-                                    print(paste0("Peforming ",Method," ",Scheme," ",Type," using the package ",Package," with the model ",Model," and ",Kernel," on ",Trait[model]," using ",Training,"."))
+                                    print(paste0("Peforming ",Method," ",Scheme," ",Type," using the package ",Package," with the model ",model," and ",Kernel," on ",Trait[j]," using ",Training,"."))
                                   }
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    Kernel=Kernel,
                                                                                                    PCA=PC,
                                                                                                    CV=CV,
@@ -642,7 +715,7 @@ WHEAT<-function(Phenotype,
                               if(!is.null(PC)){
                                 #No CV
                                 Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    PCA=GBS_Train$PC[,1:PC],
                                                                                                    CV=CV,
                                                                                                    folds = folds,
@@ -659,7 +732,7 @@ WHEAT<-function(Phenotype,
                               }else{
                                 #No CV, No PC
                                 Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    PCA=PC,
                                                                                                    CV=CV,
                                                                                                    folds = folds,
@@ -678,7 +751,7 @@ WHEAT<-function(Phenotype,
                               if(!is.null(CV)){
                                 if(!is.null(PC)){
                                   #No GAGS
-                                  Results=sapply(1:Replications, function(i,...){Results=MAS_CV(phenotype = GBS_Train$pheno,
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_CV(phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                 PCA=GBS_Train$PC[,1:PC],
                                                                                                 CV=GBS_Train$CV[,-1],
                                                                                                 folds = folds,
@@ -686,7 +759,7 @@ WHEAT<-function(Phenotype,
                                   )})
                                 }else{
                                   #No GAGS, No PC
-                                  Results=sapply(1:Replications, function(i,...){Results=MAS_CV(phenotype = GBS_Train$pheno,
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_CV(phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                 PCA=PC,
                                                                                                 CV=GBS_Train$CV[,-1],
                                                                                                 folds = folds,
@@ -706,7 +779,7 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No CV
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_CV(genotypes = GBS_Train$geno,
-                                                                                                              phenotype = GBS_Train$pheno,
+                                                                                                              phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                               model=model,
                                                                                                               Kernel=Kernel,
                                                                                                               PCA=GBS_Train$PC[,1:PC],
@@ -731,7 +804,7 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No CV, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_CV(genotypes = GBS_Train$geno,
-                                                                                                              phenotype = GBS_Train$pheno,
+                                                                                                              phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                               model=model,
                                                                                                               Kernel=Kernel,
                                                                                                               PCA=PC,
@@ -759,7 +832,7 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_CV(genotypes = GBS_Train$geno,
-                                                                                                           phenotype = GBS_Train$pheno,
+                                                                                                           phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                            model=model,
                                                                                                            Kernel=Kernel,
                                                                                                            PCA=GBS_Train$PC[,1:PC],
@@ -776,7 +849,7 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_CV(genotypes = GBS_Train$geno,
-                                                                                                           phenotype = GBS_Train$pheno,
+                                                                                                           phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                            model=model,
                                                                                                            Kernel=Kernel,
                                                                                                            PCA=PC,
@@ -795,7 +868,7 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS, No CV
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_CV(genotypes = GBS_Train$geno,
-                                                                                                           phenotype = GBS_Train$pheno,
+                                                                                                           phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                            model=model,
                                                                                                            Kernel=Kernel,
                                                                                                            PCA=GBS_Train$PC[,1:PC],
@@ -812,7 +885,7 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No CV, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_CV(genotypes = GBS_Train$geno,
-                                                                                                           phenotype = GBS_Train$pheno,
+                                                                                                           phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                            model=model,
                                                                                                            Kernel=Kernel,
                                                                                                            PCA=PC,
@@ -836,7 +909,7 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No CV
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_CV(genotypes = GBS_Train$geno,
-                                                                                                      phenotype = GBS_Train$pheno,
+                                                                                                      phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       model=model,
                                                                                                       Kernel=Kernel,
                                                                                                       PCA=GBS_Train$PC[,1:PC],
@@ -862,7 +935,7 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No CV, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_CV(genotypes = GBS_Train$geno,
-                                                                                                      phenotype = GBS_Train$pheno,
+                                                                                                      phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       model=model,
                                                                                                       Kernel=Kernel,
                                                                                                       PCA=PC,
@@ -891,7 +964,7 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
                                                                                                    PCA=GBS_Train$PC[,1:PC],
@@ -909,7 +982,7 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
                                                                                                    PCA=PC,
@@ -929,7 +1002,7 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS, No CV
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
                                                                                                    PCA=GBS_Train$PC[,1:PC],
@@ -947,7 +1020,7 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No CV, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
                                                                                                    PCA=PC,
@@ -974,7 +1047,7 @@ WHEAT<-function(Phenotype,
                             if(!is.null(CV)){
                               #No GAGS
                               Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_CV(genotypes = GBS_Train$numeric,
-                                                                                                 phenotype = GBS_Train$pheno,
+                                                                                                 phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                  myGD=GBS_Train$map,
                                                                                                  model=model,
                                                                                                  PCA.total=PC,
@@ -988,7 +1061,7 @@ WHEAT<-function(Phenotype,
                             }else{
                               #No GAGS, No CV
                               Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_CV(genotypes = GBS_Train$numeric,
-                                                                                                 phenotype = GBS_Train$pheno,
+                                                                                                 phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                  myGD=GBS_Train$map,
                                                                                                  model=model,
                                                                                                  PCA.total=PC,
@@ -1004,7 +1077,7 @@ WHEAT<-function(Phenotype,
 
                           if(Package=="caret"){
                             Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV(genotypes = GBS_Train$geno,
-                                                                                                   phenotype = GBS_Train$pheno,
+                                                                                                   phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    type=type,
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
@@ -1023,7 +1096,7 @@ WHEAT<-function(Phenotype,
 
                           if(Package=="GLM"){
                             Results=sapply(1:Replications, function(i,...){Results=GLM_CV(genotypes = GBS_Train$geno,
-                                                                                          phenotype = GBS_Train$pheno,
+                                                                                          phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                           fam=fam,
                                                                                           Kernel=Kernel,
                                                                                           markers=markers,
@@ -1038,20 +1111,22 @@ WHEAT<-function(Phenotype,
                         }
                         if(Scheme=="VS"){
                           if(is.null(GBS_Train)){
-                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
-                            GBS_Predict=get(paste0("GBS_2_",Prediction,"_",Trait[i]))
+                            #GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[j]))
+                            #GBS_Predict=get(paste0("GBS_2_",Prediction,"_",Trait[j]))
+                            GBS_Train=get(paste0("GBS_2_",Training))
+                            GBS_Predict=get(paste0("GBS_2_",Prediction))
                           }
                           if(Package=="rrBLUP"){
                             if(GAGS==TRUE){
                               if(!is.null(PC)){
                                 #No CV
                                 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_VS(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_GM=GBS_Train$map,
                                                                                                       train_GD=GBS_Train$numeric,
                                                                                                       train_PCA=GBS_Train$PC[,1:PC],
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                       Kernel=Kernel,
                                                                                                       markers=markers,
@@ -1070,12 +1145,12 @@ WHEAT<-function(Phenotype,
                               }else{
                                 #No CV, No PC
                                 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_VS(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_GM=GBS_Train$map,
                                                                                                       train_GD=GBS_Train$numeric,
                                                                                                       train_PCA=PC,
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=PC,
                                                                                                       Kernel=Kernel,
                                                                                                       markers=markers,
@@ -1096,11 +1171,11 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No GAGS
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=GBS_Train$PC[,1:PC],
                                                                                                    train_CV=GBS_Train$CV[,-1],
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                    test_CV=GBS_Predict$CV[,-1],
                                                                                                    Kernel=Kernel,
@@ -1114,11 +1189,11 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No GAGS, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=PC,
                                                                                                    train_CV=GBS_Train$CV[,-1],
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=PC,
                                                                                                    test_CV=GBS_Predict$CV[,-1],
                                                                                                    Kernel=Kernel,
@@ -1134,11 +1209,11 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No GAGS, No CV
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=GBS_Train$PC[,1:PC],
                                                                                                    train_CV=CV,
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                    test_CV=CV,
                                                                                                    Kernel=Kernel,
@@ -1152,11 +1227,11 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No GAGS, No CV, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=PC,
                                                                                                    train_CV=CV,
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=PC,
                                                                                                    test_CV=CV,
                                                                                                    Kernel=Kernel,
@@ -1180,12 +1255,12 @@ WHEAT<-function(Phenotype,
                               if(!is.null(PC)){
                                 #No CV
                                 Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_GM=GBS_Train$map,
                                                                                                    train_GD=GBS_Train$numeric,
                                                                                                    train_PCA=GBS_Train$PC[,1:PC],
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                    markers=markers,
                                                                                                    GWAS=GWAS,
@@ -1198,12 +1273,12 @@ WHEAT<-function(Phenotype,
                               }else{
                                 #No CV, No PC
                                 Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_GM=GBS_Train$map,
                                                                                                    train_GD=GBS_Train$numeric,
                                                                                                    train_PCA=PC,
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=PC,
                                                                                                    markers=markers,
                                                                                                    GWAS=GWAS,
@@ -1218,20 +1293,20 @@ WHEAT<-function(Phenotype,
                               if(!is.null(CV)){
                                 if(!is.null(PC)){
                                   #No GAGS
-                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS(train_phenotype = GBS_Train$pheno,
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS(train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                 train_PCA=GBS_Train$PC[,1:PC],
                                                                                                 train_CV=GBS_Train$CV[,-1],
-                                                                                                test_phenotype= GBS_Predict$pheno,
+                                                                                                test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                 test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                 test_CV=GBS_Predict$CV[,-1],
                                                                                                 transformation=transformation
                                   )})
                                 }else{
                                   #No GAGS, No PC
-                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS(train_phenotype = GBS_Train$pheno,
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS(train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                 train_PCA=PC,
                                                                                                 train_CV=GBS_Train$CV[,-1],
-                                                                                                test_phenotype= GBS_Predict$pheno,
+                                                                                                test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                 test_PCA=PC,
                                                                                                 test_CV=GBS_Predict$CV[,-1],
                                                                                                 transformation=transformation
@@ -1249,12 +1324,12 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No CV
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_VS(train_genotypes = GBS_Train$geno,
-                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                               train_GM=GBS_Train$map,
                                                                                                               train_GD=GBS_Train$numeric,
                                                                                                               train_PCA=GBS_Train$PC[,1:PC],
                                                                                                               test_genotypes= GBS_Predict$geno,
-                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                               test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                               model=model,
                                                                                                               Kernel=Kernel,
@@ -1274,12 +1349,12 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No CV, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_VS(train_genotypes = GBS_Train$geno,
-                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                               train_GM=GBS_Train$map,
                                                                                                               train_GD=GBS_Train$numeric,
                                                                                                               train_PCA=PC,
                                                                                                               test_genotypes= GBS_Predict$geno,
-                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                               test_PCA=PC,
                                                                                                               model=model,
                                                                                                               Kernel=Kernel,
@@ -1302,11 +1377,11 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS(train_genotypes = GBS_Train$geno,
-                                                                                                           train_phenotype = GBS_Train$pheno,
+                                                                                                           train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                            train_PCA=GBS_Train$PC[,1:PC],
                                                                                                            train_CV=GBS_Train$CV[,-1],
                                                                                                            test_genotypes= GBS_Predict$geno,
-                                                                                                           test_phenotype= GBS_Predict$pheno,
+                                                                                                           test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                            test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                            test_CV=GBS_Predict$CV[,-1],
                                                                                                            model=model,
@@ -1322,11 +1397,11 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS(train_genotypes = GBS_Train$geno,
-                                                                                                           train_phenotype = GBS_Train$pheno,
+                                                                                                           train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                            train_PCA=PC,
                                                                                                            train_CV=GBS_Train$CV[,-1],
                                                                                                            test_genotypes= GBS_Predict$geno,
-                                                                                                           test_phenotype= GBS_Predict$pheno,
+                                                                                                           test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                            test_PCA=PC,
                                                                                                            test_CV=GBS_Predict$CV[,-1],
                                                                                                            model=model,
@@ -1344,11 +1419,11 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS, No CV
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS(train_genotypes = GBS_Train$geno,
-                                                                                                           train_phenotype = GBS_Train$pheno,
+                                                                                                           train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                            train_PCA=GBS_Train$PC[,1:PC],
                                                                                                            train_CV=CV,
                                                                                                            test_genotypes= GBS_Predict$geno,
-                                                                                                           test_phenotype= GBS_Predict$pheno,
+                                                                                                           test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                            test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                            test_CV=CV,
                                                                                                            model=model,
@@ -1364,11 +1439,11 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No CV, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS(train_genotypes = GBS_Train$geno,
-                                                                                                           train_phenotype = GBS_Train$pheno,
+                                                                                                           train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                            train_PCA=PC,
                                                                                                            train_CV=CV,
                                                                                                            test_genotypes= GBS_Predict$geno,
-                                                                                                           test_phenotype= GBS_Predict$pheno,
+                                                                                                           test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                            test_PCA=PC,
                                                                                                            test_CV=CV,
                                                                                                            model=model,
@@ -1391,12 +1466,12 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No CV
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_VS(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_GM=GBS_Train$map,
                                                                                                       train_GD=GBS_Train$numeric,
                                                                                                       train_PCA=GBS_Train$PC[,1:PC],
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                       model=model,
                                                                                                       Kernel=Kernel,
@@ -1417,12 +1492,12 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No CV, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_VS(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_GM=GBS_Train$map,
                                                                                                       train_GD=GBS_Train$numeric,
                                                                                                       train_PCA=PC,
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=PC,
                                                                                                       model=model,
                                                                                                       Kernel=Kernel,
@@ -1446,11 +1521,11 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=GBS_Train$PC[,1:PC],
                                                                                                    train_CV=GBS_Train$CV[,-1],
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                    test_CV=GBS_Predict$CV[,-1],
                                                                                                    model=model,
@@ -1467,11 +1542,11 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=PC,
                                                                                                    train_CV=GBS_Train$CV[,-1],
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=PC,
                                                                                                    test_CV=GBS_Predict$CV[,-1],
                                                                                                    model=model,
@@ -1490,11 +1565,11 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS, No CV
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=GBS_Train$PC[,1:PC],
                                                                                                    train_CV=CV,
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                    test_CV=CV,
                                                                                                    model=model,
@@ -1511,11 +1586,11 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No CV, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=PC,
                                                                                                    train_CV=CV,
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=PC,
                                                                                                    test_CV=CV,
                                                                                                    model=model,
@@ -1538,9 +1613,9 @@ WHEAT<-function(Phenotype,
                           }
                           if(Package=="caret"){
                             Results=sapply(1:Replications, function(i,...){Results=Caret_Models_VS(train_genotypes = GBS_Train$geno,
-                                                                                                   train_phenotype = GBS_Train$pheno,
+                                                                                                   train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_genotypes= GBS_Predict$geno,
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    type=type,
                                                                                                    model=model,
                                                                                                    Kernel=Kernel,
@@ -1561,11 +1636,11 @@ WHEAT<-function(Phenotype,
                             if(!is.null(CV)){
                               #No GAGS
                               Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_VS(genotypes = GBS_Train$numeric,
-                                                                                                 phenotype = GBS_Train$pheno,
+                                                                                                 phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                  train_GM=GBS_Train$map,
                                                                                                  train_CV=GBS_Train$CV[,-1],
                                                                                                  test_genotypes= GBS_Predict$numeric,
-                                                                                                 test_phenotype= GBS_Predict$pheno,
+                                                                                                 test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                  test_GM=GBS_Predict$map,
                                                                                                  test_CV=GBS_Predict$CV[,-1],
                                                                                                  model=model,
@@ -1578,11 +1653,11 @@ WHEAT<-function(Phenotype,
                             }else{
                               #No GAGS, No CV
                               Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_VS(genotypes = GBS_Train$numeric,
-                                                                                                 phenotype = GBS_Train$pheno,
+                                                                                                 phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                  train_GM=GBS_Train$map,
                                                                                                  train_CV=CV,
                                                                                                  test_genotypes= GBS_Predict$numeric,
-                                                                                                 test_phenotype= GBS_Predict$pheno,
+                                                                                                 test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                  test_GM=GBS_Predict$map,
                                                                                                  test_CV=CV,
                                                                                                  model=model,
@@ -1596,9 +1671,9 @@ WHEAT<-function(Phenotype,
                           }
                           if(Package=="GLM"){
                             Results=sapply(1:Replications, function(i,...){Results=GLM_VS(train_genotypes = GBS_Train$geno,
-                                                                                          train_phenotype = GBS_Train$pheno,
+                                                                                          train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                           test_genotypes= GBS_Predict$geno,
-                                                                                          test_phenotype= GBS_Predict$pheno,
+                                                                                          test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                           fam=fam,
                                                                                           Kernel=Kernel,
                                                                                           markers=markers,
@@ -1614,7 +1689,7 @@ WHEAT<-function(Phenotype,
                       if(Outcome=="Untested"){
                         if(Scheme=="K-Fold"){
                           if(is.null(GBS_Train)){
-                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
+                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[j]))
                           }
                           #Is there even a point for K-fold for untested?
                           #We can do this if we include blank values, but not in rrBLUP or DL
@@ -1626,20 +1701,22 @@ WHEAT<-function(Phenotype,
                         }
                         if(Scheme=="VS"){
                           if(is.null(GBS_Train)){
-                            GBS_Train=get(paste0("GBS_2_",Training,"_",Trait[i]))
-                            GBS_Predict=get(paste0("GBS_2_Untested_",Prediction,"_",Trait[i]))
+                            #GBS_Train=get(paste0("GBS_2_Untested_",Training,"_",Trait[j]))
+                            #GBS_Predict=get(paste0("GBS_2_Untested_",Prediction,"_",Trait[j]))
+                            GBS_Train=get(paste0("GBS_2_Untested_",Training))
+                            GBS_Predict=get(paste0("GBS_2_Untested_",Prediction))
                           }
                           if(Package=="rrBLUP"){
                             if(GAGS==TRUE){
                               if(!is.null(PC)){
                                 #No CV
                                 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                         train_phenotype = GBS_Train$pheno,
+                                                                                                         train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                          train_GM=GBS_Train$map,
                                                                                                          train_GD=GBS_Train$numeric,
                                                                                                          train_PCA=GBS_Train$PC[,1:PC],
                                                                                                          test_genotypes= GBS_Predict$geno,
-                                                                                                         test_phenotype= GBS_Predict$pheno,
+                                                                                                         test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                          test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                          Kernel=Kernel,
                                                                                                          markers=markers,
@@ -1658,12 +1735,12 @@ WHEAT<-function(Phenotype,
                               }else{
                                 #No CV, No PC
                                 Results=sapply(1:Replications, function(i,...){Results=rrBLUP_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                         train_phenotype = GBS_Train$pheno,
+                                                                                                         train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                          train_GM=GBS_Train$map,
                                                                                                          train_GD=GBS_Train$numeric,
                                                                                                          train_PCA=PC,
                                                                                                          test_genotypes= GBS_Predict$geno,
-                                                                                                         test_phenotype= GBS_Predict$pheno,
+                                                                                                         test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                          test_PCA=PC,
                                                                                                          Kernel=Kernel,
                                                                                                          markers=markers,
@@ -1684,11 +1761,11 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No GAGS
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_PCA=GBS_Train$PC[,1:PC],
                                                                                                       train_CV=GBS_Train$CV[,-1],
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                       test_CV=GBS_Predict$CV[,-1],
                                                                                                       Kernel=Kernel,
@@ -1702,11 +1779,11 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No GAGS, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_PCA=PC,
                                                                                                       train_CV=GBS_Train$CV[,-1],
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=PC,
                                                                                                       test_CV=GBS_Predict$CV[,-1],
                                                                                                       Kernel=Kernel,
@@ -1722,11 +1799,11 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No GAGS, No CV
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_PCA=GBS_Train$PC[,1:PC],
                                                                                                       train_CV=CV,
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                       test_CV=CV,
                                                                                                       Kernel=Kernel,
@@ -1738,13 +1815,16 @@ WHEAT<-function(Phenotype,
                                                                                                       transformation=transformation
                                   )})
                                 }else{
+                                  if(Messages==TRUE){
+                                    print(paste0("Peforming ",Method," ",Scheme," ",Type," using the package ",Package," with the model ",model," and ",Kernel," on ",Trait[j]," using ",Training,"."))
+                                  }
                                   #No GAGS, No CV, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=rrBLUP_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_PCA=PC,
                                                                                                       train_CV=CV,
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=PC,
                                                                                                       test_CV=CV,
                                                                                                       Kernel=Kernel,
@@ -1768,12 +1848,12 @@ WHEAT<-function(Phenotype,
                               if(!is.null(PC)){
                                 #No CV
                                 Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_GM=GBS_Train$map,
                                                                                                       train_GD=GBS_Train$numeric,
                                                                                                       train_PCA=GBS_Train$PC[,1:PC],
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                       markers=markers,
                                                                                                       GWAS=GWAS,
@@ -1786,12 +1866,12 @@ WHEAT<-function(Phenotype,
                               }else{
                                 #No CV, No PC
                                 Results=sapply(1:Replications, function(i,...){Results=MAS_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_GM=GBS_Train$map,
                                                                                                       train_GD=GBS_Train$numeric,
                                                                                                       train_PCA=PC,
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=PC,
                                                                                                       markers=markers,
                                                                                                       GWAS=GWAS,
@@ -1806,20 +1886,20 @@ WHEAT<-function(Phenotype,
                               if(!is.null(CV)){
                                 if(!is.null(PC)){
                                   #No GAGS
-                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS_UT(train_phenotype = GBS_Train$pheno,
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS_UT(train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=GBS_Train$PC[,1:PC],
                                                                                                    train_CV=GBS_Train$CV[,-1],
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                    test_CV=GBS_Predict$CV[,-1],
                                                                                                    transformation=transformation
                                   )})
                                 }else{
                                   #No GAGS, No PC
-                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS_UT(train_phenotype = GBS_Train$pheno,
+                                  Results=sapply(1:Replications, function(i,...){Results=MAS_VS_UT(train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                    train_PCA=PC,
                                                                                                    train_CV=GBS_Train$CV[,-1],
-                                                                                                   test_phenotype= GBS_Predict$pheno,
+                                                                                                   test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                    test_PCA=PC,
                                                                                                    test_CV=GBS_Predict$CV[,-1],
                                                                                                    transformation=transformation
@@ -1837,12 +1917,12 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No CV
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                                 train_phenotype = GBS_Train$pheno,
+                                                                                                                 train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                                  train_GM=GBS_Train$map,
                                                                                                                  train_GD=GBS_Train$numeric,
                                                                                                                  train_PCA=GBS_Train$PC[,1:PC],
                                                                                                                  test_genotypes= GBS_Predict$geno,
-                                                                                                                 test_phenotype= GBS_Predict$pheno,
+                                                                                                                 test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                                  test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                                  model=model,
                                                                                                                  Kernel=Kernel,
@@ -1862,12 +1942,12 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No CV, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                                 train_phenotype = GBS_Train$pheno,
+                                                                                                                 train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                                  train_GM=GBS_Train$map,
                                                                                                                  train_GD=GBS_Train$numeric,
                                                                                                                  train_PCA=PC,
                                                                                                                  test_genotypes= GBS_Predict$geno,
-                                                                                                                 test_phenotype= GBS_Predict$pheno,
+                                                                                                                 test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                                  test_PCA=PC,
                                                                                                                  model=model,
                                                                                                                  Kernel=Kernel,
@@ -1890,11 +1970,11 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                               train_PCA=GBS_Train$PC[,1:PC],
                                                                                                               train_CV=GBS_Train$CV[,-1],
                                                                                                               test_genotypes= GBS_Predict$geno,
-                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                               test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                               test_CV=GBS_Predict$CV[,-1],
                                                                                                               model=model,
@@ -1910,11 +1990,11 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                               train_PCA=PC,
                                                                                                               train_CV=GBS_Train$CV[,-1],
                                                                                                               test_genotypes= GBS_Predict$geno,
-                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                               test_PCA=PC,
                                                                                                               test_CV=GBS_Predict$CV[,-1],
                                                                                                               model=model,
@@ -1932,11 +2012,11 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS, No CV
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                               train_PCA=GBS_Train$PC[,1:PC],
                                                                                                               train_CV=CV,
                                                                                                               test_genotypes= GBS_Predict$geno,
-                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                               test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                               test_CV=CV,
                                                                                                               model=model,
@@ -1952,11 +2032,11 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No CV, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_Ordinal_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                              train_phenotype = GBS_Train$pheno,
+                                                                                                              train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                               train_PCA=PC,
                                                                                                               train_CV=CV,
                                                                                                               test_genotypes= GBS_Predict$geno,
-                                                                                                              test_phenotype= GBS_Predict$pheno,
+                                                                                                              test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                               test_PCA=PC,
                                                                                                               test_CV=CV,
                                                                                                               model=model,
@@ -1979,12 +2059,12 @@ WHEAT<-function(Phenotype,
                                 if(!is.null(PC)){
                                   #No CV
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                         train_phenotype = GBS_Train$pheno,
+                                                                                                         train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                          train_GM=GBS_Train$map,
                                                                                                          train_GD=GBS_Train$numeric,
                                                                                                          train_PCA=GBS_Train$PC[,1:PC],
                                                                                                          test_genotypes= GBS_Predict$geno,
-                                                                                                         test_phenotype= GBS_Predict$pheno,
+                                                                                                         test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                          test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                          model=model,
                                                                                                          Kernel=Kernel,
@@ -2005,12 +2085,12 @@ WHEAT<-function(Phenotype,
                                 }else{
                                   #No CV, No PC
                                   Results=sapply(1:Replications, function(i,...){Results=BGLR_GAGS_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                         train_phenotype = GBS_Train$pheno,
+                                                                                                         train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                          train_GM=GBS_Train$map,
                                                                                                          train_GD=GBS_Train$numeric,
                                                                                                          train_PCA=PC,
                                                                                                          test_genotypes= GBS_Predict$geno,
-                                                                                                         test_phenotype= GBS_Predict$pheno,
+                                                                                                         test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                          test_PCA=PC,
                                                                                                          model=model,
                                                                                                          Kernel=Kernel,
@@ -2034,11 +2114,11 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_PCA=GBS_Train$PC[,1:PC],
                                                                                                       train_CV=GBS_Train$CV[,-1],
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                       test_CV=GBS_Predict$CV[,-1],
                                                                                                       model=model,
@@ -2055,11 +2135,11 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_PCA=PC,
                                                                                                       train_CV=GBS_Train$CV[,-1],
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=PC,
                                                                                                       test_CV=GBS_Predict$CV[,-1],
                                                                                                       model=model,
@@ -2078,11 +2158,11 @@ WHEAT<-function(Phenotype,
                                   if(!is.null(PC)){
                                     #No GAGS, No CV
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_PCA=GBS_Train$PC[,1:PC],
                                                                                                       train_CV=CV,
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=GBS_Predict$PC[,1:PC],
                                                                                                       test_CV=CV,
                                                                                                       model=model,
@@ -2099,11 +2179,11 @@ WHEAT<-function(Phenotype,
                                   }else{
                                     #No GAGS, No CV, No PC
                                     Results=sapply(1:Replications, function(i,...){Results=BGLR_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       train_PCA=PC,
                                                                                                       train_CV=CV,
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_PCA=PC,
                                                                                                       test_CV=CV,
                                                                                                       model=model,
@@ -2126,9 +2206,9 @@ WHEAT<-function(Phenotype,
                           }
                           if(Package=="caret"){
                             Results=sapply(1:Replications, function(i,...){Results=Caret_Models_CV_UT(train_genotypes = GBS_Train$geno,
-                                                                                                      train_phenotype = GBS_Train$pheno,
+                                                                                                      train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                       test_genotypes= GBS_Predict$geno,
-                                                                                                      test_phenotype= GBS_Predict$pheno,
+                                                                                                      test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                       type=type,
                                                                                                       model=model,
                                                                                                       Kernel=Kernel,
@@ -2149,11 +2229,11 @@ WHEAT<-function(Phenotype,
                             if(!is.null(CV)){
                               #No GAGS
                               Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_VS_UT(genotypes = GBS_Train$numeric,
-                                                                                                    phenotype = GBS_Train$pheno,
+                                                                                                    phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                     train_GM=GBS_Train$map,
                                                                                                     train_CV=GBS_Train$CV[,-1],
                                                                                                     test_genotypes= GBS_Predict$numeric,
-                                                                                                    test_phenotype= GBS_Predict$pheno,
+                                                                                                    test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                     test_GM=GBS_Predict$map,
                                                                                                     test_CV=GBS_Predict$CV[,-1],
                                                                                                     model=model,
@@ -2166,11 +2246,11 @@ WHEAT<-function(Phenotype,
                             }else{
                               #No GAGS, No CV
                               Results=sapply(1:Replications, function(i,...){Results=GAPIT_GS_VS_UT(genotypes = GBS_Train$numeric,
-                                                                                                    phenotype = GBS_Train$pheno,
+                                                                                                    phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                                     train_GM=GBS_Train$map,
                                                                                                     train_CV=CV,
                                                                                                     test_genotypes= GBS_Predict$numeric,
-                                                                                                    test_phenotype= GBS_Predict$pheno,
+                                                                                                    test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                                     test_GM=GBS_Predict$map,
                                                                                                     test_CV=CV,
                                                                                                     model=model,
@@ -2184,9 +2264,9 @@ WHEAT<-function(Phenotype,
                           }
                           if(Package=="GLM"){
                             Results=sapply(1:Replications, function(i,...){Results=GLM_VS_UT(train_genotypes = GBS_Train$geno,
-                                                                                             train_phenotype = GBS_Train$pheno,
+                                                                                             train_phenotype = GBS_Train$pheno[,c("Genotype",Trait[j])],
                                                                                              test_genotypes= GBS_Predict$geno,
-                                                                                             test_phenotype= GBS_Predict$pheno,
+                                                                                             test_phenotype= GBS_Predict$pheno[,c("Genotype",Trait[j])],
                                                                                              fam=fam,
                                                                                              Kernel=Kernel,
                                                                                              markers=markers,
@@ -2219,26 +2299,28 @@ WHEAT<-function(Phenotype,
                       }
 
                       if(Outcome=="Tested"){
-                        Results_Accuracy=Extract_ACC(Results,Replications,Training,model,Kernel,CV_Message,Trait[i])
+                        Results_Accuracy=Extract_ACC(Results,Replications,Training,model,Kernel,CV_Message,Trait[j])
 
-                        Results_Predictions=Extract_Pred(Results,Replications,Training,model,Kernel,CV_Message,Trait[i])
+                        Results_Predictions=Extract_Pred(Results,Replications,Training,model,Kernel,CV_Message,Trait[j])
 
                         Results_Both=list(Accuracy=Results_Accuracy,Predictions=Results_Predictions)
-                        Results_All[[i]]=Results_Both
-                        names(Results_All[[i]])<-Trait[i]
+                        #Results_All[[j]]=Results_Both
+                        Results_All[[Trait[j]]]=Results_Both
+                        #names(Results_All[[j]])<-Trait[j]
                       }
 
                       if(Outcome=="Untested"){
-                        Results_Predictions=Extract_Pred_UT(Results,Replications,Training,model,Kernel,CV_Message,Trait[i])
+                        Results_Predictions=Extract_Pred_UT(Results,Replications,Prediction,model,Kernel,CV_Message,Trait[j])
 
                         Results_Both=list(Predictions=Results_Predictions)
-                        Results_All[[i]]=Results_Both
-                        names(Results_All[[i]])<-Trait[i]
+                        #Results_All[[j]]=Results_Both
+                        Results_All[[Trait[j]]]=Results_Both
+                        #names(Results_All[[j]])<-Trait[j]
                       }
 
-                      return(Results_All)
                     }
-
+                    save(Results_All, file=paste0(Study,"_Results",".RData"))
+                    return(Results_All)
                     }
                     if(Method=="One-Step"){
                       if(is.null(Matrix)){
