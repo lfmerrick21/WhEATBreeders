@@ -61,11 +61,13 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
       if(!is.null(markers)){
         samp=sample(2:ncol(GD), markers)
         m_samp=GD[,samp]
-        myGD_train <- m_samp[fold_indices,]
-        myGD_test <- m_samp[-fold_indices,]
+        train_GM<-train_GM[samp,]
+        train_GD <- m_samp[fold_indices,]
+        #myGD_test <- m_samp[-fold_indices,]
       }else{
-        myGD_train <- GD[fold_indices,]
-        myGD_test <- GD[-fold_indices,]
+        train_GD <- GD[fold_indices,]
+        train_GM<-GM
+        #myGD_test <- GD[-fold_indices,]
       }
 
 
@@ -125,8 +127,8 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
     }
 
     GWASR<- GAPIT(Y = Y_train,
-                  GD = myGD_train,
-                  GM = GM,
+                  GD = train_GD,
+                  GM = train_GM,
                   PCA.total=PCA.total,
                   model = GWAS,
                   file.output=F)
@@ -174,6 +176,9 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
 
             fix_train_PC=make_full_rank(fix_train_PC)
             fix_test_PC=fix_test_PC[,colnames(fix_train_PC)]
+            if(ncol(data.frame(fix_test_PC))==1){
+              fix_test_PC=matrix(fix_test_PC)
+            }
 
             rrBLUP_model_PC <- mixed.solve(y = myY_train,
                                            Z = myGD_train,
@@ -227,7 +232,10 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
             #myCV=myCV[,-sm2]}
 
             fix_train=make_full_rank(fix_train)
-            fix_test=fix_test_PC[,colnames(fix_train)]
+            fix_test=fix_test[,colnames(fix_train)]
+            if(ncol(data.frame(fix_test))==1){
+              fix_test=matrix(fix_test)
+            }
             rrBLUP_model <- mixed.solve(y = myY_train,
                                         Z = myGD_train,
                                         X = fix_train)
@@ -287,6 +295,9 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
           #fix_test_PC=fix_test_PC[,-sm2]}
           fix_train_PC=make_full_rank(fix_train_PC)
           fix_test_PC=fix_test_PC[,colnames(fix_train_PC)]
+          if(ncol(data.frame(fix_test_PC))==1){
+            fix_test_PC=matrix(fix_test_PC)
+          }
           rrBLUP_model_PC <- mixed.solve(y = myY_train,
                                          Z = myGD_train,
                                          X = fix_train_PC)
@@ -331,7 +342,9 @@ rrBLUP_GAGS_CV <- function(genotypes, phenotype,Kernel="Markers",Y=NULL,GM=NULL,
           #fix_test=fix_test[,-sm2]}
           fix_train=make_full_rank(fix_train)
           fix_test=fix_test[,colnames(fix_train)]
-
+          if(ncol(data.frame(fix_test))==1){
+            fix_test=matrix(fix_test)
+          }
           #myCV_fix  <- as.matrix(myCV)
           #p <- ncol(myCV_fix)
           #XtX <- crossprod(myCV_fix, myCV_fix)

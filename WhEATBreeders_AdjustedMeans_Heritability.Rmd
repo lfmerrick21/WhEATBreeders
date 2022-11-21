@@ -1,0 +1,263 @@
+---
+title: "User Manual and Tutorial for WhEATBreeders"
+author: "Lance F. Merrick"
+date: "March 14, 2022"
+output:
+  #html_document:
+    #df_print: paged
+  #pdf_document: default
+  github_document: default
+---
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<!-- test inserting image-->
+
+<center>
+
+![](WinterWheat.png){#id .class width=300 height=300px}
+
+</center>
+
+<p>&nbsp;</p>
+
+<center> <font size="6"> **Wrappers for Easy Association, Tools, and Selection for Breeders (WhEATBreeders)** </font> </center>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+### **Table of contents**
+
+#### Introduction
+
+#### Description of package functions
+
+#### Getting started
+
+#### Load Package
+
+#### Phenotypic Data
+
+#### Genotypic Data
+
+#### Genomic Selection Tutorial
+
+#### Genome-Wide Association Tutorial using GAPIT
+
+#### Cross Prediction
+
+#### Frequently asked questions
+
+#### Further Information
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+<p>&nbsp;</p>
+
+### **Introduction**
+
+WhEATBreeders was created to lower the bar for implementing genomic selection models for plant breeders to utilize within their own breeding programs. Not only does include functions for genotype quality control and filtering, but it includes easy to use wrappers for the most commonly use models in many scenarios with K-Fold cross-validation or validation sets. You can also implement GWAS assisted genomic selection. We created a full wrapper for quality control and genomci selection in our function "WHEAT". Additionaly we walk through the set up of unrpelicated data using adjuste means and calculate cullis heritability. We also go through multi-output and multi-trait wrappers for GWAS in GAPIt. Finally we walk through cross-prediction using PopVar, rrBLUP, and sommer.
+
+### **Description of package functions**
+
+For a full list of functions within WhEATBreeders see “Reference_Manual.pdf” this file contains not only the full list of functions but also a description of each. The pdf also has each functions arguments listed. And like with all R packages once WhEATBreeders is installed and loaded you can type ?function_name and that specific function’s full descriptions will appear in the help tab on RStudio.
+
+### **Getting started**
+
+First if you do not already have R and R studio installed on your computer head over to <https://www.r-project.org/> and install the version appropriate for you machine. Once R and R studio are installed you will need to install the WhEATBreeders package since this is a working package in it’s early stages of development it’s only available through Github. To download files off Github first download and load the library of the package “devtools” using the code below.
+
+# Packages needed
+
+```{r eval=FALSE}
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(devtools)
+library(devtools)
+#Better for FDR function
+devtools::install_github("jiabowang/GAPIT3",force=TRUE)
+library(GAPIT3)
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+  BiocManager::install("impute")
+#From the source
+#require(compiler) #for cmpfun
+#Only if you want the source code
+#source("http://zzlab.net/GAPIT/GAPIT.library.R")
+#source("http://zzlab.net/GAPIT/gapit_functions.txt") #make sure compiler is running
+#source("http://zzlab.net/GAPIT/emma.txt")
+
+if (!require("pacman")) install.packages("pacman")
+pacman::p_load(BGLR,
+  rrBLUP,
+  caret,
+  tidyr,
+  dplyr,
+  Hmisc,
+  WeightIt,
+  mpath,
+  glmnetUtils,
+  glmnet,
+  MASS,
+  Metrics,
+  stringr,
+  lsa,
+  keras,
+  tensorflow,
+  BMTME,
+  plyr,
+  data.table,
+  bigmemory,
+  biganalytics,
+  ggplot2,
+  tidyverse,
+  knitr,
+  cvTools,
+  vcfR,
+  compiler,
+  gdata,
+  PopVar,
+  BLR,
+  sommer,
+  heritability,
+  arm,
+  optimx,
+  purrr,
+  psych,
+  lme4,
+  lmerTest,
+  gridExtra,
+  grid,
+  readxl,
+  devtools)
+
+
+```
+
+### **Load Package**
+
+Next using the code below download and install the package WhEATBreeders from Github. The bottom two line of code in the chunk below make sure the dependencies WhEATBreeders relies on are also downloaded and installed.
+
+```{r eval=FALSE,warning=FALSE}
+#install package
+install_github("lfmerrick21/WhEATBreeders")
+library(WhEATBreeders)#package name
+```
+
+In order to have an effective tutorial you’ll need some data to play with, this code below downloads and loads into your environment data used for this tutorial.
+
+### **Phenotypic Data**
+
+#### Read in Phenotypic Data
+
+```{r eval=FALSE}
+#Read in phenotypic files
+em_trials=read.csv("C:\\Users\\lance\\OneDrive - Washington State University (email.wsu.edu)\\Documents\\Genomic Selection\\Genomic Selection Pipeline\\Selected Trials_C\\Selected Trials_Emergence\\Emergence_Trials.csv",header=TRUE)
+str(em_trials)
+em_trials$bloc=as.factor(em_trials$bloc)
+em_trials$checks=as.factor(em_trials$checks)
+em_trials$prow=as.factor(em_trials$prow)
+em_trials$pcol=as.factor(em_trials$pcol)
+em_trials$ibloc=as.factor(em_trials$ibloc)
+em_trials$year1=as.factor(em_trials$year1)
+em_trials$r_expt=as.factor(em_trials$r_expt)
+colnames(em_trials)[8]<-c("Name")
+
+#We have to create new identifiers according to the model indicated in the review paper I sent you.
+em_trials$new.ind=em_trials$checks
+em_trials=em_trials %>% mutate(check.ind = recode(checks,"1"="0", "0"="1"))
+em_trials$check.ind=as.factor(em_trials$check.ind)
+em_trials$new.ind=as.factor(em_trials$new.ind)
+str(em_trials)
+View(em_trials)
+
+#I just subset the different trials I needed
+lq15=subset(em_trials,em_trials$r_expt==levels(em_trials$r_expt)[2])
+lq17=subset(em_trials,em_trials$r_expt==levels(em_trials$r_expt)[3])
+lq18=subset(em_trials,em_trials$r_expt==levels(em_trials$r_expt)[4])
+lq19=subset(em_trials,em_trials$r_expt==levels(em_trials$r_expt)[5])
+lq15_17=em_trials[em_trials$r_expt == "2015 QAM Plots Lind" | em_trials$r_expt == "2017 QAM Plots Lind", ]
+
+lq15_18=em_trials[em_trials$r_expt == "2015 QAM Plots Lind" | em_trials$r_expt == "2017 QAM Plots Lind" |em_trials$r_expt == "2018 QAM Rows Lind", ]
+lq15_19=em_trials[em_trials$r_expt == "2015 QAM Plots Lind" | em_trials$r_expt == "2017 QAM Plots Lind" |em_trials$r_expt == "2018 QAM Rows Lind" |em_trials$r_expt == "2019 QAM Rows Lind", ]
+```
+
+#### Cullis Heritability (From Shantel Martinez Github)
+
+##### Single Environment Including genotype
+
+```{r eval=FALSE}
+lq15_bp <- lmer(emer~check.ind + (1|Name:new.ind) + (1|ibloc), data=lq15)
+Cullis_H2(lq15_bp)
+summary(lq15_bp)
+anova(lq15_bp)
+ranova(lq15_bp)
+```
+
+##### Multi Environment including genotype
+
+```{r eval=FALSE}
+lq15_17_bp <- lmer(emer~check.ind + (1|Name:new.ind) + (1|ibloc)+(1|r_expt)+check.ind:r_expt + (1|Name:new.ind:r_expt) + (1|ibloc:r_expt), data=lq15_17)
+Cullis_H2(lq15_17_bp)
+summary(lq15_17_bp)
+anova(lq15_17_bp)
+ranova(lq15_17_bp)
+```
+
+###Singularity Problems
+
+##### If you run into singularity or convergence problems you can always add in an lmerControl and then mess around with the maxfun number to get rid of the problem.
+
+```{r eval=FALSE}
+lb1_2_bp <- lmer(emer~check.ind + (1|Name:new.ind) + (1|ibloc)+(1|r_expt)+check.ind:r_expt + (1|Name:new.ind:r_expt) + (1|ibloc:r_expt), data=lbl1_2,
+            control=lmerControl(optimizer="Nelder_Mead",
+                                 optCtrl=list(maxfun=1e3)))
+```
+
+#### Adjusted Means
+
+##### Single Environment
+
+```{r eval=FALSE}
+#Adjustments
+lq15_r <- lm(emer~ibloc+checks, data=lq15)
+#residuals(lq15_r)
+lq15=lq15 %>% mutate(ap_adj = emer+lq15_r$residuals)
+lq15_ap=aggregate(lq15[,c(21)],list(lq15$Name),mean)
+colnames(lq15_ap)<-c("Name","emer_f15_ap")
+```
+
+##### Multi Environment
+
+```{r eval=FALSE}
+lq15_17_r <- lm(emer~ibloc+checks+r_expt+ibloc*r_expt+checks*r_expt, data=lq15_17)
+#lq15_17_r$residuals
+lq15_17=lq15_17 %>% mutate(ap_adj = emer+lq15_17_r$residuals)
+lq15_17_ap=aggregate(lq15_17[,c(21)],list(lq15_17$Name),mean)
+colnames(lq15_17_ap)<-c("Name","emer_15_17_ap")
+```
+
+#Combine Environments
+
+```{r eval=FALSE}
+d1=left_join(lq15_r,lq15_17_r,by="Name")
+d2=left_join(d1,lq18_raw,by="Name")
+```
+
+#### True version of Cullis heritability code that I'm working on which has been adapted from the Comparison of heritability papers and the github "<https://github.com/PaulSchmidtGit/Heritability>". 
+
+
+### **Frequently asked questions**
+
+1.  Where can I get WhEATBreeders? WhEATBreeders is currently only available on github via Lance F. Merrick’s public repository found at <https://github.com/lfmerrick21/WhEATBreeders>.
+2.  How to download WhEATBreeders? Please refer the “Getting started” section above where I show how to download and install WhEATBreeders using devtools.
+3.  Where can I get help with issues regarding WhEATBreeders? All questions should be directed to Lance F. Merrick at [lance.merrick21\@gmail.com](mailto:lance.merrick21@gmail.com).
+
+### **Further Information**
+
+For more information on individual functions please see the “Reference_Manual.pdf” or type ?FUNCITON_NAME into the R console, this will pull up specific information of each function inside WhEATBreeders. For example typing ?manhattan_plot will pull of the help page with details about the function that creates the Manhattan plots.

@@ -179,7 +179,9 @@ rrBLUP_CV <- function(genotypes, phenotype,Kernel="Markers",PCA=NULL,CV=NULL,mar
 
           fix_train_PC=make_full_rank(fix_train_PC)
           fix_test_PC=fix_test_PC[,colnames(fix_train_PC)]
-
+          if(ncol(data.frame(fix_test_PC))==1){
+            fix_test_PC=matrix(fix_test_PC)
+          }
           rrBLUP_model_PC <- mixed.solve(y = myY_train,
                                          Z = myGD_train,
                                          X = fix_train_PC)
@@ -217,7 +219,10 @@ rrBLUP_CV <- function(genotypes, phenotype,Kernel="Markers",PCA=NULL,CV=NULL,mar
           #fix_test=fix_test[,-sm2]}
 
           fix_train=make_full_rank(fix_train)
-          fix_test=fix_test_PC[,colnames(fix_train)]
+          fix_test=fix_test[,colnames(fix_train)]
+          if(ncol(data.frame(fix_test))==1){
+            fix_test=matrix(fix_test)
+          }
 
           rrBLUP_model <- mixed.solve(y = myY_train,
                                       Z = myGD_train,

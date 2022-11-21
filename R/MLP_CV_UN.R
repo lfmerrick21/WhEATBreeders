@@ -28,7 +28,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
       CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
       #fold_list <- make_CV_sets(length(phenotypes), k = folds)
       #######Final X and y for fitting the model###################
-      y=Y2[,trait[j]]
+      y=as.data.frame(Y2[,trait[j]])
       X=X2
       #########Grid of hyperparameters######## ############# #####################.
       if(is.null(Stage)){
@@ -56,8 +56,8 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
         length(tst_set)
         X_trn = (X[-tst_set,])
         X_tst = (X[tst_set,])
-        y_trn = sqrt((y[-tst_set]))
-        y_tst = sqrt((y [tst_set]))
+        y_trn = sqrt((y[-tst_set,]))
+        y_tst = sqrt((y [tst_set,]))
         nCVI = nCVI ####Number of folds for inner CV
         #i = 1
         #########Matrices for saving the output of inner CV#######################.
@@ -75,7 +75,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
         y_trI = y_trn
         for(i in 1:nCVI){
           for(stage in seq_len(dim(Stage)[1])){
-            X_trII = X_trI
+            X_trII = as.matrix(X_trI)
             y_trII = y_trI
             units_M <- Stage[stage, 1]
             epochs_M <- Stage[stage, 2]
@@ -224,7 +224,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
     CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
     #fold_list <- make_CV_sets(length(phenotypes), k = folds)
     #######Final X and y for fitting the model###################
-    y=Y2[,trait]
+    y=as.data.frame(Y2[,trait])
     X=X2
     dim(X)
     dim(y)
@@ -270,7 +270,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
       y_trI = y_trn
       for(i in 1:nCVI){
         for(stage in seq_len(dim(Stage)[1])){
-          X_trII = X_trI
+          X_trII = as.matrix(X_trI)
           y_trII = y_trI
           units_M <- Stage[stage, 1]
           epochs_M <- Stage[stage, 2]
@@ -690,7 +690,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
       CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
       #fold_list <- make_CV_sets(length(phenotypes), k = folds)
       #######Final X and y for fitting the model###################
-      y=Y2[,trait[j]]
+      y=as.data.frame(Y2[,trait[j]])
       X=X2
       #########Grid of hyperparameters######## ############# #####################.
       if(is.null(Stage)){
@@ -718,8 +718,8 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
         length(tst_set)
         X_trn = (X[-tst_set,])
         X_tst = (X[tst_set,])
-        y_trn = sqrt((y[-tst_set]))
-        y_tst = sqrt((y [tst_set]))
+        y_trn = sqrt((y[-tst_set,]))
+        y_tst = sqrt((y [tst_set,]))
         nCVI = nCVI ####Number of folds for inner CV
         #i = 1
         #########Matrices for saving the output of inner CV#######################.
@@ -737,7 +737,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
         y_trI = y_trn
         for(i in 1:nCVI){
           for(stage in seq_len(dim(Stage)[1])){
-            X_trII = X_trI
+            X_trII = as.matrix(X_trI)
             y_trII = y_trI
             units_M <- Stage[stage, 1]
             epochs_M <- Stage[stage, 2]
@@ -892,7 +892,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
     CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
     #fold_list <- make_CV_sets(length(phenotypes), k = folds)
     #######Final X and y for fitting the model###################
-    y=Y2[,trait]
+    y=as.data.frame(Y2[,trait])
     X=X2
     dim(X)
     dim(y)
@@ -938,7 +938,7 @@ MLP_CV_UN<- function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,f
       y_trI = y_trn
       for(i in 1:nCVI){
         for(stage in seq_len(dim(Stage)[1])){
-          X_trII = X_trI
+          X_trII = as.matrix(X_trI)
           y_trII = y_trI
           units_M <- Stage[stage, 1]
           epochs_M <- Stage[stage, 2]

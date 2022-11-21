@@ -48,7 +48,7 @@ WHEAT<-function(Phenotype,
                 QTN=10,
                 GWAS=c("BLINK"),
                 alpha=0.05,
-                threshold=NULL,
+                threshold="none",
                 GE=TRUE,
                 UN=FALSE,
                 GE_model="MTME",
@@ -58,9 +58,10 @@ WHEAT<-function(Phenotype,
                 digits=4,
                 nCVI=5,
                 Messages=TRUE){
-                colnames(Phenotype)[1:2]<-c("Genotype","Env")
-                Phenotype=Phenotype %>% filter(Env %in% c(Trial))
+
                   if(QC==TRUE){
+                    colnames(Phenotype)[1:2]<-c("Genotype","Env")
+                    Phenotype=Phenotype %>% filter(Env %in% c(Trial))
                     #############PandG#########################
                     ###############################################################################
                     #Get Taxa
@@ -443,6 +444,8 @@ WHEAT<-function(Phenotype,
                     #####################GS######################################################
                     if(QC==FALSE){
                       if(is.null(GBS_Train)){
+                        colnames(Phenotype)[1:2]<-c("Genotype","Env")
+                        Phenotype=Phenotype %>% filter(Env %in% c(Trial))
 
                       if(Method=="Two-Step"){
                         if(Outcome=="Tested"){

@@ -28,7 +28,7 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
       CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
       #fold_list <- make_CV_sets(length(phenotypes), k = folds)
       #######Final X and y for fitting the model###################
-      y=Y2[,trait[j]]
+      y=as.data.frame(Y2[,trait[j]])
       X=X2
       #########Grid of hyperparameters######## ############# #####################.
       if(is.null(Stage)){
@@ -56,8 +56,8 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
         length(tst_set)
         X_trn = (X[-tst_set,])
         X_tst = (X[tst_set,])
-        y_trn = sqrt((y[-tst_set]))
-        y_tst = sqrt((y [tst_set]))
+        y_trn = sqrt((y[-tst_set,]))
+        y_tst = sqrt((y [tst_set,]))
         nCVI = nCVI ####Number of folds for inner CV
         #i = 1
         #########Matrices for saving the output of inner CV#######################.
@@ -75,7 +75,7 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
         y_trI = y_trn
         for(i in 1:nCVI){
           for(stage in seq_len(dim(Stage)[1])){
-            X_trII = X_trI
+            X_trII = as.matrix(X_trI)
             y_trII = y_trI
             units_M <- Stage[stage, 1]
             epochs_M <- Stage[stage, 2]
@@ -224,7 +224,7 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
     CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
     #fold_list <- make_CV_sets(length(phenotypes), k = folds)
     #######Final X and y for fitting the model###################
-    y=Y2[,trait]
+    y=as.data.frame(Y2[,trait])
     X=X2
     dim(X)
     dim(y)
@@ -270,7 +270,7 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
       y_trI = y_trn
       for(i in 1:nCVI){
         for(stage in seq_len(dim(Stage)[1])){
-          X_trII = X_trI
+          X_trII = as.matrix(X_trI)
           y_trII = y_trI
           units_M <- Stage[stage, 1]
           epochs_M <- Stage[stage, 2]
@@ -667,6 +667,8 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
       K_GE=matrix$MTME$K_GE
 
       Genotype=cbind(Z_E,K_expanded,K_GE)
+      mode(Genotype) = "numeric"
+      Genotype=data.frame(Genotype)
       #Phenotype$Genotype=as.factor(Phenotype$Genotype)
       #Phenotype$Env=as.factor(Phenotype$Env)
       Y2=Phenotype[complete.cases(Phenotype),]
@@ -677,6 +679,8 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
       Z1=matrix$BMTME$Z1
       Z2=matrix$BMTME$Z2
       Genotype=cbind(X,Z1,Z2)
+      mode(Genotype) = "numeric"
+      Genotype=data.frame(Genotype)
       Y2=Phenotype[complete.cases(Phenotype),]
       X2=Genotype[complete.cases(Phenotype),]
     }
@@ -694,7 +698,7 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
       CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
       #fold_list <- make_CV_sets(length(phenotypes), k = folds)
       #######Final X and y for fitting the model###################
-      y=Y2[,trait[j]]
+      y=as.data.frame(Y2[,trait[j]])
       X=X2
       #########Grid of hyperparameters######## ############# #####################.
       if(is.null(Stage)){
@@ -722,8 +726,8 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
         length(tst_set)
         X_trn = (X[-tst_set,])
         X_tst = (X[tst_set,])
-        y_trn = sqrt((y[-tst_set]))
-        y_tst = sqrt((y [tst_set]))
+        y_trn = sqrt((y[-tst_set,]))
+        y_tst = sqrt((y [tst_set,]))
         nCVI = nCVI ####Number of folds for inner CV
         #i = 1
         #########Matrices for saving the output of inner CV#######################.
@@ -741,7 +745,7 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
         y_trI = y_trn
         for(i in 1:nCVI){
           for(stage in seq_len(dim(Stage)[1])){
-            X_trII = X_trI
+            X_trII = as.matrix(X_trI)
             y_trII = y_trI
             units_M <- Stage[stage, 1]
             epochs_M <- Stage[stage, 2]
@@ -874,6 +878,8 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
       K_GE=matrix$MTME$K_GE
 
       Genotype=cbind(Z_E,K_expanded,K_GE)
+      mode(Genotype) = "numeric"
+      Genotype=data.frame(Genotype)
       #Phenotype$Genotype=as.factor(Phenotype$Genotype)
       #Phenotype$Env=as.factor(Phenotype$Env)
       Y2=Phenotype[complete.cases(Phenotype),]
@@ -884,6 +890,8 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
       Z1=matrix$BMTME$Z1
       Z2=matrix$BMTME$Z2
       Genotype=cbind(X,Z1,Z2)
+      mode(Genotype) = "numeric"
+      Genotype=data.frame(Genotype)
       Y2=Phenotype[complete.cases(Phenotype),]
       X2=Genotype[complete.cases(Phenotype),]
     }
@@ -901,7 +909,7 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
     CrossV=CV.KFold(pheno, DataSetID = 'Genotype', K=K)
     #fold_list <- make_CV_sets(length(phenotypes), k = folds)
     #######Final X and y for fitting the model###################
-    y=Y2[,trait]
+    y=as.data.frame(Y2[,trait])
     X=X2
     dim(X)
     dim(y)
@@ -947,7 +955,7 @@ MLP_CV<-function(matrix,trait=c("IT","SEV"),model="ST",digits=4,nCVI=5,K=5,folds
       y_trI = y_trn
       for(i in 1:nCVI){
         for(stage in seq_len(dim(Stage)[1])){
-          X_trII = X_trI
+          X_trII = as.matrix(X_trI)
           y_trII = y_trI
           units_M <- Stage[stage, 1]
           epochs_M <- Stage[stage, 2]
