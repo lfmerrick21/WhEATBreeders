@@ -2302,9 +2302,9 @@ WHEAT<-function(Phenotype,
                       }
 
                       if(Outcome=="Tested"){
-                        Results_Accuracy=Extract_ACC(Results,Replications,Training,model,Kernel,CV_Message,Trait[j])
+                        Results_Accuracy=Extract_ACC(Results,Replications,Prediction,model,Kernel,CV_Message,Trait[j])
 
-                        Results_Predictions=Extract_Pred(Results,Replications,Training,model,Kernel,CV_Message,Trait[j])
+                        Results_Predictions=Extract_Pred(Results,Replications,Prediction,model,Kernel,CV_Message,Trait[j])
 
                         Results_Both=list(Accuracy=Results_Accuracy,Predictions=Results_Predictions)
                         #Results_All[[j]]=Results_Both
